@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# DocVal
+
+## Introduction
+
+**DocVal** is an AI-based tool designed for evaluating and validating official documents. This system leverages artificial intelligence to analyze, verify, and assess the authenticity and completeness of official documents with high accuracy. Whether you need to validate certificates, identification documents, official records, or other critical paperwork, DocVal provides a reliable and efficient solution for document verification.
+
+The application features a secure, user-friendly interface that allows users to upload and evaluate documents, with detailed reports and insights generated through advanced AI algorithms.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+Before running the system, ensure you have the following installed:
+
+- Node.js (v16 or higher)
+- npm (v7 or higher) or yarn/pnpm/bun
+
+### Installation Steps
+
+1. **Clone the repository** (if applicable)
+
+   ```bash
+   git clone <repository-url>
+   cd docval_final
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   ```
+
+3. **Configure environment variables**
+   Create a `.env` file in the root directory and add the required configuration:
+
+   ```
+   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_SECRET=<your-secret-key>
+
+   ```
+
+### Running the System
+
+#### Development Mode
+
+To start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to access the application.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+#### Production Mode
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+To build and run in production:
 
-## Learn More
+```bash
+npm run build
+npm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- AI-powered document validation and verification
+- Secure user authentication
+- Dashboard for managing and tracking documents
+- Document upload and analysis
+- Detailed validation reports
+- User profile management
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+- `src/app/` - Next.js application pages and API routes
+- `src/components/` - Reusable React components
+- `src/helper/` - Utility functions and helpers
+- `public/` - Static assets
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Support
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For issues, questions, or contributions, please refer to the project documentation or contact the development team.
