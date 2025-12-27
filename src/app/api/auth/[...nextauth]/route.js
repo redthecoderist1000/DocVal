@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { signOut } from "next-auth/react";
 
 export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -7,8 +8,16 @@ export const authOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
+        email: {
+          label: "Email",
+          type: "text",
+          placeholder: "Enter your email",
+        },
+        password: {
+          label: "Password",
+          type: "password",
+          placeholder: "Enter your password",
+        },
       },
       async authorize(credentials) {
         const res = await fetch(
@@ -51,9 +60,10 @@ export const authOptions = {
       return session;
     },
   },
-  // pages: {
-  //   signIn: "api/auth/signin",
-  // },
+  pages: {
+    signIn: "api/auth/signin",
+    signOut: "/",
+  },
 };
 
 const handler = NextAuth(authOptions);
