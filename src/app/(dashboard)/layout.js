@@ -93,7 +93,7 @@ export default function DashboardLayout({ children }) {
           {/* Navigation Menu */}
           <nav className="flex-1 p-4 space-y-2">
             {menuItems.map((item, index) => (
-              <Link key={index} href={`/dashboard/${item.path}`}>
+              <Link key={index} href={`/${item.path}`}>
                 <button
                   className={`w-full text-left px-4 py-3 rounded-lg transition ${
                     activeMenu === item.path
