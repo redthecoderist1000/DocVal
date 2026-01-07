@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -17,20 +17,25 @@ import {
   InputLabel,
   MenuItem,
   Chip,
+  IconButton,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
+import StopCircleRoundedIcon from "@mui/icons-material/StopCircleRounded";
 import axiosInstance from "@/helper/Axios";
 import { useRouter } from "next/navigation";
 
 export default function NewFile() {
   const router = useRouter();
+  const abortControllerRef = useRef(null);
   const [formData, setFormData] = useState({
     refno: "",
     title: "",
     classification: "",
     classification_name: "",
+    type: "",
     type_name: "",
+    sender_office: "",
     sender_office_name: "",
     sender_person: "",
     sender_email: "",
@@ -69,7 +74,8 @@ export default function NewFile() {
       return;
     }
 
-    // setLoading(true);
+    abortControllerRef.current = new AbortController();
+
     setMessage({ type: "", text: "" });
 
     // convert to file to base64
@@ -87,29 +93,34 @@ export default function NewFile() {
 
     setLoading(true);
     axiosInstance
-      .post("/document/generateReport", { base64_data: fileBase64 })
+      .post(
+        "/document/generateReport",
+        { base64_data: fileBase64 },
+        { signal: abortControllerRef.current.signal }
+      )
       .then((res) => {
-        console.log(res);
-        // console.log({ ...formData, base64_data: fileBase64 });
+        // store in session storage
+        sessionStorage.setItem(
+          "newReportData",
+          JSON.stringify({
+            ...formData,
+            file_name: formData.file.name,
+            file_base64: fileBase64,
+            report_data: res.body,
+          })
+        );
 
-        // const queryParams = new URLSearchParams({
-        //   refno: formData.refno,
-        //   title: formData.title,
-        //   classification: formData.classification,
-        //   type: formData.type,
-        //   sender_office: formData.sender_office,
-        //   sender_person: formData.sender_person,
-        //   sender_email: formData.sender_email,
-        //   sender_phone: formData.sender_phone,
-        // }).toString();
-
-        // router.push(`/files/report?${queryParams}`);
+        router.push(`/files/report`);
         setLoading(false);
       })
       .catch((err) => {
-        console.error(err);
+        console.log(err);
+        if (err.name === "CanceledError") {
+          setMessage({ type: "info", text: "Request cancelled" });
+        } else {
+          setMessage({ type: "error", text: "Error evaluating file" });
+        }
         setLoading(false);
-        setMessage({ type: "error", text: "Error uploading file" });
       });
   };
 
@@ -118,14 +129,24 @@ export default function NewFile() {
       refno: "",
       title: "",
       classification: "",
+      classification_name: "",
       type: "",
+      type_name: "",
       sender_office: "",
+      sender_office_name: "",
       sender_person: "",
       sender_email: "",
       sender_phone: "",
       file: null,
     });
     setMessage({ type: "", text: "" });
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -163,7 +184,6 @@ export default function NewFile() {
     <Container maxWidth="md" sx={{ py: 6 }}>
       <Card
         sx={{
-          // boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
           borderRadius: 2,
         }}
       >
@@ -239,7 +259,16 @@ export default function NewFile() {
                       Select Classification
                     </MenuItem>
                     {classifications?.map((data, index) => (
-                      <MenuItem key={index} value={data.id}>
+                      <MenuItem
+                        key={index}
+                        value={data.id}
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            classification_name: data.name,
+                          });
+                        }}
+                      >
                         {data.name}
                       </MenuItem>
                     ))}
@@ -258,7 +287,16 @@ export default function NewFile() {
                       Select Type
                     </MenuItem>
                     {types?.map((data, index) => (
-                      <MenuItem key={index} value={data.id}>
+                      <MenuItem
+                        key={index}
+                        value={data.id}
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            type_name: data.name,
+                          });
+                        }}
+                      >
                         {data.name}
                       </MenuItem>
                     ))}
@@ -286,7 +324,16 @@ export default function NewFile() {
                       Select Sender Office
                     </MenuItem>
                     {offices?.map((data, index) => (
-                      <MenuItem key={index} value={data.id}>
+                      <MenuItem
+                        key={index}
+                        value={data.id}
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            sender_office_name: data.division_abrv,
+                          });
+                        }}
+                      >
                         {data.division_name} ({data.division_abrv})
                       </MenuItem>
                     ))}
@@ -408,6 +455,14 @@ export default function NewFile() {
                 >
                   Continue
                 </Button>
+                {loading && (
+                  <IconButton>
+                    <StopCircleRoundedIcon
+                      color="error"
+                      onClick={handleCancel}
+                    />
+                  </IconButton>
+                )}
               </Stack>
             </Stack>
           </form>

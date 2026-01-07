@@ -6,14 +6,14 @@ async function refreshAccessToken(token) {
   try {
     const res = await axios.post(
       `${process.env.NEXT_PUBLIC_BASE_URL}/auth/refresh`,
-      { refreshToken: token.refreshToken },
-      { skipAuthRefresh: true }
+      { refreshToken: token.refresh_token }
+      // { skipAuthRefresh: true }
     );
-    console.log("Refreshed access token:", res.data);
+    console.log("Access token refreshed successfully");
     return {
       ...token,
-      access_token: res.data.accessToken,
-      accessTokenExpires: Date.now() + res.data.expiresIn * 1000,
+      access_token: res.data.access_token,
+      accessTokenExpires: Date.now() + 15 * 60 * 1000, // 15 minutes
     };
   } catch (error) {
     return { ...token, error: "RefreshAccessTokenError" };
@@ -77,7 +77,7 @@ export const authOptions = {
       }
 
       // Otherwise refresh
-      console.log("Access token expired, refreshing...");
+      // console.log("Access token expired, refreshing...");
       return await refreshAccessToken(token);
     },
     async session({ session, token }) {

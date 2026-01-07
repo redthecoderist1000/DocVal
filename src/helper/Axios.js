@@ -34,12 +34,12 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response.data,
   async (error) => {
-    if (error.config?.skipAuthRefresh) {
-      return Promise.reject({
-        status: error.response?.status,
-        message: error.response?.data?.error,
-      });
-    }
+    // if (error.config?.skipAuthRefresh) {
+    //   return Promise.reject({
+    //     status: error.response?.status,
+    //     message: error.response?.data?.error,
+    //   });
+    // }
 
     if (error.response?.data.error === "jwt expired") {
       // Refresh session via NextAuth
