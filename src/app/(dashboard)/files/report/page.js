@@ -20,27 +20,20 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Report_pdf from "@/helper/printables/Report_pdf";
+import { useSession } from "next-auth/react";
+import { useProtectedRoute } from "@/helper/ProtectedRoutes";
+import axiosInstance from "@/helper/Axios";
 
 export default function Report() {
+  const { session, status } = useProtectedRoute();
+  const [loading, setLoading] = useState(false);
+
   const router = useRouter();
 
   // get data frm session storage
   const [newReportData, setNewReportData] = useState(
     JSON.parse(sessionStorage.getItem("newReportData")) || {}
   );
-
-  //     refno: "",
-  //     title: "",
-  //     classification: "",
-  //     classification_name: "",
-  //     type: "",
-  //     type_name: "",
-  //     sender_office: "",
-  //     sender_office_name: "",
-  //     sender_person: "",
-  //     sender_email: "",
-  //     sender_phone: "",
-  //     file: null,
 
   const handleCancel = () => {
     router.push("/files", { replace: true });
@@ -49,6 +42,30 @@ export default function Report() {
 
   const handleSave = () => {
     // save logic here
+    setLoading(true);
+    axiosInstance
+      .post("/document/createFile", {
+        reference_no: newReportData.refno,
+        title: newReportData.title,
+        doc_type: newReportData.type,
+        doc_class: newReportData.classification,
+        sender_office: newReportData.sender_office,
+        sender_person: newReportData.sender_person,
+        sender_email: newReportData.sender_email,
+        sender_phone: newReportData.sender_phone,
+        base64_data: newReportData.file_base64,
+        report: newReportData.report_data,
+      })
+      .then((res) => {
+        console.log(res);
+        router.push("/files", { replace: true });
+        sessionStorage.removeItem("newReportData");
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
   };
 
   const handleExportPDF = () => {
@@ -260,6 +277,7 @@ export default function Report() {
               size="small"
               startIcon={<CloseRoundedIcon />}
               onClick={handleCancel}
+              loading={loading}
             >
               cancel
             </Button>
@@ -267,8 +285,10 @@ export default function Report() {
               variant="contained"
               size="small"
               disableElevation
+              color="success"
               startIcon={<CheckRoundedIcon />}
               onClick={handleSave}
+              loading={loading}
             >
               save
             </Button>

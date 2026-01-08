@@ -24,8 +24,11 @@ import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
 import StopCircleRoundedIcon from "@mui/icons-material/StopCircleRounded";
 import axiosInstance from "@/helper/Axios";
 import { useRouter } from "next/navigation";
+import { useProtectedRoute } from "@/helper/ProtectedRoutes";
 
 export default function NewFile() {
+  const { session, status } = useProtectedRoute();
+
   const router = useRouter();
   const abortControllerRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -107,6 +110,9 @@ export default function NewFile() {
             file_name: formData.file.name,
             file_base64: fileBase64,
             report_data: res.body,
+            generation_date: new Date().toLocaleString("en-PH", {
+              timeZone: "Asia/Manila",
+            }),
           })
         );
 

@@ -44,7 +44,7 @@ const set_dict_header = (doc) => {
   doc.addImage(
     "/bagong_pilipinas.png",
     "PNG",
-    pageWidth - margin - logoSize - 5,
+    pageWidth - margin - logoSize - 10,
     margin - 5,
     logoSize + 10,
     logoSize + 10

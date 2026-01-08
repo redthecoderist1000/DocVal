@@ -5,7 +5,7 @@ export default function LoadingScreen() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="text-center">
         <div className="loader mb-4"></div>
-        <p className="text-gray-600 text-lg">Loading...</p>
+        <p className="text-gray-600 text-lg">Loading Screen...</p>
       </div>
     </div>
   );
