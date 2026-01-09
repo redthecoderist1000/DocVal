@@ -1,12 +1,18 @@
 "use client";
 
-import { Button, IconButton, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import {
+  Button,
+  Divider,
+  TablePagination,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
+import FileDetailsModal from "@/components/FileDetailsModal";
 
 export default function files() {
   const router = useRouter();
@@ -15,28 +21,52 @@ export default function files() {
   const [files, setFiles] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const filteredDocuments = [
-    {
-      id: 1,
-      doc_title: "document title",
-      sender: "sender office",
-      created_at: "2023-10-01T10:00:00Z",
-    },
-  ];
+  // pagination
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const headerCells = ["Documents", "Date Received", "Status", "Actions"];
+  const headerCells = ["File", "Date Received", "Actions"];
 
   useEffect(() => {
     axiosInstance
       .post("/document/getFileByUser")
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         setFiles(res.body);
       })
       .catch((err) => {
         console.error(err);
       });
   }, []);
+
+  let visibleRows = useMemo(
+    () =>
+      files.filter((file) =>
+        file.title.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    [files, searchQuery]
+  );
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const deleteFile = (fileId) => {
+    axiosInstance
+      .post("/document/deleteFile", { fileId: fileId })
+      .then((res) => {
+        setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to delete the file. Please try again.");
+      });
+  };
 
   return (
     <>
@@ -66,18 +96,19 @@ export default function files() {
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
             size={20}
           /> */}
-            <input
+            <TextField
               type="text"
-              placeholder="Search documents by reference number, title, or type..."
+              placeholder="Search files..."
+              size="small"
+              fullWidth
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          {files.length > 0 ? (
+          {visibleRows.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
@@ -85,7 +116,7 @@ export default function files() {
                     {headerCells.map((cell, index) => (
                       <th
                         key={index}
-                        className={`px-6 py-4 text-${
+                        className={`px-6 py-2 text-${
                           index === 0 ? "left" : "center"
                         } text-xs uppercase text-gray-500`}
                       >
@@ -95,19 +126,17 @@ export default function files() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {files.map((doc, index) => (
+                  {visibleRows.map((doc, index) => (
                     <tr key={index}>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-2">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-gray-900">
-                            {doc.title}
-                          </span>
-                          <span className="text-sm text-gray-600 mt-1">
-                            {doc.sender_office}
-                          </span>
+                          <Typography variant="body1">{doc.title}</Typography>
+                          <Typography variant="caption">
+                            {doc.sender_division}
+                          </Typography>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-600">
+                      <td className="px-6 py-2 text-center text-sm text-gray-600">
                         {new Date(doc.date_created).toLocaleDateString(
                           "en-US",
                           {
@@ -117,21 +146,20 @@ export default function files() {
                           }
                         )}
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                          Active
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-2">
                         <div className="flex items-center justify-center gap-2">
                           <Button
                             variant="outlined"
-                            color="inherit"
                             size="small"
                             startIcon={
                               <RemoveRedEyeOutlinedIcon fontSize="small" />
                             }
-                            onClick={() => setIsModalOpen(true)}
+                            onClick={() =>
+                              router.push(`/files?id=${doc.id}`, {
+                                replace: true,
+                              })
+                            }
+                            sx={{ color: "#5f5f5fff", borderColor: "#9CA3AF" }}
                           >
                             View
                           </Button>
@@ -143,6 +171,9 @@ export default function files() {
                             }
                             disableElevation
                             size="small"
+                            onClick={() => {
+                              deleteFile(doc.id);
+                            }}
                           >
                             Delete
                           </Button>
@@ -152,6 +183,33 @@ export default function files() {
                   ))}
                 </tbody>
               </table>
+              <Divider />
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={files.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                sx={{
+                  "& .MuiTablePagination-toolbar": {
+                    minHeight: "44px",
+                    paddingX: 2,
+                  },
+                  "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
+                    {
+                      margin: 0,
+                      fontSize: "0.75rem",
+                    },
+                  "& .MuiTablePagination-select": {
+                    fontSize: "0.75rem",
+                  },
+                  "& .MuiIconButton-root": {
+                    padding: "4px",
+                  },
+                }}
+              />
             </div>
           ) : (
             <div className="text-center py-12 text-gray-500">
@@ -167,36 +225,10 @@ export default function files() {
         </div>
       </div>
 
-      {/* Modal Overlay */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0  bg-opacity-50 z-40"
-          onClick={() => setIsModalOpen(false)}
-        />
-      )}
-
-      {/* Side Modal */}
-      <div
-        className={`fixed top-0 right-0 h-full w-1/2 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${
-          isModalOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-3 bg-gray-100 border-b border-gray-200">
-          <Typography variant="h6" fontWeight="bold">
-            File Details
-          </Typography>
-
-          <IconButton size="small" onClick={() => setIsModalOpen(false)}>
-            <CloseRoundedIcon />
-          </IconButton>
-        </div>
-
-        {/* Modal Content */}
-        <div className="p-6 overflow-y-auto h-[calc(100%-80px)]">
-          <p className="text-gray-600">Modal content goes here...</p>
-        </div>
-      </div>
+      <FileDetailsModal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+      />
     </>
   );
 }

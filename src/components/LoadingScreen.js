@@ -1,12 +1,43 @@
 import React from "react";
+import { CircularProgress, Box, Typography } from "@mui/material";
 
 export default function LoadingScreen() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <div className="loader mb-4"></div>
-        <p className="text-gray-600 text-lg">Loading Screen...</p>
-      </div>
-    </div>
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "background.default",
+      }}
+    >
+      <Box sx={{ textAlign: "center" }}>
+        <Typography
+          variant="h3"
+          sx={{
+            fontWeight: 700,
+            mb: 3,
+            color: "#1e3a8a",
+            letterSpacing: 1,
+          }}
+        >
+          DocVal
+        </Typography>
+
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <CircularProgress size={50} thickness={3} sx={{ color: "#1e3a8a" }} />
+        </Box>
+
+        <Typography
+          variant="body2"
+          sx={{
+            color: "text.secondary",
+          }}
+        >
+          Please wait...
+        </Typography>
+      </Box>
+    </Box>
   );
 }
