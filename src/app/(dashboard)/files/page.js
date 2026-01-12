@@ -47,10 +47,12 @@ export default function files() {
 
   let visibleRows = useMemo(
     () =>
-      files.filter((file) =>
-        file.title.toLowerCase().includes(searchQuery.toLowerCase())
-      ),
-    [files, searchQuery]
+      files
+        .filter((file) =>
+          file.title.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [files, searchQuery, page, rowsPerPage]
   );
 
   const handleChangePage = (event, newPage) => {
@@ -99,10 +101,6 @@ export default function files() {
         {/* Search Bar */}
         <div className="mb-6">
           <div className="relative">
-            {/* <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={20}
-          /> */}
             <TextField
               type="text"
               placeholder="Search files..."
