@@ -3,7 +3,9 @@ import set_dict_header from "./header";
 import set_dict_footer from "./footer";
 
 const Report_pdf = (data) => {
-  let filename = `${data.title}_report`.replaceAll(" ", "_");
+  let filename = `${data.title}_report`
+    .replaceAll(" ", "_")
+    .replace(/[^a-zA-Z0-9_-]/g, "");
   const doc = new jsPDF();
 
   doc.setProperties({
@@ -66,7 +68,7 @@ const Report_pdf = (data) => {
   doc.text(`Document type: ${data.type_name}`, margin, yOffset);
   yOffset += lineHeight;
   // sender office
-  doc.text(`Sender Office: ${data.sender_office_name}`, margin, yOffset);
+  doc.text(`Sender Office: ${data.sender_office}`, margin, yOffset);
   yOffset += lineHeight;
   // generation date
   doc.text(`Generation date: ${data.generation_date}`, margin, yOffset);

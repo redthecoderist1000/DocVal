@@ -13,7 +13,7 @@ export default function ReportTab({ data }) {
       refno: data.reference_no,
       classification_name: data.doc_class,
       type_name: data.doc_type,
-      sender_office_name: data.sender_division,
+      sender_office: data.sender_office,
       generation_date: new Date(data.date_created).toLocaleDateString("en-PH", {
         timeZone: "Asia/Manila",
       }),

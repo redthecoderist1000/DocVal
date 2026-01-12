@@ -69,7 +69,7 @@ export default function InfoTab({ data }) {
         office
       </Typography>
       <Typography variant="body2" gutterBottom>
-        {data?.sender_division}
+        {data?.sender_office}
       </Typography>
       <Typography variant="subtitle2" color="text.disabled">
         contact person

@@ -115,7 +115,7 @@ export default function Report() {
               sender office
             </Typography>
             <Typography variant="body1" gutterBottom>
-              {newReportData.sender_office_name}
+              {newReportData.sender_office}
             </Typography>
             <Typography variant="body2" color="text.disabled">
               sender email
@@ -277,7 +277,7 @@ export default function Report() {
               size="small"
               startIcon={<CloseRoundedIcon />}
               onClick={handleCancel}
-              loading={loading}
+              disabled={loading}
             >
               cancel
             </Button>

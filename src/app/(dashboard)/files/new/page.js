@@ -175,15 +175,15 @@ export default function NewFile() {
         console.error("Error fetching types:", error);
       });
 
-    axiosInstance
-      .get("/office/getAllDivision")
-      .then((res) => {
-        // console.log("Fetched offices:", res.body);
-        setOffices(res.body);
-      })
-      .catch((error) => {
-        console.error("Error fetching offices:", error);
-      });
+    // axiosInstance
+    //   .get("/office/getAllDivision")
+    //   .then((res) => {
+    //     // console.log("Fetched offices:", res.body);
+    //     setOffices(res.body);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error fetching offices:", error);
+    //   });
   }, []);
 
   return (
@@ -315,7 +315,18 @@ export default function NewFile() {
                 Sender Details
               </Typography>
               <Stack direction="row" spacing={2}>
-                <FormControl fullWidth size="small" required>
+                <TextField
+                  label="Sender Office"
+                  name="sender_office"
+                  value={formData.sender_office}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Department of Agrarian Reform"
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  required
+                />
+                {/* <FormControl fullWidth size="small" required>
                   <InputLabel id="sender-office-label">
                     Sender Office
                   </InputLabel>
@@ -344,7 +355,7 @@ export default function NewFile() {
                       </MenuItem>
                     ))}
                   </Select>
-                </FormControl>
+                </FormControl> */}
                 <TextField
                   label="Contact Person"
                   name="sender_person"
@@ -389,7 +400,10 @@ export default function NewFile() {
               </Typography>
               {formData.file ? (
                 <Chip
-                  label={formData.file.name}
+                  label={`${formData.file.name} (${(
+                    formData.file.size /
+                    (1024 * 1024)
+                  ).toFixed(2)} MB)`}
                   variant="outlined"
                   icon={<PictureAsPdfRoundedIcon color="error" />}
                   sx={{ borderStyle: "dashed", bgcolor: "#f7f7f7ff" }}

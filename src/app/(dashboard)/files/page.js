@@ -6,10 +6,12 @@ import {
   TablePagination,
   TextField,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
 import FileDetailsModal from "@/components/FileDetailsModal";
@@ -19,6 +21,7 @@ export default function files() {
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState("");
   const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // pagination
@@ -28,14 +31,17 @@ export default function files() {
   const headerCells = ["File", "Date Received", "Actions"];
 
   useEffect(() => {
+    setLoading(true);
     axiosInstance
       .post("/document/getFileByUser")
       .then((res) => {
         // console.log(res);
         setFiles(res.body);
+        setLoading(false);
       })
       .catch((err) => {
         console.error(err);
+        setLoading(false);
       });
   }, []);
 
@@ -77,6 +83,7 @@ export default function files() {
             variant="contained"
             size="small"
             disableElevation
+            startIcon={<AddRoundedIcon fontSize="small" />}
             onClick={() => router.push("/files/new")}
           >
             Add Document
@@ -108,7 +115,11 @@ export default function files() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          {visibleRows.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <CircularProgress />
+            </div>
+          ) : visibleRows.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
@@ -132,7 +143,7 @@ export default function files() {
                         <div className="flex flex-col">
                           <Typography variant="body1">{doc.title}</Typography>
                           <Typography variant="caption">
-                            {doc.sender_division}
+                            {doc.sender_office}
                           </Typography>
                         </div>
                       </td>
@@ -149,7 +160,9 @@ export default function files() {
                       <td className="px-6 py-2">
                         <div className="flex items-center justify-center gap-2">
                           <Button
-                            variant="outlined"
+                            variant="contained"
+                            color="success"
+                            disableElevation
                             size="small"
                             startIcon={
                               <RemoveRedEyeOutlinedIcon fontSize="small" />
@@ -159,7 +172,6 @@ export default function files() {
                                 replace: true,
                               })
                             }
-                            sx={{ color: "#5f5f5fff", borderColor: "#9CA3AF" }}
                           >
                             View
                           </Button>
