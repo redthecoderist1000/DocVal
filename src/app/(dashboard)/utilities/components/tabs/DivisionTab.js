@@ -2,35 +2,43 @@
 
 import {
   Typography,
+  Stack,
+  Chip,
   Button,
   Divider,
   TablePagination,
   CircularProgress,
   TextField,
 } from "@mui/material";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
+import NewDivDialog from "../NewDivDialog";
+import EditDivisionDialog from "../EditDivisionDialog";
 
-export default function AccountsTab({ data, isActive }) {
-  //   const accounts = data?.accounts || [];
-  const [accounts, setAccounts] = useState([]);
+export default function DivisionTab({ data, isActive }) {
+  const [divisions, setDivisions] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  const [openNewDivDialog, setOpenNewDivDialog] = useState(false);
+  const [editDivDialog, setEditDivDialog] = useState({
+    open: false,
+    divisionId: null,
+    divisionName: "",
+  });
+
   useEffect(() => {
     if (isActive) {
       setLoading(true);
       axiosInstance
-        .get("/user/getAllUser")
+        .get("/office/getAllDivision")
         .then((res) => {
-          //   console.log(res);
-          setAccounts(res.body);
+          setDivisions(res.body);
           setLoading(false);
         })
         .catch((err) => {
@@ -40,16 +48,22 @@ export default function AccountsTab({ data, isActive }) {
     }
   }, [isActive]);
 
-  const handleView = (id) => {
-    console.log("View account:", id);
-  };
-
-  const handleEdit = (id) => {
-    console.log("Edit account:", id);
+  const handleEdit = (id, divisionName, divisionAbrv) => {
+    setEditDivDialog((prev) => ({
+      ...prev,
+      open: true,
+      divisionId: id,
+      divisionName: divisionName,
+      divisionAbrv: divisionAbrv,
+    }));
   };
 
   const handleDelete = (id) => {
-    console.log("Delete account:", id);
+    console.log("Delete division:", id);
+  };
+
+  const handleNewEntry = () => {
+    setOpenNewDivDialog(true);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -63,36 +77,24 @@ export default function AccountsTab({ data, isActive }) {
 
   const visibleRows = useMemo(
     () =>
-      accounts
-        .filter((account) => {
-          const matchFName = (account?.full_name ?? "")
+      divisions
+        .filter((division) =>
+          (division?.division_name ?? "")
             .toLowerCase()
-            .includes(searchQuery.toLowerCase());
-
-          const matchEmail = (account?.email ?? "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase());
-
-          const matchDivision = (account?.division_name ?? "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase());
-
-          return matchFName || matchEmail || matchDivision;
-        })
+            .includes(searchQuery.toLowerCase())
+        )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [accounts, page, rowsPerPage, searchQuery]
+    [divisions, searchQuery, page, rowsPerPage]
   );
 
-  const handleNewEntry = () => {
-    console.log("New account entry");
-  };
+  useEffect(() => {}, []);
 
   return (
     <div>
       <div className="mb-6">
         <TextField
           type="text"
-          placeholder="Search accounts..."
+          placeholder="Search divisions..."
           size="small"
           fullWidth
           value={searchQuery}
@@ -106,8 +108,8 @@ export default function AccountsTab({ data, isActive }) {
           variant="contained"
           size="small"
           disableElevation
-          onClick={handleNewEntry}
           startIcon={<AddRoundedIcon fontSize="small" />}
+          onClick={handleNewEntry}
         >
           New Entry
         </Button>
@@ -118,19 +120,13 @@ export default function AccountsTab({ data, isActive }) {
           <div className="flex items-center justify-center py-12">
             <CircularProgress />
           </div>
-        ) : accounts && accounts.length > 0 ? (
+        ) : divisions && divisions.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
-                    Fullname
-                  </th>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
-                    Email
-                  </th>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
-                    Division
+                    Name
                   </th>
                   <th className="px-6 py-2 text-center text-xs uppercase text-gray-500">
                     Actions
@@ -138,21 +134,11 @@ export default function AccountsTab({ data, isActive }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {visibleRows.map((account, index) => (
+                {visibleRows.map((division, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
                       <Typography variant="body2">
-                        {account?.full_name || "N/A"}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-2">
-                      <Typography variant="body2">
-                        {account?.email || "N/A"}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-2">
-                      <Typography variant="body2">
-                        {account?.division_name || "N/A"}
+                        {division?.division_name || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
@@ -160,22 +146,16 @@ export default function AccountsTab({ data, isActive }) {
                         <Button
                           variant="contained"
                           size="small"
-                          color="success"
-                          disableElevation
-                          startIcon={
-                            <RemoveRedEyeOutlinedIcon fontSize="small" />
-                          }
-                          onClick={() => handleView(account?.id)}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          variant="contained"
-                          size="small"
                           color="warning"
                           disableElevation
                           startIcon={<EditOutlinedIcon fontSize="small" />}
-                          onClick={() => handleEdit(account?.id)}
+                          onClick={() =>
+                            handleEdit(
+                              division?.id,
+                              division?.division_name,
+                              division?.division_abrv
+                            )
+                          }
                         >
                           Edit
                         </Button>
@@ -187,7 +167,7 @@ export default function AccountsTab({ data, isActive }) {
                             <DeleteOutlineRoundedIcon fontSize="small" />
                           }
                           disableElevation
-                          onClick={() => handleDelete(account?.id)}
+                          onClick={() => handleDelete(division?.id)}
                         >
                           Delete
                         </Button>
@@ -201,7 +181,7 @@ export default function AccountsTab({ data, isActive }) {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={accounts.length}
+              count={divisions.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -228,13 +208,21 @@ export default function AccountsTab({ data, isActive }) {
         ) : (
           <div className="text-center py-12 text-gray-500">
             {searchQuery ? (
-              <p>No accounts found matching &quot;{searchQuery}&quot;</p>
+              <p>No divisions found matching &quot;{searchQuery}&quot;</p>
             ) : (
-              <p>No accounts found</p>
+              <p>No divisions found</p>
             )}
           </div>
         )}
       </div>
+
+      <NewDivDialog
+        open={openNewDivDialog}
+        setOpen={setOpenNewDivDialog}
+        setDivisions={setDivisions}
+      />
+
+      <EditDivisionDialog data={editDivDialog} setData={setEditDivDialog} />
     </div>
   );
 }

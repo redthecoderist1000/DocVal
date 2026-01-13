@@ -9,10 +9,10 @@ import {
   Card,
   CardContent,
 } from "@mui/material";
-import DivisionTab from "@/components/tabs/DivisionTab";
-import DocumentTypeTab from "@/components/tabs/DocumentTypeTab";
-import DocumentClassificationTab from "@/components/tabs/DocumentClassificationTab";
-import AccountsTab from "@/components/tabs/AccountsTab";
+import DivisionTab from "@/app/(dashboard)/utilities/components/tabs/DivisionTab";
+import DocumentTypeTab from "@/app/(dashboard)/utilities/components/tabs/DocumentTypeTab";
+import DocumentClassificationTab from "@/app/(dashboard)/utilities/components/tabs/DocumentClassificationTab";
+import AccountsTab from "@/app/(dashboard)/utilities/components/tabs/AccountsTab";
 
 export default function utilities() {
   const [activeTab, setActiveTab] = useState(0);

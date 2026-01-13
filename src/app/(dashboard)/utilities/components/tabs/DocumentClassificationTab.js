@@ -15,21 +15,25 @@ import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
+import NewDocumentClassificationDialog from "../NewDocumentClassificationDialog";
 
-export default function DivisionTab({ data, isActive }) {
-  const [divisions, setDivisions] = useState([]);
+export default function DocumentClassificationTab({ data, isActive }) {
+  //   const classifications = data?.classifications || [];
+  const [classifications, setClassifications] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     if (isActive) {
       setLoading(true);
       axiosInstance
-        .get("/office/getAllDivision")
+        .get("/document/getAllDocClass")
         .then((res) => {
-          setDivisions(res.body);
+          //   console.log(res);
+          setClassifications(res.body);
           setLoading(false);
         })
         .catch((err) => {
@@ -40,11 +44,11 @@ export default function DivisionTab({ data, isActive }) {
   }, [isActive]);
 
   const handleEdit = (id) => {
-    console.log("Edit division:", id);
+    console.log("Edit classification:", id);
   };
 
   const handleDelete = (id) => {
-    console.log("Delete division:", id);
+    console.log("Delete classification:", id);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -58,28 +62,31 @@ export default function DivisionTab({ data, isActive }) {
 
   const visibleRows = useMemo(
     () =>
-      divisions
-        .filter((division) =>
-          (division?.division_name ?? "")
+      classifications
+        .filter((classification) =>
+          (classification?.name ?? "")
             .toLowerCase()
             .includes(searchQuery.toLowerCase())
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [divisions, searchQuery, page, rowsPerPage]
+    [classifications, searchQuery, page, rowsPerPage]
   );
 
   const handleNewEntry = () => {
-    console.log("New division entry");
+    setDialogOpen(true);
   };
-
-  useEffect(() => {}, []);
 
   return (
     <div>
+      <NewDocumentClassificationDialog
+        open={dialogOpen}
+        setOpen={setDialogOpen}
+        setClassifications={setClassifications}
+      />
       <div className="mb-6">
         <TextField
           type="text"
-          placeholder="Search divisions..."
+          placeholder="Search classifications..."
           size="small"
           fullWidth
           value={searchQuery}
@@ -93,8 +100,8 @@ export default function DivisionTab({ data, isActive }) {
           variant="contained"
           size="small"
           disableElevation
-          startIcon={<AddRoundedIcon fontSize="small" />}
           onClick={handleNewEntry}
+          startIcon={<AddRoundedIcon fontSize="small" />}
         >
           New Entry
         </Button>
@@ -105,7 +112,7 @@ export default function DivisionTab({ data, isActive }) {
           <div className="flex items-center justify-center py-12">
             <CircularProgress />
           </div>
-        ) : divisions && divisions.length > 0 ? (
+        ) : classifications && classifications.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -119,11 +126,11 @@ export default function DivisionTab({ data, isActive }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {visibleRows.map((division, index) => (
+                {visibleRows.map((classification, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
                       <Typography variant="body2">
-                        {division?.division_name || "N/A"}
+                        {classification?.name || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
@@ -134,7 +141,7 @@ export default function DivisionTab({ data, isActive }) {
                           color="warning"
                           disableElevation
                           startIcon={<EditOutlinedIcon fontSize="small" />}
-                          onClick={() => handleEdit(division?.id)}
+                          onClick={() => handleEdit(classification?.id)}
                         >
                           Edit
                         </Button>
@@ -146,7 +153,7 @@ export default function DivisionTab({ data, isActive }) {
                             <DeleteOutlineRoundedIcon fontSize="small" />
                           }
                           disableElevation
-                          onClick={() => handleDelete(division?.id)}
+                          onClick={() => handleDelete(classification?.id)}
                         >
                           Delete
                         </Button>
@@ -160,7 +167,7 @@ export default function DivisionTab({ data, isActive }) {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={divisions.length}
+              count={classifications.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -187,9 +194,9 @@ export default function DivisionTab({ data, isActive }) {
         ) : (
           <div className="text-center py-12 text-gray-500">
             {searchQuery ? (
-              <p>No divisions found matching &quot;{searchQuery}&quot;</p>
+              <p>No classifications found matching &quot;{searchQuery}&quot;</p>
             ) : (
-              <p>No divisions found</p>
+              <p>No classifications found</p>
             )}
           </div>
         )}

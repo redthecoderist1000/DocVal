@@ -2,36 +2,37 @@
 
 import {
   Typography,
-  Stack,
-  Chip,
   Button,
   Divider,
   TablePagination,
   CircularProgress,
   TextField,
 } from "@mui/material";
+import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
+import NewAccountDialog from "../NewAccountDialog";
 
-export default function DocumentClassificationTab({ data, isActive }) {
-  //   const classifications = data?.classifications || [];
-  const [classifications, setClassifications] = useState([]);
+export default function AccountsTab({ data, isActive }) {
+  //   const accounts = data?.accounts || [];
+  const [accounts, setAccounts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     if (isActive) {
       setLoading(true);
       axiosInstance
-        .get("/document/getAllDocClass")
+        .get("/user/getAllUser")
         .then((res) => {
           //   console.log(res);
-          setClassifications(res.body);
+          setAccounts(res.body);
           setLoading(false);
         })
         .catch((err) => {
@@ -41,12 +42,16 @@ export default function DocumentClassificationTab({ data, isActive }) {
     }
   }, [isActive]);
 
+  const handleView = (id) => {
+    console.log("View account:", id);
+  };
+
   const handleEdit = (id) => {
-    console.log("Edit classification:", id);
+    console.log("Edit account:", id);
   };
 
   const handleDelete = (id) => {
-    console.log("Delete classification:", id);
+    console.log("Delete account:", id);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -60,24 +65,41 @@ export default function DocumentClassificationTab({ data, isActive }) {
 
   const visibleRows = useMemo(
     () =>
-      classifications
-        .filter((classification) =>
-          (classification?.name ?? "").toLowerCase().includes(searchQuery.toLowerCase())
-        )
+      accounts
+        .filter((account) => {
+          const matchFName = (account?.full_name ?? "")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
+
+          const matchEmail = (account?.email ?? "")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
+
+          const matchDivision = (account?.division_name ?? "")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
+
+          return matchFName || matchEmail || matchDivision;
+        })
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [classifications, searchQuery, page, rowsPerPage]
+    [accounts, page, rowsPerPage, searchQuery]
   );
 
   const handleNewEntry = () => {
-    console.log("New classification entry");
+    setDialogOpen(true);
   };
 
   return (
     <div>
+      <NewAccountDialog
+        open={dialogOpen}
+        setOpen={setDialogOpen}
+        setAccounts={setAccounts}
+      />
       <div className="mb-6">
         <TextField
           type="text"
-          placeholder="Search classifications..."
+          placeholder="Search accounts..."
           size="small"
           fullWidth
           value={searchQuery}
@@ -103,13 +125,19 @@ export default function DocumentClassificationTab({ data, isActive }) {
           <div className="flex items-center justify-center py-12">
             <CircularProgress />
           </div>
-        ) : classifications && classifications.length > 0 ? (
+        ) : accounts && accounts.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
-                    Name
+                    Fullname
+                  </th>
+                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
+                    Email
+                  </th>
+                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
+                    Division
                   </th>
                   <th className="px-6 py-2 text-center text-xs uppercase text-gray-500">
                     Actions
@@ -117,11 +145,21 @@ export default function DocumentClassificationTab({ data, isActive }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {visibleRows.map((classification, index) => (
+                {visibleRows.map((account, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
                       <Typography variant="body2">
-                        {classification?.name || "N/A"}
+                        {account?.full_name || "N/A"}
+                      </Typography>
+                    </td>
+                    <td className="px-6 py-2">
+                      <Typography variant="body2">
+                        {account?.email || "N/A"}
+                      </Typography>
+                    </td>
+                    <td className="px-6 py-2">
+                      <Typography variant="body2">
+                        {account?.division_name || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
@@ -129,10 +167,22 @@ export default function DocumentClassificationTab({ data, isActive }) {
                         <Button
                           variant="contained"
                           size="small"
+                          color="success"
+                          disableElevation
+                          startIcon={
+                            <RemoveRedEyeOutlinedIcon fontSize="small" />
+                          }
+                          onClick={() => handleView(account?.id)}
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="contained"
+                          size="small"
                           color="warning"
                           disableElevation
                           startIcon={<EditOutlinedIcon fontSize="small" />}
-                          onClick={() => handleEdit(classification?.id)}
+                          onClick={() => handleEdit(account?.id)}
                         >
                           Edit
                         </Button>
@@ -144,7 +194,7 @@ export default function DocumentClassificationTab({ data, isActive }) {
                             <DeleteOutlineRoundedIcon fontSize="small" />
                           }
                           disableElevation
-                          onClick={() => handleDelete(classification?.id)}
+                          onClick={() => handleDelete(account?.id)}
                         >
                           Delete
                         </Button>
@@ -158,7 +208,7 @@ export default function DocumentClassificationTab({ data, isActive }) {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={classifications.length}
+              count={accounts.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -185,9 +235,9 @@ export default function DocumentClassificationTab({ data, isActive }) {
         ) : (
           <div className="text-center py-12 text-gray-500">
             {searchQuery ? (
-              <p>No classifications found matching &quot;{searchQuery}&quot;</p>
+              <p>No accounts found matching &quot;{searchQuery}&quot;</p>
             ) : (
-              <p>No classifications found</p>
+              <p>No accounts found</p>
             )}
           </div>
         )}

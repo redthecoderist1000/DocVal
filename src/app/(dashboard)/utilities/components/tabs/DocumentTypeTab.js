@@ -15,6 +15,7 @@ import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
+import NewDocumentTypeDialog from "../NewDocumentTypeDialog";
 
 export default function DocumentTypeTab({ data, isActive }) {
   const [documentTypes, setDocumentTypes] = useState([]);
@@ -22,6 +23,7 @@ export default function DocumentTypeTab({ data, isActive }) {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     if (isActive) {
@@ -67,11 +69,16 @@ export default function DocumentTypeTab({ data, isActive }) {
   );
 
   const handleNewEntry = () => {
-    console.log("New document type entry");
+    setDialogOpen(true);
   };
 
   return (
     <div>
+      <NewDocumentTypeDialog
+        open={dialogOpen}
+        setOpen={setDialogOpen}
+        setDocumentTypes={setDocumentTypes}
+      />
       <div className="mb-6">
         <TextField
           type="text"

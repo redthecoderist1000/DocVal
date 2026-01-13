@@ -14,7 +14,7 @@ import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
-import FileDetailsModal from "@/components/FileDetailsModal";
+import FileDetailsModal from "@/app/(dashboard)/files/components/FileDetailsModal";
 
 export default function files() {
   const router = useRouter();
