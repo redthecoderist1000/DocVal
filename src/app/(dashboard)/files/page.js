@@ -14,19 +14,28 @@ import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
+import { useError } from "@/helper/ErrorContext";
+import { useProtectedRoute } from "@/helper/ProtectedRoutes";
+import { useLoading } from "@/helper/LoadingContext";
 import FileDetailsModal from "@/app/(dashboard)/files/components/FileDetailsModal";
+import DeleteDocDialog from "./components/DeleteDocDialog";
 
 export default function files() {
   const router = useRouter();
+  const { setError } = useError();
+  const { session, status, isChecking } = useProtectedRoute();
+  const { startLoading, stopLoading } = useLoading();
   const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState("");
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [deleteDoc, setDeleteDoc] = useState({
+    open: false,
+    docId: null,
+    docTitle: "",
+  });
 
   const headerCells = ["File", "Date Received", "Actions"];
 
@@ -64,17 +73,13 @@ export default function files() {
     setPage(0);
   };
 
-  const deleteFile = (fileId) => {
-    axiosInstance
-      .post("/document/deleteFile", { fileId: fileId })
-      .then((res) => {
-        setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("Failed to delete the file. Please try again.");
-      });
-  };
+  useEffect(() => {
+    if (isChecking) {
+      startLoading();
+    } else {
+      stopLoading();
+    }
+  }, [isChecking, startLoading, stopLoading]);
 
   return (
     <>
@@ -91,12 +96,6 @@ export default function files() {
             Add Document
           </Button>
         </div>
-
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-            {error}
-          </div>
-        )}
 
         {/* Search Bar */}
         <div className="mb-6">
@@ -182,7 +181,11 @@ export default function files() {
                             disableElevation
                             size="small"
                             onClick={() => {
-                              deleteFile(doc.id);
+                              setDeleteDoc({
+                                open: true,
+                                docId: doc.id,
+                                docTitle: doc.title,
+                              });
                             }}
                           >
                             Delete
@@ -238,6 +241,12 @@ export default function files() {
       <FileDetailsModal
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
+      />
+
+      <DeleteDocDialog
+        deleteDoc={deleteDoc}
+        setDeleteDoc={setDeleteDoc}
+        setFiles={setFiles}
       />
     </>
   );

@@ -1,6 +1,6 @@
 import axiosInstance from "@/helper/Axios";
+import { useError } from "@/helper/ErrorContext";
 import {
-  Alert,
   Button,
   CircularProgress,
   Dialog,
@@ -17,10 +17,10 @@ export default function NewDocumentTypeDialog({
   setOpen,
   setDocumentTypes,
 }) {
+  const { setError } = useError();
   const [formData, setFormData] = useState({
     name: "",
   });
-  const [message, setMessage] = useState({ type: "", text: "" });
   const [errors, setErrors] = useState({ name: "" });
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +28,6 @@ export default function NewDocumentTypeDialog({
     setOpen(false);
     setFormData({ name: "" });
     setErrors({ name: "" });
-    setMessage({ type: "", text: "" });
   };
 
   const handleInputChange = (e) => {
@@ -61,7 +60,7 @@ export default function NewDocumentTypeDialog({
     e.preventDefault();
 
     if (!validateForm()) {
-      setMessage({ type: "error", text: "Please fill in all required fields" });
+      setError("Please fill in all required fields", "error");
       return;
     }
 
@@ -72,23 +71,16 @@ export default function NewDocumentTypeDialog({
       })
       .then((res) => {
         setDocumentTypes((prev) => [...prev, ...res.body]);
-        setMessage({
-          type: "success",
-          text: "Document type added successfully!",
-        });
+        setError("Document type added successfully!", "success");
         setFormData({ name: "" });
         setErrors({ name: "" });
         setTimeout(() => {
-          setMessage({ type: "", text: "" });
           setOpen(false);
           setLoading(false);
         }, 1500);
       })
       .catch((err) => {
-        setMessage({
-          type: "error",
-          text: "Submission failed. Please try again.",
-        });
+        setError("Submission failed. Please try again.", "error");
         setLoading(false);
       });
   };
@@ -105,15 +97,6 @@ export default function NewDocumentTypeDialog({
         Add a New Document Type
       </DialogTitle>
       <DialogContent>
-        {message.text && (
-          <Alert
-            severity={message.type}
-            sx={{ mb: 2 }}
-            onClose={() => setMessage({ type: "", text: "" })}
-          >
-            {message.text}
-          </Alert>
-        )}
         <form onSubmit={handleSubmit}>
           <Stack spacing={2} sx={{ mt: 2 }}>
             <TextField

@@ -38,6 +38,7 @@ export default function DivisionTab({ data, isActive }) {
       axiosInstance
         .get("/office/getAllDivision")
         .then((res) => {
+          // console.log(res.body);
           setDivisions(res.body);
           setLoading(false);
         })
@@ -222,7 +223,11 @@ export default function DivisionTab({ data, isActive }) {
         setDivisions={setDivisions}
       />
 
-      <EditDivisionDialog data={editDivDialog} setData={setEditDivDialog} />
+      <EditDivisionDialog
+        data={editDivDialog}
+        setData={setEditDivDialog}
+        set={setDivisions}
+      />
     </div>
   );
 }

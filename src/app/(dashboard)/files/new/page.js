@@ -9,7 +9,6 @@ import {
   Container,
   TextField,
   Typography,
-  Alert,
   CircularProgress,
   Stack,
   FormControl,
@@ -25,10 +24,11 @@ import StopCircleRoundedIcon from "@mui/icons-material/StopCircleRounded";
 import axiosInstance from "@/helper/Axios";
 import { useRouter } from "next/navigation";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
+import { useError } from "@/helper/ErrorContext";
 
 export default function NewFile() {
   const { session, status } = useProtectedRoute();
-
+  const { setError } = useError();
   const router = useRouter();
   const abortControllerRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -46,7 +46,6 @@ export default function NewFile() {
     file: null,
   });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
   const [classifications, setClassifications] = useState([]);
   const [types, setTypes] = useState([]);
   const [offices, setOffices] = useState([]);
@@ -73,13 +72,11 @@ export default function NewFile() {
     e.preventDefault();
 
     if (!formData.file) {
-      setMessage({ type: "error", text: "Please fill in all required fields" });
+      setError("Please fill in all required fields", "error");
       return;
     }
 
     abortControllerRef.current = new AbortController();
-
-    setMessage({ type: "", text: "" });
 
     // convert to file to base64
     const toBase64 = (file) =>
@@ -91,7 +88,7 @@ export default function NewFile() {
       });
 
     const fileBase64 = await toBase64(formData.file).catch((err) => {
-      setMessage({ type: "error", text: "Error reading file" });
+      setError("Error reading file", "error");
     });
 
     setLoading(true);
@@ -122,9 +119,9 @@ export default function NewFile() {
       .catch((err) => {
         console.log(err);
         if (err.name === "CanceledError") {
-          setMessage({ type: "info", text: "Request cancelled" });
+          setError("Request cancelled", "info");
         } else {
-          setMessage({ type: "error", text: "Error evaluating file" });
+          setError("Error evaluating file", "error");
         }
         setLoading(false);
       });
@@ -145,7 +142,6 @@ export default function NewFile() {
       sender_phone: "",
       file: null,
     });
-    setMessage({ type: "", text: "" });
   };
 
   const handleCancel = () => {
@@ -206,17 +202,6 @@ export default function NewFile() {
           >
             Upload New File
           </Typography>
-
-          {/* Message Alert */}
-          {message.text && (
-            <Alert
-              severity={message.type}
-              sx={{ mb: 3 }}
-              onClose={() => setMessage({ type: "", text: "" })}
-            >
-              {message.text}
-            </Alert>
-          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit}>

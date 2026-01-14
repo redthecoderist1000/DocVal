@@ -1,9 +1,21 @@
 "use client";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
 import Link from "next/link";
+import { useLoading } from "@/helper/LoadingContext";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 
 export default function home() {
-  const { session, status } = useProtectedRoute();
+  const { session, status, isChecking } = useProtectedRoute();
+  const { startLoading, stopLoading } = useLoading();
+
+  useEffect(() => {
+    if (isChecking) {
+      startLoading();
+    } else {
+      stopLoading();
+    }
+  }, [isChecking, startLoading, stopLoading]);
 
   return (
     <>

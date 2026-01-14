@@ -2,6 +2,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import SessionProvider from "../helper/SessionProvider";
+import { ErrorProvider } from "../helper/ErrorContext";
+import { LoadingProvider } from "../helper/LoadingContext";
+import GlobalAlert from "../components/GlobalAlert";
+import LoadingScreen from "../components/LoadingScreen";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,7 +28,15 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider>{children}</SessionProvider>
+        <LoadingProvider>
+          <ErrorProvider>
+            <SessionProvider>
+              {children}
+              <GlobalAlert />
+              <LoadingScreen />
+            </SessionProvider>
+          </ErrorProvider>
+        </LoadingProvider>
       </body>
     </html>
   );

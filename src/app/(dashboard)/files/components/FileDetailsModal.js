@@ -37,7 +37,7 @@ export default function FileDetailsModal({ isModalOpen, setIsModalOpen }) {
     axiosInstance
       .post("/document/getFileDetail", { fileId: fileId })
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         setData(res.body);
         setLoading(false);
       })

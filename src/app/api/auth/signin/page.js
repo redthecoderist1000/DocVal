@@ -5,30 +5,33 @@ import { useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import Image from "next/image";
+import { useLoading } from "@/helper/LoadingContext";
 
 export default function SignIn() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { startLoading, stopLoading } = useLoading();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard/home");
+    if (status === "loading") {
+      startLoading();
+    } else {
+      stopLoading();
     }
-  }, [status, router]);
 
-  if (status === "loading") {
-    return <p>Loadifdd ng...</p>;
-  }
-
-  if (status === "authenticated") {
-    return null;
-  }
+    if (status === "authenticated") {
+      router.push("/home");
+    } else if (status === "unauthenticated") {
+      // stay on the page
+    }
+  }, [status, router, startLoading, stopLoading]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submitting:", { email, password });
     const result = await signIn("credentials", {
       email,
       password,

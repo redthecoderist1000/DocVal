@@ -4,8 +4,11 @@ import { Chip, IconButton, Stack, Typography } from "@mui/material";
 import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
 import LaunchRoundedIcon from "@mui/icons-material/LaunchRounded";
 import axiosInstance from "@/helper/Axios";
+import { useError } from "@/helper/ErrorContext";
 
 export default function InfoTab({ data }) {
+  const { setError } = useError();
+
   const openFile = () => {
     axiosInstance
       .post(
@@ -23,7 +26,7 @@ export default function InfoTab({ data }) {
         // URL.revokeObjectURL(url);
       })
       .catch((err) => {
-        console.error(err);
+        setError("Failed to open the file. Please try again.", "error");
       });
   };
 

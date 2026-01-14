@@ -22,10 +22,12 @@ import { useState } from "react";
 import Report_pdf from "@/helper/printables/Report_pdf";
 import { useSession } from "next-auth/react";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
+import { useError } from "@/helper/ErrorContext";
 import axiosInstance from "@/helper/Axios";
 
 export default function Report() {
   const { session, status } = useProtectedRoute();
+  const { setError } = useError();
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
@@ -58,12 +60,14 @@ export default function Report() {
       })
       .then((res) => {
         console.log(res);
+        setError("File saved successfully!", "success");
         router.push("/files", { replace: true });
         sessionStorage.removeItem("newReportData");
         setLoading(false);
       })
       .catch((err) => {
         console.error(err);
+        setError("Failed to save file. Please try again.", "error");
         setLoading(false);
       });
   };

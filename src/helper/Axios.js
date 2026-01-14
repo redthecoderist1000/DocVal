@@ -34,24 +34,47 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response.data,
   async (error) => {
-    // if (error.config?.skipAuthRefresh) {
-    //   return Promise.reject({
-    //     status: error.response?.status,
-    //     message: error.response?.data?.error,
-    //   });
-    // }
-
     if (error.response?.data.error === "jwt expired") {
-      // Refresh session via NextAuth
+      // Mark as retry attempt to prevent infinite loops
+      if (error.config?._retryAttempted) {
+        // Already retried once, don't retry again
+        return Promise.reject({
+          status: error.response?.status,
+          message: error.response?.data?.error,
+        });
+      }
+
+      // Mark this config as having been retried
+      error.config._retryAttempted = true;
+
+      // Get fresh session (NextAuth will refresh if needed)
       const session = await getSession();
-      console.log("Session before signOut:", session);
+
+      // If refresh failed (e.g., refresh token expired), bail out early
+      if (session?.error) {
+        try {
+          await signOut({ redirect: true, callbackUrl: "/api/auth/signin" });
+        } catch {
+          // no-op
+        }
+        return Promise.reject({
+          status: 401,
+          message: session.error,
+        });
+      }
 
       if (session?.access_token) {
         // Update the original request with new token
         error.config.headers.Authorization = `Bearer ${session.access_token}`;
 
-        // Retry the request
+        // Retry the request once
         return axiosInstance(error.config);
+      } else {
+        // No valid session, reject
+        return Promise.reject({
+          status: 401,
+          message: "No valid session",
+        });
       }
     }
 

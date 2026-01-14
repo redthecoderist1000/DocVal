@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   CircularProgress,
@@ -9,15 +9,27 @@ import {
   Card,
   CardContent,
 } from "@mui/material";
+import { useProtectedRoute } from "@/helper/ProtectedRoutes";
+import { useLoading } from "@/helper/LoadingContext";
 import DivisionTab from "@/app/(dashboard)/utilities/components/tabs/DivisionTab";
-import DocumentTypeTab from "@/app/(dashboard)/utilities/components/tabs/DocumentTypeTab";
-import DocumentClassificationTab from "@/app/(dashboard)/utilities/components/tabs/DocumentClassificationTab";
-import AccountsTab from "@/app/(dashboard)/utilities/components/tabs/AccountsTab";
+import DocumentTypeTab from "./components/tabs/DocumentTypeTab";
+import DocumentClassificationTab from "./components/tabs/DocumentClassificationTab";
+import AccountsTab from "./components/tabs/AccountsTab";
 
 export default function utilities() {
+  const { session, status, isChecking } = useProtectedRoute();
+  const { startLoading, stopLoading } = useLoading();
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
+
+  useEffect(() => {
+    if (isChecking) {
+      startLoading();
+    } else {
+      stopLoading();
+    }
+  }, [isChecking, startLoading, stopLoading]);
 
   const tabs = [
     { label: "Division", id: 0 },

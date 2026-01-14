@@ -4,18 +4,38 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 async function refreshAccessToken(token) {
   try {
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/auth/refresh`,
-      { refreshToken: token.refresh_token }
-      // { skipAuthRefresh: true }
-    );
+    const apiBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+    const res = await axios.post(`${apiBaseUrl}/auth/refresh`, {
+      refresh_token: token.refresh_token,
+      refreshToken: token.refresh_token,
+    });
+
+    const newAccessToken =
+      res.data?.access_token ??
+      res.data?.accessToken ??
+      res.data?.body?.access_token ??
+      res.data?.body?.accessToken;
+    const newRefreshToken =
+      res.data?.refresh_token ??
+      res.data?.refreshToken ??
+      res.data?.body?.refresh_token ??
+      res.data?.body?.refreshToken;
+
+    if (!newAccessToken) {
+      throw new Error("Refresh response missing access token");
+    }
+
     console.log("Access token refreshed successfully");
     return {
       ...token,
-      access_token: res.data.access_token,
-      accessTokenExpires: Date.now() + 15 * 60 * 1000, // 15 minutes
+      access_token: newAccessToken,
+      refresh_token: newRefreshToken ?? token.refresh_token,
+      accessTokenExpires: Date.now() + 15 * 60 * 1000,
+      error: undefined,
     };
   } catch (error) {
+    console.error("Error refreshing access token:", error);
     return { ...token, error: "RefreshAccessTokenError" };
   }
 }
@@ -38,27 +58,34 @@ export const authOptions = {
         },
       },
       async authorize(credentials) {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(credentials),
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(credentials),
+            }
+          );
+
+          const user = await res.json();
+
+          if (res.ok && user) {
+            return user;
           }
-        );
 
-        const user = await res.json();
-
-        if (res.ok && user) {
-          return user;
+          // Return error with message from server
+          const errorMessage = user?.message || user?.error || "Invalid email or password";
+          throw new Error(errorMessage);
+        } catch (error) {
+          throw new Error(error.message || "An error occurred during sign in");
         }
-        return null;
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      // iniital sign in
+    async jwt({ token, user, account }) {
+      // Initial sign in
       if (user) {
         token.id = user.body.id;
         token.full_name = user.body.full_name;
@@ -68,7 +95,10 @@ export const authOptions = {
         token.division_abrv = user.body.division_abrv;
         token.access_token = user.access_token;
         token.refresh_token = user.refresh_token;
-        token.accessTokenExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+        token.accessTokenExpires = Date.now() + 15 * 60 * 1000;
+        token.refreshTokenExpires = Date.now() + 7 * 24 * 60 * 60 * 1000;
+
+        return token;
       }
 
       // If access token has not expired, return it
@@ -76,8 +106,13 @@ export const authOptions = {
         return token;
       }
 
+      // If refresh token has expired, return null
+      if (Date.now() > token.refreshTokenExpires) {
+        console.log("Refresh token expired, please log in again");
+        return { ...token, error: "RefreshTokenExpired" };
+      }
+
       // Otherwise refresh
-      // console.log("Access token expired, refreshing...");
       return await refreshAccessToken(token);
     },
     async session({ session, token }) {
@@ -89,12 +124,13 @@ export const authOptions = {
       session.user.division_abrv = token.division_abrv;
       session.access_token = token.access_token;
       session.refresh_token = token.refresh_token;
+      session.error = token.error;
 
       return session;
     },
   },
   pages: {
-    signIn: "api/auth/signin",
+    signIn: "/api/auth/signin",
     signOut: "/",
   },
 };

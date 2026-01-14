@@ -12,17 +12,20 @@ import {
 import { useState } from "react";
 import { useError } from "@/helper/ErrorContext";
 
-export default function EditDivisionDialog({ data, setData, setDivisions }) {
+export default function EditDocumentClassificationDialog({
+  data,
+  setData,
+  setClassifications,
+}) {
   const { setError } = useError();
   const [formData, setFormData] = useState({
     name: "",
-    abrv: "",
   });
   const [errors, setErrors] = useState({ name: "" });
   const [loading, setLoading] = useState(false);
 
   const handleClose = () => {
-    setFormData({ name: "", abrv: "" });
+    setFormData({ name: "" });
     setData((prev) => ({
       ...prev,
       open: false,
@@ -50,17 +53,14 @@ export default function EditDivisionDialog({ data, setData, setDivisions }) {
       onClose={handleClose}
       fullWidth
       maxWidth="sm"
-      aria-labelledby="new-classification-dialog-title"
+      aria-labelledby="edit-classification-dialog-title"
     >
-      <DialogTitle id="new-classification-dialog-title">
-        Edit Division
+      <DialogTitle id="edit-classification-dialog-title">
+        Edit Document Classification
       </DialogTitle>
       <DialogContent>
-        <Typography variant="body2" color="textSecondary">
-          Division name: {data.divisionName}
-        </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-          Division abrv.: {data.divisionAbrv}
+          Classification name: {data.classificationName}
         </Typography>
 
         <form onSubmit={handleSubmit}>
@@ -70,21 +70,7 @@ export default function EditDivisionDialog({ data, setData, setDivisions }) {
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              placeholder="e.g., Management Information Systems Services - Data Warehouse and Analytics Division"
-              fullWidth
-              variant="outlined"
-              size="small"
-              required
-              error={!!errors.name}
-              helperText={errors.name}
-              disabled={loading}
-            />
-            <TextField
-              label="Abrv"
-              name="abrv"
-              value={formData.abrv}
-              onChange={handleInputChange}
-              placeholder="e.g., MISS-DWAD"
+              placeholder="e.g., Confidential"
               fullWidth
               variant="outlined"
               size="small"

@@ -1,6 +1,6 @@
 import axiosInstance from "@/helper/Axios";
+import { useError } from "@/helper/ErrorContext";
 import {
-  Alert,
   Button,
   CircularProgress,
   Dialog,
@@ -17,6 +17,7 @@ import {
 import React, { useState, useEffect } from "react";
 
 export default function NewAccountDialog({ open, setOpen, setAccounts }) {
+  const { setError } = useError();
   const [formData, setFormData] = useState({
     f_name: "",
     m_name: "",
@@ -26,7 +27,6 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
     division_id: "",
   });
   const [divisions, setDivisions] = useState([]);
-  const [message, setMessage] = useState({ type: "", text: "" });
   const [errors, setErrors] = useState({
     f_name: "",
     m_name: "",
@@ -69,7 +69,6 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
       role: "",
       division_id: "",
     });
-    setMessage({ type: "", text: "" });
   };
 
   const handleInputChange = (e) => {
@@ -156,7 +155,7 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
     e.preventDefault();
 
     if (!validateForm()) {
-      setMessage({ type: "error", text: "Please fill in all required fields" });
+      setError("Please fill in all required fields", "error");
       return;
     }
 
@@ -183,7 +182,7 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
             division_name: res.body[0].division,
           },
         ]);
-        setMessage({ type: "success", text: "Account added successfully!" });
+        setError("Account added successfully!", "success");
         setFormData({
           f_name: "",
           m_name: "",
@@ -201,17 +200,13 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
           division_id: "",
         });
         setTimeout(() => {
-          setMessage({ type: "", text: "" });
           setOpen(false);
           setLoading(false);
         }, 1500);
       })
       .catch((err) => {
         console.log("Error registering account", err);
-        setMessage({
-          type: "error",
-          text: "Submission failed. Please try again.",
-        });
+        setError("Submission failed. Please try again.", "error");
         setLoading(false);
       });
   };
@@ -226,15 +221,6 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
     >
       <DialogTitle id="new-account-dialog-title">Add a New Account</DialogTitle>
       <DialogContent>
-        {message.text && (
-          <Alert
-            severity={message.type}
-            sx={{ mb: 2 }}
-            onClose={() => setMessage({ type: "", text: "" })}
-          >
-            {message.text}
-          </Alert>
-        )}
         <form onSubmit={handleSubmit}>
           <Stack spacing={2} sx={{ mt: 2 }}>
             <TextField

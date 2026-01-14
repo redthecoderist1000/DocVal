@@ -16,6 +16,7 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
 import NewDocumentTypeDialog from "../NewDocumentTypeDialog";
+import EditDocumentTypeDialog from "../EditDocumentTypeDialog";
 
 export default function DocumentTypeTab({ data, isActive }) {
   const [documentTypes, setDocumentTypes] = useState([]);
@@ -24,6 +25,11 @@ export default function DocumentTypeTab({ data, isActive }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editData, setEditData] = useState({
+    open: false,
+    documentTypeName: "",
+    id: null,
+  });
 
   useEffect(() => {
     if (isActive) {
@@ -31,6 +37,7 @@ export default function DocumentTypeTab({ data, isActive }) {
       axiosInstance
         .get("/document/getAllDocType")
         .then((res) => {
+          // console.log(res.body);
           setDocumentTypes(res.body);
           setLoading(false);
         })
@@ -42,7 +49,14 @@ export default function DocumentTypeTab({ data, isActive }) {
   }, [isActive]);
 
   const handleEdit = (id) => {
-    console.log("Edit document type:", id);
+    const docType = documentTypes.find((dt) => dt.id === id);
+    if (docType) {
+      setEditData({
+        open: true,
+        documentTypeName: docType.name,
+        id: id,
+      });
+    }
   };
 
   const handleDelete = (id) => {
@@ -77,6 +91,11 @@ export default function DocumentTypeTab({ data, isActive }) {
       <NewDocumentTypeDialog
         open={dialogOpen}
         setOpen={setDialogOpen}
+        setDocumentTypes={setDocumentTypes}
+      />
+      <EditDocumentTypeDialog
+        data={editData}
+        setData={setEditData}
         setDocumentTypes={setDocumentTypes}
       />
       <div className="mb-6">

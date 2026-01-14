@@ -16,6 +16,7 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
 import NewDocumentClassificationDialog from "../NewDocumentClassificationDialog";
+import EditDocumentClassificationDialog from "../EditDocumentClassificationDialog";
 
 export default function DocumentClassificationTab({ data, isActive }) {
   //   const classifications = data?.classifications || [];
@@ -25,6 +26,11 @@ export default function DocumentClassificationTab({ data, isActive }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editData, setEditData] = useState({
+    open: false,
+    classificationName: "",
+    id: null,
+  });
 
   useEffect(() => {
     if (isActive) {
@@ -44,7 +50,14 @@ export default function DocumentClassificationTab({ data, isActive }) {
   }, [isActive]);
 
   const handleEdit = (id) => {
-    console.log("Edit classification:", id);
+    const classification = classifications.find((c) => c.id === id);
+    if (classification) {
+      setEditData({
+        open: true,
+        classificationName: classification.name,
+        id: id,
+      });
+    }
   };
 
   const handleDelete = (id) => {
@@ -81,6 +94,11 @@ export default function DocumentClassificationTab({ data, isActive }) {
       <NewDocumentClassificationDialog
         open={dialogOpen}
         setOpen={setDialogOpen}
+        setClassifications={setClassifications}
+      />
+      <EditDocumentClassificationDialog
+        data={editData}
+        setData={setEditData}
         setClassifications={setClassifications}
       />
       <div className="mb-6">
