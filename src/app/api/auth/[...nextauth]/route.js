@@ -13,14 +13,10 @@ async function refreshAccessToken(token) {
 
     const newAccessToken =
       res.data?.access_token ??
-      res.data?.accessToken ??
-      res.data?.body?.access_token ??
-      res.data?.body?.accessToken;
+      res.data?.body?.access_token;
     const newRefreshToken =
       res.data?.refresh_token ??
-      res.data?.refreshToken ??
-      res.data?.body?.refresh_token ??
-      res.data?.body?.refreshToken;
+      res.data?.body?.refresh_token;
 
     if (!newAccessToken) {
       throw new Error("Refresh response missing access token");

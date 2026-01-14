@@ -226,7 +226,7 @@ export default function DivisionTab({ data, isActive }) {
       <EditDivisionDialog
         data={editDivDialog}
         setData={setEditDivDialog}
-        set={setDivisions}
+        setDivisions={setDivisions}
       />
     </div>
   );

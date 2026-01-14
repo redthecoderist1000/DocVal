@@ -38,7 +38,7 @@ Before running the system, ensure you have the following installed:
    Create a `.env` file in the root directory and add the required configuration:
 
    ```
-   NEXTAUTH_URL=http://localhost:3000
+   NEXT_PUBLIC_BASE_URL=<base-url-for-backend-service>
    NEXTAUTH_SECRET=<your-secret-key>
 
    ```

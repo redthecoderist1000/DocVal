@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useError } from "@/helper/ErrorContext";
+import axiosInstance from "@/helper/Axios";
 
 export default function EditDivisionDialog({ data, setData, setDivisions }) {
   const { setError } = useError();
@@ -42,6 +43,22 @@ export default function EditDivisionDialog({ data, setData, setDivisions }) {
     // Add your submit logic here
     console.log("data:", data);
     console.log("Form submitted with data:", formData);
+
+    axiosInstance
+      .post("/office/editDivision", {
+        divId: data.divisionId,
+        newName: formData.name,
+        newAbrv: formData.abrv,
+      })
+      .then((res) => {
+        console.log(res);
+        // Update divisions list
+        handleClose();
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to update division. Please try again.");
+      });
   };
 
   return (
