@@ -14,7 +14,6 @@ const Report_pdf = (data) => {
     author: "DocVal",
     keywords: "document, evaluation, report, Gemini AI",
     creator: "DICT MISS-DWAD",
-    creationDate: new Date(),
   });
 
   set_dict_header(doc);

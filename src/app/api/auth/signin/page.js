@@ -31,7 +31,7 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting:", { email, password });
+    // console.log("Submitting:", { email, password });
     const result = await signIn("credentials", {
       email,
       password,
@@ -65,7 +65,12 @@ export default function SignIn() {
             {/* Top Logo */}
             <div className="flex justify-center items-center gap-4 mb-6">
               <Image src="/dict_logo.png" alt="Logo" width={50} height={50} />
-              <Image src="/bagong_pilipinas.png" alt="Bagong Pilipinas" width={50} height={50} />
+              <Image
+                src="/bagong_pilipinas.png"
+                alt="Bagong Pilipinas"
+                width={50}
+                height={50}
+              />
             </div>
 
             {/* Title */}

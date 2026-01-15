@@ -145,14 +145,7 @@ export default function files() {
                         </div>
                       </td>
                       <td className="px-6 py-2 text-center text-sm text-gray-600">
-                        {new Date(doc.date_created).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )}
+                        {doc.date_created ? new Date(doc.date_created).toISOString().split('T')[0] : '-'}
                       </td>
                       <td className="px-6 py-2">
                         <div className="flex items-center justify-center gap-2">

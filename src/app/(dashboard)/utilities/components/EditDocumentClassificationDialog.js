@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useError } from "@/helper/ErrorContext";
+import axiosInstance from "@/helper/Axios";
 
 export default function EditDocumentClassificationDialog({
   data,
@@ -38,13 +39,51 @@ export default function EditDocumentClassificationDialog({
       ...prev,
       [name]: value,
     }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add your submit logic here
-    console.log("data:", data);
-    console.log("Form submitted with data:", formData);
+
+    // Validation
+    if (formData.name.trim() === "") {
+      setErrors({ name: "Classification name is required." });
+      return;
+    }
+
+    setLoading(true);
+    axiosInstance
+      .post("/document/editDocClass", {
+        docClassId: data.id,
+        newName: formData.name.trim(),
+      })
+      .then((res) => {
+        // Update classifications list
+        const newRecord = res.body;
+        setClassifications((prev) =>
+          prev.map((classification) =>
+            classification.id === data.id
+              ? { ...classification, name: newRecord.name }
+              : classification
+          )
+        );
+        setError("Document classification updated successfully!", "success");
+        setTimeout(() => {
+          setLoading(false);
+          handleClose();
+        }, 1500);
+      })
+      .catch((err) => {
+        console.log(err);
+        setError(
+          "Failed to update document classification. Please try again.",
+          "error"
+        );
+        setLoading(false);
+      });
   };
 
   return (

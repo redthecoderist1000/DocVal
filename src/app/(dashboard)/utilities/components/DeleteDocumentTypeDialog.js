@@ -14,17 +14,17 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 
-export default function DeleteDivisionDialog({
-  deleteDivision,
-  setDeleteDivision,
-  setDivisions,
+export default function DeleteDocumentTypeDialog({
+  deleteDocType,
+  setDeleteDocType,
+  setDocumentTypes,
 }) {
   const { setError } = useError();
   const [loading, setLoading] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
 
   const handleClose = () => {
-    setDeleteDivision((prev) => ({
+    setDeleteDocType((prev) => ({
       ...prev,
       open: false,
     }));
@@ -42,14 +42,14 @@ export default function DeleteDivisionDialog({
 
     setLoading(true);
     axiosInstance
-      .post("/office/deleteDivision", { divisionId: deleteDivision.divisionId })
+      .post("/document/deleteDocType", { docTypeId: deleteDocType.docTypeId })
       .then((res) => {
-        setDivisions((prevDivisions) =>
-          prevDivisions.filter(
-            (division) => division.id !== deleteDivision.divisionId
+        setDocumentTypes((prevDocTypes) =>
+          prevDocTypes.filter(
+            (docType) => docType.id !== deleteDocType.docTypeId
           )
         );
-        setError("Division deleted successfully!", "success");
+        setError("Document type deleted successfully!", "success");
         setTimeout(() => {
           setLoading(false);
           handleClose();
@@ -57,28 +57,28 @@ export default function DeleteDivisionDialog({
       })
       .catch((err) => {
         console.error(err);
-        setError("Failed to delete the division. Please try again.", "error");
+        setError("Failed to delete the document type. Please try again.", "error");
         setLoading(false);
       });
   };
 
   return (
     <Dialog
-      open={deleteDivision.open}
+      open={deleteDocType.open}
       onClose={handleClose}
       fullWidth
       maxWidth="sm"
-      aria-labelledby="delete-division-dialog-title"
+      aria-labelledby="delete-doctype-dialog-title"
     >
-      <DialogTitle id="delete-division-dialog-title">
+      <DialogTitle id="delete-doctype-dialog-title">
         Confirm Deletion
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1" sx={{ mb: 1 }}>
-          Are you sure you want to delete this division?
+          Are you sure you want to delete this document type?
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          Division name: <strong>{deleteDivision.divisionName}</strong>
+          Document type name: <strong>{deleteDocType.docTypeName}</strong>
         </Typography>
         <FormControlLabel
           control={

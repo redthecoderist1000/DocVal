@@ -17,6 +17,7 @@ import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
 import NewDocumentTypeDialog from "../NewDocumentTypeDialog";
 import EditDocumentTypeDialog from "../EditDocumentTypeDialog";
+import DeleteDocumentTypeDialog from "../DeleteDocumentTypeDialog";
 
 export default function DocumentTypeTab({ data, isActive }) {
   const [documentTypes, setDocumentTypes] = useState([]);
@@ -29,6 +30,11 @@ export default function DocumentTypeTab({ data, isActive }) {
     open: false,
     documentTypeName: "",
     id: null,
+  });
+  const [deleteData, setDeleteData] = useState({
+    open: false,
+    docTypeId: null,
+    docTypeName: "",
   });
 
   useEffect(() => {
@@ -60,7 +66,14 @@ export default function DocumentTypeTab({ data, isActive }) {
   };
 
   const handleDelete = (id) => {
-    console.log("Delete document type:", id);
+    const docType = documentTypes.find((dt) => dt.id === id);
+    if (docType) {
+      setDeleteData({
+        open: true,
+        docTypeId: id,
+        docTypeName: docType.name,
+      });
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -96,6 +109,11 @@ export default function DocumentTypeTab({ data, isActive }) {
       <EditDocumentTypeDialog
         data={editData}
         setData={setEditData}
+        setDocumentTypes={setDocumentTypes}
+      />
+      <DeleteDocumentTypeDialog
+        deleteDocType={deleteData}
+        setDeleteDocType={setDeleteData}
         setDocumentTypes={setDocumentTypes}
       />
       <div className="mb-6">
