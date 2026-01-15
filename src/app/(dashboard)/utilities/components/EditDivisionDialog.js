@@ -40,24 +40,42 @@ export default function EditDivisionDialog({ data, setData, setDivisions }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add your submit logic here
-    console.log("data:", data);
-    console.log("Form submitted with data:", formData);
 
+    // Validation
+    if (formData.name.trim() === "" && formData.abrv.trim() === "") {
+      setErrors({ name: "Please provide at least one field to update." });
+      return;
+    }
+
+    setLoading(true);
     axiosInstance
       .post("/office/editDivision", {
         divId: data.divisionId,
-        newName: formData.name,
-        newAbrv: formData.abrv,
+        newName: formData.name.trim(),
+        newAbrv: formData.abrv.trim(),
       })
       .then((res) => {
-        console.log(res);
         // Update divisions list
+        const newRecord = res.body;
+        setDivisions((prev) =>
+          prev.map((division) =>
+            division.id === data.divisionId
+              ? {
+                  ...division,
+                  division_name: newRecord.name,
+                  division_abrv: newRecord.abrv,
+                }
+              : division
+          )
+        );
+        setError(res.message, "success");
         handleClose();
+        setLoading(false);
       })
       .catch((err) => {
-        console.error(err);
-        setError("Failed to update division. Please try again.");
+        console.log(err);
+        setError("Failed to update division. Please try again.", "error");
+        setLoading(false);
       });
   };
 
@@ -127,7 +145,6 @@ export default function EditDivisionDialog({ data, setData, setDivisions }) {
           </Button>
           <Button
             onClick={handleSubmit}
-            type="submit"
             autoFocus
             color="success"
             size="small"

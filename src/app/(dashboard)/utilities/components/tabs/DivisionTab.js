@@ -17,6 +17,7 @@ import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
 import NewDivDialog from "../NewDivDialog";
 import EditDivisionDialog from "../EditDivisionDialog";
+import DeleteDivisionDialog from "../DeleteDivisionDialog";
 
 export default function DivisionTab({ data, isActive }) {
   const [divisions, setDivisions] = useState([]);
@@ -27,6 +28,11 @@ export default function DivisionTab({ data, isActive }) {
 
   const [openNewDivDialog, setOpenNewDivDialog] = useState(false);
   const [editDivDialog, setEditDivDialog] = useState({
+    open: false,
+    divisionId: null,
+    divisionName: "",
+  });
+  const [deleteDivDialog, setDeleteDivDialog] = useState({
     open: false,
     divisionId: null,
     divisionName: "",
@@ -60,7 +66,16 @@ export default function DivisionTab({ data, isActive }) {
   };
 
   const handleDelete = (id) => {
-    console.log("Delete division:", id);
+    // console.log("Delete division:", id);
+    const divisionToDelete = divisions.find((div) => div.id === id);
+    setDeleteDivDialog((prev) => ({
+      ...prev,
+      open: true,
+      divisionId: id,
+      divisionName: divisionToDelete
+        ? divisionToDelete.division_name
+        : "Unknown Division",
+    }));
   };
 
   const handleNewEntry = () => {
@@ -138,7 +153,7 @@ export default function DivisionTab({ data, isActive }) {
                 {visibleRows.map((division, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: '#000000' }}>
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
                         {division?.division_name || "N/A"}
                       </Typography>
                     </td>
@@ -226,6 +241,12 @@ export default function DivisionTab({ data, isActive }) {
       <EditDivisionDialog
         data={editDivDialog}
         setData={setEditDivDialog}
+        setDivisions={setDivisions}
+      />
+
+      <DeleteDivisionDialog
+        deleteDivision={deleteDivDialog}
+        setDeleteDivision={setDeleteDivDialog}
         setDivisions={setDivisions}
       />
     </div>
