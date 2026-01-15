@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { CircularProgress, Box, Typography, Backdrop } from "@mui/material";
 import { useLoading } from "@/helper/LoadingContext";
 
