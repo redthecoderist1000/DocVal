@@ -25,6 +25,7 @@ import axiosInstance from "@/helper/Axios";
 import { useRouter } from "next/navigation";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
 import { useError } from "@/helper/ErrorContext";
+import LoadingDialog from "@/components/LoadingDialog";
 
 export default function NewFile() {
   const { session, status } = useProtectedRoute();
@@ -170,16 +171,6 @@ export default function NewFile() {
       .catch((error) => {
         console.error("Error fetching types:", error);
       });
-
-    // axiosInstance
-    //   .get("/office/getAllDivision")
-    //   .then((res) => {
-    //     // console.log("Fetched offices:", res.body);
-    //     setOffices(res.body);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error fetching offices:", error);
-    //   });
   }, []);
 
   return (
@@ -311,36 +302,6 @@ export default function NewFile() {
                   size="small"
                   required
                 />
-                {/* <FormControl fullWidth size="small" required>
-                  <InputLabel id="sender-office-label">
-                    Sender Office
-                  </InputLabel>
-                  <Select
-                    labelId="sender-office-label"
-                    label="Sender Office"
-                    name="sender_office"
-                    onChange={handleInputChange}
-                    value={formData.sender_office}
-                  >
-                    <MenuItem value="" disabled>
-                      Select Sender Office
-                    </MenuItem>
-                    {offices?.map((data, index) => (
-                      <MenuItem
-                        key={index}
-                        value={data.id}
-                        onClick={() => {
-                          setFormData({
-                            ...formData,
-                            sender_office_name: data.division_abrv,
-                          });
-                        }}
-                      >
-                        {data.division_name} ({data.division_abrv})
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl> */}
                 <TextField
                   label="Contact Person"
                   name="sender_person"
@@ -473,6 +434,7 @@ export default function NewFile() {
           </form>
         </CardContent>
       </Card>
+      <LoadingDialog open={loading} />
     </Container>
   );
 }
