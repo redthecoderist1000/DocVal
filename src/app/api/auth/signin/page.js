@@ -58,13 +58,14 @@ export default function SignIn() {
       </div>
 
       {/* Right Section - Login Card */}
-      <div className="w-full lg:w-[40%] flex items-center justify-center p-1">
+      <div className="w-full lg:w-[40%] flex items-center justify-center p-1 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="w-full max-w-md">
           {/* Login Card */}
           <div className="p-10">
             {/* Top Logo */}
             <div className="flex justify-center items-center gap-4 mb-6">
               <Image src="/dict_logo.png" alt="Logo" width={50} height={50} />
+              <Image src="/bagong_pilipinas.png" alt="Bagong Pilipinas" width={50} height={50} />
             </div>
 
             {/* Title */}
@@ -97,7 +98,7 @@ export default function SignIn() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full px-4 py-3 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-black"
                   placeholder="Enter your email"
                 />
               </div>
@@ -116,7 +117,7 @@ export default function SignIn() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full px-4 py-3 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-black"
                   placeholder="Enter your password"
                 />
               </div>

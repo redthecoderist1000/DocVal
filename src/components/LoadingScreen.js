@@ -1,11 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { CircularProgress, Box, Typography, Backdrop } from "@mui/material";
 import { useLoading } from "@/helper/LoadingContext";
 
 export default function LoadingScreen() {
   const { isLoading } = useLoading();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <Backdrop

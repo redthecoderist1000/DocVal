@@ -138,7 +138,7 @@ export default function DivisionTab({ data, isActive }) {
                 {visibleRows.map((division, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ color: '#000000' }}>
                         {division?.division_name || "N/A"}
                       </Typography>
                     </td>

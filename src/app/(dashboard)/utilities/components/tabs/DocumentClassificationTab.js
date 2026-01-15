@@ -147,7 +147,7 @@ export default function DocumentClassificationTab({ data, isActive }) {
                 {visibleRows.map((classification, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ color: '#000000' }}>
                         {classification?.name || "N/A"}
                       </Typography>
                     </td>

@@ -148,17 +148,17 @@ export default function AccountsTab({ data, isActive }) {
                 {visibleRows.map((account, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ color: '#000000' }}>
                         {account?.full_name || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ color: '#000000' }}>
                         {account?.email || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ color: '#000000' }}>
                         {account?.division_name || "N/A"}
                       </Typography>
                     </td>
