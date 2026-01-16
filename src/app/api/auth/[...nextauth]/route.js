@@ -7,16 +7,13 @@ async function refreshAccessToken(token) {
     const apiBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
     const res = await axios.post(`${apiBaseUrl}/auth/refresh`, {
-      refresh_token: token.refresh_token,
       refreshToken: token.refresh_token,
     });
 
     const newAccessToken =
-      res.data?.access_token ??
-      res.data?.body?.access_token;
+      res.data?.access_token ?? res.data?.body?.access_token;
     const newRefreshToken =
-      res.data?.refresh_token ??
-      res.data?.body?.refresh_token;
+      res.data?.refresh_token ?? res.data?.body?.refresh_token;
 
     if (!newAccessToken) {
       throw new Error("Refresh response missing access token");
@@ -71,7 +68,8 @@ export const authOptions = {
           }
 
           // Return error with message from server
-          const errorMessage = user?.message || user?.error || "Invalid email or password";
+          const errorMessage =
+            user?.message || user?.error || "Invalid email or password";
           throw new Error(errorMessage);
         } catch (error) {
           throw new Error(error.message || "An error occurred during sign in");
