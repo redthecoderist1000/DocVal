@@ -17,6 +17,7 @@ import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
 import NewDocumentClassificationDialog from "../NewDocumentClassificationDialog";
 import EditDocumentClassificationDialog from "../EditDocumentClassificationDialog";
+import DeleteDocumentClassificationDialog from "../DeleteDocumentClassificationDialog";
 
 export default function DocumentClassificationTab({ data, isActive }) {
   //   const classifications = data?.classifications || [];
@@ -31,6 +32,11 @@ export default function DocumentClassificationTab({ data, isActive }) {
     classificationName: "",
     id: null,
   });
+  const [deleteData, setDeleteData] = useState({
+    open: false,
+    docClassId: null,
+    docClassName: "",
+  });
 
   useEffect(() => {
     if (isActive) {
@@ -38,8 +44,9 @@ export default function DocumentClassificationTab({ data, isActive }) {
       axiosInstance
         .get("/document/getAllDocClass")
         .then((res) => {
-          //   console.log(res);
+          console.log(res);
           setClassifications(res.body);
+
           setLoading(false);
         })
         .catch((err) => {
@@ -61,7 +68,14 @@ export default function DocumentClassificationTab({ data, isActive }) {
   };
 
   const handleDelete = (id) => {
-    console.log("Delete classification:", id);
+    const classification = classifications.find((c) => c.id === id);
+    if (classification) {
+      setDeleteData({
+        open: true,
+        docClassId: id,
+        docClassName: classification.name,
+      });
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -99,6 +113,11 @@ export default function DocumentClassificationTab({ data, isActive }) {
       <EditDocumentClassificationDialog
         data={editData}
         setData={setEditData}
+        setClassifications={setClassifications}
+      />
+      <DeleteDocumentClassificationDialog
+        deleteDocClass={deleteData}
+        setDeleteDocClass={setDeleteData}
         setClassifications={setClassifications}
       />
       <div className="mb-6">
@@ -147,7 +166,7 @@ export default function DocumentClassificationTab({ data, isActive }) {
                 {visibleRows.map((classification, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: '#000000' }}>
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
                         {classification?.name || "N/A"}
                       </Typography>
                     </td>
@@ -159,7 +178,9 @@ export default function DocumentClassificationTab({ data, isActive }) {
                           color="warning"
                           disableElevation
                           startIcon={<EditOutlinedIcon fontSize="small" />}
-                          onClick={() => handleEdit(classification?.id)}
+                          onClick={() => {
+                            handleEdit(classification?.id);
+                          }}
                         >
                           Edit
                         </Button>

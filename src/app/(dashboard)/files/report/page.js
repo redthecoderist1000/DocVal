@@ -59,7 +59,7 @@ export default function Report() {
         report: newReportData.report_data,
       })
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         setError("File saved successfully!", "success");
         router.push("/files", { replace: true });
         sessionStorage.removeItem("newReportData");

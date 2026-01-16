@@ -14,9 +14,7 @@ export default function ReportTab({ data }) {
       classification_name: data.doc_class,
       type_name: data.doc_type,
       sender_office: data.sender_office,
-      generation_date: new Date(data.date_created).toLocaleDateString("en-PH", {
-        timeZone: "Asia/Manila",
-      }),
+      generation_date: new Date(data.date_created).toISOString().split('T')[0],
       report_data: reportData,
     };
 

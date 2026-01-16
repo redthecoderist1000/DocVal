@@ -108,9 +108,7 @@ export default function NewFile() {
             file_name: formData.file.name,
             file_base64: fileBase64,
             report_data: res.body,
-            generation_date: new Date().toLocaleString("en-PH", {
-              timeZone: "Asia/Manila",
-            }),
+            generation_date: new Date().toISOString(),
           })
         );
 

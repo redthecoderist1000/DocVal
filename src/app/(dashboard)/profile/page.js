@@ -24,10 +24,6 @@ export default function Profile() {
   const [alertMessage, setAlertMessage] = useState("");
   const [error, setError] = useState("");
 
-  if (isChecking) {
-    return <LoadingScreen />;
-  }
-
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setAlertMessage("");
@@ -39,7 +35,7 @@ export default function Profile() {
       setError("Failed to update profile. Please try again.");
     }
   };
-  
+
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setAlertMessage("");
@@ -59,10 +55,15 @@ export default function Profile() {
       setError("Failed to change password.");
     }
   };
+
+  if (isChecking) {
+    return <LoadingScreen />;
+  }
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Profile</h1>
-      
+
       {alertMessage && (
         <Alert severity="success" sx={{ mb: 3 }}>
           {alertMessage}
@@ -73,17 +74,21 @@ export default function Profile() {
           {error}
         </Alert>
       )}
-      
+
       {/* Profile Information Card */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Typography variant="h6" gutterBottom sx={{fontWeight: "bold", color: "#333"}}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ fontWeight: "bold", color: "#333" }}
+          >
             Personal Information
           </Typography>
           <Divider sx={{ mb: 3 }} />
 
           <form onSubmit={handleUpdateProfile}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3}}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <TextField
                 label="First Name"
                 variant="outlined"
@@ -98,7 +103,7 @@ export default function Profile() {
                   },
                 }}
               />
-              
+
               <TextField
                 label="Middle Name"
                 variant="outlined"
@@ -112,7 +117,7 @@ export default function Profile() {
                   },
                 }}
               />
-              
+
               <TextField
                 label="Last Name"
                 variant="outlined"
@@ -148,11 +153,15 @@ export default function Profile() {
       {/* Change Password Card */}
       <Card>
         <CardContent>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold", color: "#000" }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ fontWeight: "bold", color: "#000" }}
+          >
             Change Password
           </Typography>
           <Divider sx={{ mb: 3 }} />
-          
+
           <form onSubmit={handleChangePassword}>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <TextField
@@ -170,7 +179,7 @@ export default function Profile() {
                   },
                 }}
               />
-              
+
               <TextField
                 label="New Password"
                 type="password"
@@ -186,7 +195,7 @@ export default function Profile() {
                   },
                 }}
               />
-              
+
               <TextField
                 label="Confirm New Password"
                 type="password"
