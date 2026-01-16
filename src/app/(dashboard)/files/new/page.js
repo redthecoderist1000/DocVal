@@ -100,20 +100,48 @@ export default function NewFile() {
         { signal: abortControllerRef.current.signal }
       )
       .then((res) => {
-        // store in session storage
-        sessionStorage.setItem(
-          "newReportData",
-          JSON.stringify({
-            ...formData,
-            file_name: formData.file.name,
+        // Store large file_base64 and report_data in IndexedDB to avoid session storage limits
+        const request = indexedDB.open("docval_db", 1);
+
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains("reports")) {
+            db.createObjectStore("reports", { keyPath: "id" });
+          }
+        };
+
+        request.onsuccess = () => {
+          const db = request.result;
+          const transaction = db.transaction("reports", "readwrite");
+          const store = transaction.objectStore("reports");
+          const reportId = `report_${Date.now()}`;
+
+          store.put({
+            id: reportId,
             file_base64: fileBase64,
             report_data: res.body,
-            generation_date: new Date().toISOString(),
-          })
-        );
+            timestamp: Date.now(),
+          });
 
-        router.push(`/files/report`);
-        setLoading(false);
+          // Store only metadata in session storage (much smaller)
+          sessionStorage.setItem(
+            "newReportData",
+            JSON.stringify({
+              ...formData,
+              file_name: formData.file.name,
+              report_id: reportId,
+              generation_date: new Date().toISOString(),
+            })
+          );
+
+          router.push(`/files/report`);
+          setLoading(false);
+        };
+
+        request.onerror = () => {
+          setError("Error storing report data", "error");
+          setLoading(false);
+        };
       })
       .catch((err) => {
         console.log(err);

@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   Chip,
+  CircularProgress,
   Container,
   Grid,
   IconButton,
@@ -18,7 +19,7 @@ import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Report_pdf from "@/helper/printables/Report_pdf";
 import { useSession } from "next-auth/react";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
@@ -28,14 +29,54 @@ import axiosInstance from "@/helper/Axios";
 export default function Report() {
   const { session, status } = useProtectedRoute();
   const { setError } = useError();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [newReportData, setNewReportData] = useState({});
 
   const router = useRouter();
 
-  // get data frm session storage
-  const [newReportData, setNewReportData] = useState(
-    JSON.parse(sessionStorage.getItem("newReportData")) || {}
-  );
+  // get data from session storage and IndexedDB
+  useEffect(() => {
+    const storedData =
+      JSON.parse(sessionStorage.getItem("newReportData")) || {};
+
+    if (storedData.report_id) {
+      // Retrieve large data from IndexedDB
+      const request = indexedDB.open("docval_db", 1);
+
+      request.onsuccess = () => {
+        const db = request.result;
+        const transaction = db.transaction("reports", "readonly");
+        const store = transaction.objectStore("reports");
+        const getRequest = store.get(storedData.report_id);
+
+        getRequest.onsuccess = () => {
+          const indexedData = getRequest.result || {};
+          // console.log(indexedData);
+          setNewReportData({
+            ...storedData,
+            file_base64: indexedData.file_base64,
+            report_data: indexedData.report_data,
+          });
+          setLoading(false);
+        };
+
+        getRequest.onerror = () => {
+          setError("Error loading report data", "error");
+          setNewReportData(storedData);
+          setLoading(false);
+        };
+      };
+
+      request.onerror = () => {
+        setError("Error accessing database", "error");
+        setNewReportData(storedData);
+        setLoading(false);
+      };
+    } else {
+      setNewReportData(storedData);
+      setLoading(false);
+    }
+  }, [setError]);
 
   const handleCancel = () => {
     router.push("/files", { replace: true });
@@ -63,7 +104,7 @@ export default function Report() {
         setError("File saved successfully!", "success");
         router.push("/files", { replace: true });
         sessionStorage.removeItem("newReportData");
-        setLoading(false);
+        // setLoading(false);
       })
       .catch((err) => {
         console.error(err);
@@ -75,6 +116,14 @@ export default function Report() {
   const handleExportPDF = () => {
     Report_pdf(newReportData);
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 6, textAlign: "center" }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
@@ -180,98 +229,114 @@ export default function Report() {
                 powered by Gemini AI{" "}
                 <AutoAwesomeRoundedIcon sx={{ fontSize: 10 }} />
               </Typography>
-              <Typography variant="body1" gutterBottom fontWeight="bold">
-                Summary
-              </Typography>
-              <Typography variant="body2" gutterBottom align="justify">
-                {newReportData.report_data.summary}
-              </Typography>
-              <Typography variant="body1" gutterBottom fontWeight="bold">
-                Key Points
-              </Typography>
-              {newReportData.report_data.key_points.map((point, index) => (
-                <Typography key={index} variant="body2" align="justify">
-                  • {point}
-                </Typography>
-              ))}
-              {newReportData.report_data.potential_issues.compliance_issues && (
+              {newReportData.report_data && (
                 <>
                   <Typography variant="body1" gutterBottom fontWeight="bold">
-                    Compliance Issues
+                    Summary
                   </Typography>
-                  {newReportData.report_data.potential_issues.compliance_issues.map(
-                    (data, index) => (
-                      <div key={index}>
-                        <Typography
-                          variant="body2"
-                          align="center"
-                          fontStyle={"italic"}
-                        >
-                          "{data.excerpt}"
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          align="center"
-                          fontStyle="italic"
-                          color="text.disabled"
-                        >
-                          - {data.location}
-                        </Typography>
-                        <Typography variant="body1" align="justify">
-                          {data.explanation}
-                        </Typography>
-                      </div>
-                    )
-                  )}
-                </>
-              )}
-              {newReportData.report_data.potential_issues.security_concerns && (
-                <>
+                  <Typography variant="body2" gutterBottom align="justify">
+                    {newReportData.report_data.summary}
+                  </Typography>
                   <Typography variant="body1" gutterBottom fontWeight="bold">
-                    Security Concerns
+                    Key Points
                   </Typography>
-                  {newReportData.report_data.potential_issues.security_concerns.map(
+                  {newReportData.report_data.key_points?.map((point, index) => (
+                    <Typography key={index} variant="body2" align="justify">
+                      • {point}
+                    </Typography>
+                  ))}
+                  {newReportData.report_data.potential_issues
+                    ?.compliance_issues && (
+                    <>
+                      <Typography
+                        variant="body1"
+                        gutterBottom
+                        fontWeight="bold"
+                      >
+                        Compliance Issues
+                      </Typography>
+                      {newReportData.report_data.potential_issues.compliance_issues.map(
+                        (data, index) => (
+                          <div key={index}>
+                            <Typography
+                              variant="body2"
+                              align="center"
+                              fontStyle={"italic"}
+                            >
+                              "{data.excerpt}"
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              align="center"
+                              fontStyle="italic"
+                              color="text.disabled"
+                            >
+                              - {data.location}
+                            </Typography>
+                            <Typography variant="body1" align="justify">
+                              {data.explanation}
+                            </Typography>
+                          </div>
+                        )
+                      )}
+                    </>
+                  )}
+                  {newReportData.report_data.potential_issues
+                    ?.security_concerns && (
+                    <>
+                      <Typography
+                        variant="body1"
+                        gutterBottom
+                        fontWeight="bold"
+                      >
+                        Security Concerns
+                      </Typography>
+                      {newReportData.report_data.potential_issues.security_concerns.map(
+                        (data, index) => (
+                          <div key={index}>
+                            <Typography
+                              variant="body2"
+                              align="center"
+                              fontStyle={"italic"}
+                            >
+                              "{data.excerpt}"
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              align="center"
+                              fontStyle="italic"
+                              color="text.disabled"
+                            >
+                              - {data.location}
+                            </Typography>
+                            <Typography variant="body1" align="justify">
+                              {data.explanation}
+                            </Typography>
+                          </div>
+                        )
+                      )}
+                    </>
+                  )}
+                  <Typography variant="body1" gutterBottom fontWeight="bold">
+                    Recommendations
+                  </Typography>
+                  {newReportData.report_data.recommendations?.map(
                     (data, index) => (
-                      <div key={index}>
-                        <Typography
-                          variant="body2"
-                          align="center"
-                          fontStyle={"italic"}
-                        >
-                          "{data.excerpt}"
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          align="center"
-                          fontStyle="italic"
-                          color="text.disabled"
-                        >
-                          - {data.location}
-                        </Typography>
-                        <Typography variant="body1" align="justify">
-                          {data.explanation}
-                        </Typography>
-                      </div>
+                      <Typography key={index} variant="body2" align="justify">
+                        • {data}
+                      </Typography>
                     )
                   )}
+                  <Typography variant="body1" gutterBottom fontWeight="bold">
+                    References
+                  </Typography>
+                  {newReportData.report_data.references?.map((data, index) => (
+                    <Typography key={index} variant="body2" align="justify">
+                      • {data}
+                    </Typography>
+                  ))}
                 </>
               )}
-              <Typography variant="body1" gutterBottom fontWeight="bold">
-                Recommendations
-              </Typography>
-              {newReportData.report_data.recommendations.map((data, index) => (
-                <Typography key={index} variant="body2" align="justify">
-                  • {data}
-                </Typography>
-              ))}
-              <Typography variant="body1" gutterBottom fontWeight="bold">
-                References
-              </Typography>
-              {newReportData.report_data.references.map((data, index) => (
-                <Typography key={index} variant="body2" align="justify">
-                  • {data}
-                </Typography>
-              ))}
             </Stack>
           </Card>
           <Stack direction="row" justifyContent="center" spacing={2} mt={4}>
