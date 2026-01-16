@@ -15,6 +15,7 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
 import NewAccountDialog from "../NewAccountDialog";
+import ViewAccountModal from "../ViewAccountModal";
 
 export default function AccountsTab({ data, isActive }) {
   //   const accounts = data?.accounts || [];
@@ -24,6 +25,8 @@ export default function AccountsTab({ data, isActive }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
 
   useEffect(() => {
     if (isActive) {
@@ -42,8 +45,9 @@ export default function AccountsTab({ data, isActive }) {
     }
   }, [isActive]);
 
-  const handleView = (id) => {
-    console.log("View account:", id);
+  const handleView = (account) => {
+    setSelectedAccount(account);
+    setModalOpen(true);
   };
 
   const handleEdit = (id) => {
@@ -91,6 +95,11 @@ export default function AccountsTab({ data, isActive }) {
 
   return (
     <div>
+      <ViewAccountModal
+        isModalOpen={modalOpen}
+        setIsModalOpen={setModalOpen}
+        accountData={selectedAccount}
+      />
       <NewAccountDialog
         open={dialogOpen}
         setOpen={setDialogOpen}
@@ -148,17 +157,17 @@ export default function AccountsTab({ data, isActive }) {
                 {visibleRows.map((account, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: '#000000' }}>
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
                         {account?.full_name || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: '#000000' }}>
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
                         {account?.email || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: '#000000' }}>
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
                         {account?.division_name || "N/A"}
                       </Typography>
                     </td>
@@ -172,7 +181,7 @@ export default function AccountsTab({ data, isActive }) {
                           startIcon={
                             <RemoveRedEyeOutlinedIcon fontSize="small" />
                           }
-                          onClick={() => handleView(account?.id)}
+                          onClick={() => handleView(account)}
                         >
                           View
                         </Button>

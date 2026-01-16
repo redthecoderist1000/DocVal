@@ -14,6 +14,7 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (status === "loading") {
@@ -31,15 +32,21 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
     // console.log("Submitting:", { email, password });
     const result = await signIn("credentials", {
       email,
       password,
       callbackUrl: "/home",
+      redirect: false,
     });
 
     if (!result.ok) {
-      setError("Invalid credentials");
+      setError(result.error || "Failed to sign in. Please try again.");
+      setIsSubmitting(false);
+    } else {
+      router.push("/home");
     }
   };
 
@@ -130,10 +137,10 @@ export default function SignIn() {
               {/* Sign In Button */}
               <button
                 type="submit"
-                disabled={status == "loading"}
+                disabled={isSubmitting || status == "loading"}
                 className="w-full bg-blue-900 text-white py-3 px-4 rounded-lg hover:bg-blue-800 active:bg-blue-950 focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all mt-6"
               >
-                {status == "loading" ? "Signing In..." : "Sign In"}
+                {isSubmitting ? "Signing In..." : "Sign In"}
               </button>
             </form>
 
