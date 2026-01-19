@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -17,9 +18,16 @@ import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 
 export default function DashboardLayout({ children }) {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeMenu, setActiveMenu] = useState("home");
+
+  // Set active menu based on current route
+  useEffect(() => {
+    const currentPath = pathname.split("/").filter(Boolean)[0] || "home";
+    setActiveMenu(currentPath);
+  }, [pathname]);
 
   const menuItems = [
     {

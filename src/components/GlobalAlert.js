@@ -29,9 +29,10 @@ export default function GlobalAlert() {
       anchorOrigin={{ vertical: "top", horizontal: "right" }}
     >
       <Alert
+        variant="outlined"
         onClose={handleClose}
         severity={errorData.severity}
-        sx={{ width: "100%" }}
+        sx={{ width: "100%", bgcolor: "background.paper" }}
       >
         {errorData.message}
       </Alert>

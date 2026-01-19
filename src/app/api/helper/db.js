@@ -26,7 +26,12 @@ export async function getConnection() {
     }
     return await poolPromise;
   } catch (err) {
-    console.error("Database connection failed:", err);
-    throw new Error("Database connection failed");
+    console.error("Database connection failed:", err.message || err);
+    console.error("Config:", {
+      server: DB_SERVER,
+      database: DB_NAME,
+      user: DB_USERNAME,
+    });
+    throw err;
   }
 }

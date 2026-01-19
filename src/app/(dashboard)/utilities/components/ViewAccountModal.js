@@ -7,149 +7,304 @@ import {
   Typography,
   Stack,
   Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import { useState, useEffect } from "react";
+import axiosInstance from "@/helper/Axios";
+import { useError } from "@/helper/ErrorContext";
 
-export default function ViewAccountModal({
-  isModalOpen,
-  setIsModalOpen,
-  accountData,
-}) {
+export default function ViewAccountModal({ data, setData, setAccounts }) {
+  const { setError } = useError();
+  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
-
-  const handleClose = () => {
-    setIsModalOpen(false);
-  };
+  const [divOption, setDivOption] = useState([]);
+  const [oldData, setOldData] = useState({
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    email: "",
+    divisionName: "",
+    divisionId: "",
+    role: "",
+  });
+  const [formData, setFormData] = useState({
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    email: "",
+    divisionName: "",
+    divisionId: "",
+    role: "",
+  });
 
   useEffect(() => {
-    if (isModalOpen && accountData) {
-      setLoading(false);
-      setData(accountData);
+    // console.log("ViewAccountModal data:", data);
+    if (data.open && data.userId) {
+      setLoading(true);
+      axiosInstance
+        .get("/office/getAllDivision")
+        .then(async (res) => {
+          setDivOption(res.body || []);
+          await fetchUserDetails();
+        })
+        .catch((err) => {
+          setError("Failed to fetch divisions. Please try again.");
+          handleClose();
+          setLoading(false);
+          console.error(err);
+        });
     }
-  }, [isModalOpen, accountData]);
+  }, [data.open, data.userId]);
+
+  const fetchUserDetails = async () => {
+    axiosInstance
+      .post("/user/getUserDetail", { userId: data.userId })
+      .then((res) => {
+        const user = res.body;
+        setFormData({
+          firstName: user.f_name || "",
+          middleName: user.m_name || "",
+          lastName: user.l_name || "",
+          email: user.email || "",
+          divisionName: user.division_name || "",
+          divisionId: user.division_id || "",
+          role: user.role || "",
+        });
+        setOldData({
+          firstName: user.f_name || "",
+          middleName: user.m_name || "",
+          lastName: user.l_name || "",
+          email: user.email || "",
+          divisionName: user.division_name || "",
+          divisionId: user.division_id || "",
+          role: user.role || "",
+        });
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError("Failed to fetch user details");
+        handleClose();
+        setLoading(false);
+      });
+  };
+
+  const handleClose = () => {
+    setData({ ...data, open: false });
+    setIsEditing(false);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleSave = async () => {
+    // check for changes
+    const changes = {};
+    Object.keys(formData).forEach((key) => {
+      if (formData[key] !== oldData[key]) {
+        changes[key] = formData[key];
+      }
+    });
+    if (Object.keys(changes).length === 0) {
+      setError("No changes made", "warning");
+      setIsEditing(false);
+      return;
+    }
+
+    setLoading(true);
+
+    const updateData = { userId: data.userId };
+
+    if (formData.firstName !== oldData.firstName)
+      updateData.newFName = formData.firstName;
+    if (formData.middleName !== oldData.middleName)
+      updateData.newMName = formData.middleName;
+    if (formData.lastName !== oldData.lastName)
+      updateData.newLName = formData.lastName;
+    if (formData.email !== oldData.email) updateData.newEmail = formData.email;
+    if (formData.divisionId !== oldData.divisionId)
+      updateData.newDiv = formData.divisionId;
+    if (formData.role !== oldData.role) updateData.newRole = formData.role;
+
+    axiosInstance
+      .post("/user/editUser", updateData)
+      .then((res) => {
+        // console.log("Edit user response:", res);
+        setError(res.message, "success");
+        // update accounts list
+        setAccounts((prev) =>
+          prev.map((acc) => (acc.id === data.userId ? res.body : acc)),
+        );
+        setIsEditing(false);
+        handleClose();
+        setLoading(false);
+      })
+      .catch((err) => {
+        const message =
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to update user. Please try again.";
+        setError(message);
+        setLoading(false);
+        // console.error(err);
+      });
+    setIsEditing(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
   return (
-    <>
-      {/* Modal Overlay */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0  bg-opacity-50 z-40"
-          onClick={handleClose}
-        />
-      )}
-
-      {/* Side Modal */}
-      <div
-        className={`fixed top-0 right-0 h-full w-1/2 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${
-          isModalOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-3 bg-gray-100 border-b border-gray-200">
-          <Typography variant="h6" fontWeight="bold">
-            Account Details
-          </Typography>
-
-          <IconButton size="small" onClick={handleClose}>
+    <Dialog open={data.open} onClose={handleClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h6">Account Details</Typography>
+          <IconButton onClick={handleClose} size="small">
             <CloseRoundedIcon />
           </IconButton>
-        </div>
+        </Box>
+      </DialogTitle>
 
-        {/* Modal Content */}
-        <div className="p-6 overflow-y-auto h-[calc(100%-90px)]">
-          {loading ? (
-            <div className="flex items-center justify-center h-full">
-              <CircularProgress />
-            </div>
-          ) : data ? (
-            <Stack spacing={3}>
-              {/* Full Name */}
-              <Box>
-                <Typography variant="caption" color="textSecondary">
-                  Full Name
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#000000", mt: 0.5 }}>
-                  {data?.full_name || "N/A"}
-                </Typography>
-              </Box>
-
-              {/* Email */}
-              <Box>
-                <Typography variant="caption" color="textSecondary">
-                  Email
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#000000", mt: 0.5 }}>
-                  {data?.email || "N/A"}
-                </Typography>
-              </Box>
-
-              {/* Division */}
-              <Box>
-                <Typography variant="caption" color="textSecondary">
-                  Division
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#000000", mt: 0.5 }}>
-                  {data?.division_name || "N/A"}
-                </Typography>
-              </Box>
-
-              {/* Username */}
-              <Box>
-                <Typography variant="caption" color="textSecondary">
-                  Username
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#000000", mt: 0.5 }}>
-                  {data?.username || "N/A"}
-                </Typography>
-              </Box>
-
-              {/* Status */}
-              <Box>
-                <Typography variant="caption" color="textSecondary">
-                  Status
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#000000", mt: 0.5 }}>
-                  {data?.status || "N/A"}
-                </Typography>
-              </Box>
-
-              {/* Created At */}
-              {data?.created_at && (
-                <Box>
-                  <Typography variant="caption" color="textSecondary">
-                    Created At
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "#000000", mt: 0.5 }}
-                  >
-                    {new Date(data?.created_at).toLocaleDateString()}
-                  </Typography>
-                </Box>
-              )}
-
-              {/* Updated At */}
-              {data?.updated_at && (
-                <Box>
-                  <Typography variant="caption" color="textSecondary">
-                    Last Updated
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "#000000", mt: 0.5 }}
-                  >
-                    {new Date(data?.updated_at).toLocaleDateString()}
-                  </Typography>
-                </Box>
-              )}
+      <DialogContent>
+        {loading ? (
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            minHeight="200px"
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2 }}>
+              Name
+            </Typography>
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="First Name"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                disabled={!isEditing}
+                fullWidth
+                size="small"
+                variant="outlined"
+              />
+              <TextField
+                label="Middle Name"
+                name="middleName"
+                value={formData.middleName}
+                onChange={handleChange}
+                disabled={!isEditing}
+                fullWidth
+                size="small"
+                variant="outlined"
+              />
             </Stack>
-          ) : (
-            <Typography color="textSecondary">No data available</Typography>
-          )}
-        </div>
-      </div>
-    </>
+            <TextField
+              label="Last Name"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              disabled={!isEditing}
+              fullWidth
+              size="small"
+              variant="outlined"
+            />
+
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2 }}>
+              Email
+            </Typography>
+            <TextField
+              label="Email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              disabled={!isEditing}
+              fullWidth
+              size="small"
+              variant="outlined"
+              type="email"
+            />
+
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2 }}>
+              Division
+            </Typography>
+            <Select
+              name="divisionId"
+              value={formData.divisionId}
+              onChange={handleChange}
+              disabled={!isEditing}
+              size="small"
+              fullWidth
+              variant="outlined"
+            >
+              <MenuItem value="">Select a Division</MenuItem>
+              {divOption.map((div) => (
+                <MenuItem key={div.id} value={div.id}>
+                  {div.division_name}
+                </MenuItem>
+              ))}
+            </Select>
+
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2 }}>
+              Role
+            </Typography>
+            <Select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              disabled={!isEditing}
+              size="small"
+              fullWidth
+              variant="outlined"
+            >
+              <MenuItem value="" disabled>
+                Select a Role
+              </MenuItem>
+              <MenuItem value="user">User</MenuItem>
+              <MenuItem value="administrator">Admin</MenuItem>
+            </Select>
+          </Stack>
+        )}
+      </DialogContent>
+
+      <DialogActions>
+        <Button
+          onClick={handleEdit}
+          variant="outlined"
+          size="small"
+          color={isEditing ? "error" : "warning"}
+          startIcon={<EditRoundedIcon />}
+          disableElevation
+          disabled={loading}
+        >
+          {isEditing ? "Cancel" : "Edit"}
+        </Button>
+        {isEditing && (
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            color="success"
+            size="small"
+            disableElevation
+          >
+            Save
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
   );
 }

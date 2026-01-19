@@ -24,9 +24,9 @@ export default function AccountsTab({ data, isActive }) {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [viewAccount, setViewAccount] = useState({});
 
   useEffect(() => {
     if (isActive) {
@@ -45,9 +45,9 @@ export default function AccountsTab({ data, isActive }) {
     }
   }, [isActive]);
 
-  const handleView = (account) => {
-    setSelectedAccount(account);
-    setModalOpen(true);
+  const handleView = (accountId) => {
+    setViewAccount({ ...viewAccount, open: true, userId: accountId }); //
+    meronHandel;
   };
 
   const handleEdit = (id) => {
@@ -96,9 +96,9 @@ export default function AccountsTab({ data, isActive }) {
   return (
     <div>
       <ViewAccountModal
-        isModalOpen={modalOpen}
-        setIsModalOpen={setModalOpen}
-        accountData={selectedAccount}
+        data={viewAccount}
+        setData={setViewAccount}
+        setAccounts={setAccounts}
       />
       <NewAccountDialog
         open={dialogOpen}
@@ -116,8 +116,7 @@ export default function AccountsTab({ data, isActive }) {
         />
       </div>
 
-      <div className="flex items-center justify-between mb-3">
-        <div></div>
+      <div className="flex items-center justify-end mb-3">
         <Button
           variant="contained"
           size="small"
@@ -174,38 +173,22 @@ export default function AccountsTab({ data, isActive }) {
                     <td className="px-6 py-2">
                       <div className="flex items-center justify-center gap-2">
                         <Button
-                          variant="contained"
+                          variant="outlined"
                           size="small"
                           color="success"
                           disableElevation
-                          startIcon={
-                            <RemoveRedEyeOutlinedIcon fontSize="small" />
-                          }
-                          onClick={() => handleView(account)}
+                          onClick={() => handleView(account.id)}
                         >
-                          View
+                          <RemoveRedEyeOutlinedIcon fontSize="small" />
                         </Button>
                         <Button
-                          variant="contained"
-                          size="small"
-                          color="warning"
-                          disableElevation
-                          startIcon={<EditOutlinedIcon fontSize="small" />}
-                          onClick={() => handleEdit(account?.id)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="contained"
+                          variant="outlined"
                           color="error"
                           size="small"
-                          startIcon={
-                            <DeleteOutlineRoundedIcon fontSize="small" />
-                          }
                           disableElevation
                           onClick={() => handleDelete(account?.id)}
                         >
-                          Delete
+                          <DeleteOutlineRoundedIcon fontSize="small" />
                         </Button>
                       </div>
                     </td>

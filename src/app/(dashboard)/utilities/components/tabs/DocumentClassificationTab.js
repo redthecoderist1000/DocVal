@@ -173,28 +173,24 @@ export default function DocumentClassificationTab({ data, isActive }) {
                     <td className="px-6 py-2">
                       <div className="flex items-center justify-center gap-2">
                         <Button
-                          variant="contained"
+                          variant="outlined"
                           size="small"
                           color="warning"
                           disableElevation
-                          startIcon={<EditOutlinedIcon fontSize="small" />}
                           onClick={() => {
                             handleEdit(classification?.id);
                           }}
                         >
-                          Edit
+                          <EditOutlinedIcon fontSize="small" />
                         </Button>
                         <Button
-                          variant="contained"
+                          variant="outlined"
                           color="error"
                           size="small"
-                          startIcon={
-                            <DeleteOutlineRoundedIcon fontSize="small" />
-                          }
                           disableElevation
                           onClick={() => handleDelete(classification?.id)}
                         >
-                          Delete
+                          <DeleteOutlineRoundedIcon fontSize="small" />
                         </Button>
                       </div>
                     </td>
