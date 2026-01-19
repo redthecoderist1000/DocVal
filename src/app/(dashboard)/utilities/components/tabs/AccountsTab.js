@@ -16,6 +16,7 @@ import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
 import NewAccountDialog from "../NewAccountDialog";
 import ViewAccountModal from "../ViewAccountModal";
+import DeleteAccountDialog from "../DeleteAccountDialog";
 
 export default function AccountsTab({ data, isActive }) {
   //   const accounts = data?.accounts || [];
@@ -27,6 +28,11 @@ export default function AccountsTab({ data, isActive }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewAccount, setViewAccount] = useState({});
+  const [deleteAccount, setDeleteAccount] = useState({
+    open: false,
+    userId: null,
+    email: "",
+  });
 
   useEffect(() => {
     if (isActive) {
@@ -54,8 +60,8 @@ export default function AccountsTab({ data, isActive }) {
     console.log("Edit account:", id);
   };
 
-  const handleDelete = (id) => {
-    console.log("Delete account:", id);
+  const handleDelete = (id, email) => {
+    setDeleteAccount({ open: true, userId: id, email: email });
   };
 
   const handleChangePage = (event, newPage) => {
@@ -86,7 +92,7 @@ export default function AccountsTab({ data, isActive }) {
           return matchFName || matchEmail || matchDivision;
         })
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [accounts, page, rowsPerPage, searchQuery]
+    [accounts, page, rowsPerPage, searchQuery],
   );
 
   const handleNewEntry = () => {
@@ -98,6 +104,11 @@ export default function AccountsTab({ data, isActive }) {
       <ViewAccountModal
         data={viewAccount}
         setData={setViewAccount}
+        setAccounts={setAccounts}
+      />
+      <DeleteAccountDialog
+        data={deleteAccount}
+        setData={setDeleteAccount}
         setAccounts={setAccounts}
       />
       <NewAccountDialog
@@ -186,7 +197,9 @@ export default function AccountsTab({ data, isActive }) {
                           color="error"
                           size="small"
                           disableElevation
-                          onClick={() => handleDelete(account?.id)}
+                          onClick={() =>
+                            handleDelete(account?.id, account?.email)
+                          }
                         >
                           <DeleteOutlineRoundedIcon fontSize="small" />
                         </Button>
