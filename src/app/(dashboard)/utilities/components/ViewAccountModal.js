@@ -188,6 +188,17 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
           </Box>
         ) : (
           <Stack spacing={2} sx={{ mt: 1 }}>
+            <Button
+              onClick={handleEdit}
+              variant="contained"
+              size="small"
+              color={isEditing ? "error" : "warning"}
+              startIcon={isEditing ? <CloseRoundedIcon /> : <EditRoundedIcon />}
+              disableElevation
+              disabled={loading}
+            >
+              {isEditing ? "Cancel Edit" : "Edit"}
+            </Button>
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2 }}>
               Name
             </Typography>
@@ -282,17 +293,6 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
       </DialogContent>
 
       <DialogActions>
-        <Button
-          onClick={handleEdit}
-          variant="outlined"
-          size="small"
-          color={isEditing ? "error" : "warning"}
-          startIcon={<EditRoundedIcon />}
-          disableElevation
-          disabled={loading}
-        >
-          {isEditing ? "Cancel" : "Edit"}
-        </Button>
         {isEditing && (
           <Button
             onClick={handleSave}

@@ -7,6 +7,7 @@ import {
   TablePagination,
   CircularProgress,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -183,26 +184,30 @@ export default function AccountsTab({ data, isActive }) {
                     </td>
                     <td className="px-6 py-2">
                       <div className="flex items-center justify-center gap-2">
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          color="success"
-                          disableElevation
-                          onClick={() => handleView(account.id)}
-                        >
-                          <RemoveRedEyeOutlinedIcon fontSize="small" />
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          disableElevation
-                          onClick={() =>
-                            handleDelete(account?.id, account?.email)
-                          }
-                        >
-                          <DeleteOutlineRoundedIcon fontSize="small" />
-                        </Button>
+                        <Tooltip title="View Account" placement="top" arrow>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            color="success"
+                            disableElevation
+                            onClick={() => handleView(account.id)}
+                          >
+                            <RemoveRedEyeOutlinedIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="Delete Account" placement="top" arrow>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            disableElevation
+                            onClick={() =>
+                              handleDelete(account?.id, account?.email)
+                            }
+                          >
+                            <DeleteOutlineRoundedIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
                       </div>
                     </td>
                   </tr>

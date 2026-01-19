@@ -9,6 +9,7 @@ import {
   TablePagination,
   CircularProgress,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -93,10 +94,10 @@ export default function DocumentClassificationTab({ data, isActive }) {
         .filter((classification) =>
           (classification?.name ?? "")
             .toLowerCase()
-            .includes(searchQuery.toLowerCase())
+            .includes(searchQuery.toLowerCase()),
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [classifications, searchQuery, page, rowsPerPage]
+    [classifications, searchQuery, page, rowsPerPage],
   );
 
   const handleNewEntry = () => {
@@ -172,26 +173,38 @@ export default function DocumentClassificationTab({ data, isActive }) {
                     </td>
                     <td className="px-6 py-2">
                       <div className="flex items-center justify-center gap-2">
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          color="warning"
-                          disableElevation
-                          onClick={() => {
-                            handleEdit(classification?.id);
-                          }}
+                        <Tooltip
+                          title="Edit Classification"
+                          placement="top"
+                          arrow
                         >
-                          <EditOutlinedIcon fontSize="small" />
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          disableElevation
-                          onClick={() => handleDelete(classification?.id)}
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            color="warning"
+                            disableElevation
+                            onClick={() => {
+                              handleEdit(classification?.id);
+                            }}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip
+                          title="Delete Classification"
+                          placement="top"
+                          arrow
                         >
-                          <DeleteOutlineRoundedIcon fontSize="small" />
-                        </Button>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            disableElevation
+                            onClick={() => handleDelete(classification?.id)}
+                          >
+                            <DeleteOutlineRoundedIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
                       </div>
                     </td>
                   </tr>

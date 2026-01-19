@@ -9,6 +9,7 @@ import {
   TablePagination,
   CircularProgress,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -89,10 +90,10 @@ export default function DocumentTypeTab({ data, isActive }) {
     () =>
       documentTypes
         .filter((docType) =>
-          docType.name.toLowerCase().includes(searchQuery.toLowerCase())
+          docType.name.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [documentTypes, page, rowsPerPage, searchQuery]
+    [documentTypes, page, rowsPerPage, searchQuery],
   );
 
   const handleNewEntry = () => {
@@ -168,24 +169,36 @@ export default function DocumentTypeTab({ data, isActive }) {
                     </td>
                     <td className="px-6 py-2">
                       <div className="flex items-center justify-center gap-2">
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          color="warning"
-                          disableElevation
-                          onClick={() => handleEdit(docType?.id)}
+                        <Tooltip
+                          title="Edit Document Type"
+                          placement="top"
+                          arrow
                         >
-                          <EditOutlinedIcon fontSize="small" />
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          disableElevation
-                          onClick={() => handleDelete(docType?.id)}
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            color="warning"
+                            disableElevation
+                            onClick={() => handleEdit(docType?.id)}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip
+                          title="Delete Document Type"
+                          placement="top"
+                          arrow
                         >
-                          <DeleteOutlineRoundedIcon fontSize="small" />
-                        </Button>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            disableElevation
+                            onClick={() => handleDelete(docType?.id)}
+                          >
+                            <DeleteOutlineRoundedIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
                       </div>
                     </td>
                   </tr>

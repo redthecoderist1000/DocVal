@@ -9,6 +9,7 @@ import {
   TablePagination,
   CircularProgress,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -97,10 +98,10 @@ export default function DivisionTab({ data, isActive }) {
         .filter((division) =>
           (division?.division_name ?? "")
             .toLowerCase()
-            .includes(searchQuery.toLowerCase())
+            .includes(searchQuery.toLowerCase()),
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [divisions, searchQuery, page, rowsPerPage]
+    [divisions, searchQuery, page, rowsPerPage],
   );
 
   useEffect(() => {}, []);
@@ -159,30 +160,34 @@ export default function DivisionTab({ data, isActive }) {
                     </td>
                     <td className="px-6 py-2">
                       <div className="flex items-center justify-center gap-2">
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          color="warning"
-                          disableElevation
-                          onClick={() =>
-                            handleEdit(
-                              division?.id,
-                              division?.division_name,
-                              division?.division_abrv
-                            )
-                          }
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          disableElevation
-                          onClick={() => handleDelete(division?.id)}
-                        >
-                          <DeleteOutlineRoundedIcon fontSize="small" />
-                        </Button>
+                        <Tooltip title="Edit Division" placement="top" arrow>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            color="warning"
+                            disableElevation
+                            onClick={() =>
+                              handleEdit(
+                                division?.id,
+                                division?.division_name,
+                                division?.division_abrv,
+                              )
+                            }
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="Delete Division" placement="top" arrow>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            disableElevation
+                            onClick={() => handleDelete(division?.id)}
+                          >
+                            <DeleteOutlineRoundedIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
                       </div>
                     </td>
                   </tr>
