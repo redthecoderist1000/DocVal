@@ -50,6 +50,11 @@ export default function files() {
       })
       .catch((err) => {
         console.error(err);
+        const message =
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to fetch documents. Please try again.";
+        setError(message);
         setLoading(false);
       });
   }, []);
@@ -58,10 +63,10 @@ export default function files() {
     () =>
       files
         .filter((file) =>
-          file.title.toLowerCase().includes(searchQuery.toLowerCase())
+          file.title.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [files, searchQuery, page, rowsPerPage]
+    [files, searchQuery, page, rowsPerPage],
   );
 
   const handleChangePage = (event, newPage) => {
@@ -145,7 +150,11 @@ export default function files() {
                         </div>
                       </td>
                       <td className="px-6 py-2 text-center text-sm text-gray-600">
-                        {doc.date_created ? new Date(doc.date_created).toISOString().split('T')[0] : '-'}
+                        {doc.date_created
+                          ? new Date(doc.date_created)
+                              .toISOString()
+                              .split("T")[0]
+                          : "-"}
                       </td>
                       <td className="px-6 py-2">
                         <div className="flex items-center justify-center gap-2">

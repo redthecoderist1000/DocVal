@@ -28,7 +28,7 @@ axiosInstance.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 axiosInstance.interceptors.response.use(
@@ -82,7 +82,7 @@ axiosInstance.interceptors.response.use(
       status: error.response?.status,
       message: error.response?.data?.error,
     });
-  }
+  },
 );
 
 // Response interceptor

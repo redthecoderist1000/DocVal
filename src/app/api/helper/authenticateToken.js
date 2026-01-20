@@ -16,7 +16,7 @@ export async function authenticateToken(request) {
       return {
         error: NextResponse.json(
           { message: "Authorization header missing" },
-          { status: 401 }
+          { status: 401 },
         ),
       };
     }
@@ -26,7 +26,7 @@ export async function authenticateToken(request) {
       return {
         error: NextResponse.json(
           { message: "Malformed Authorization header" },
-          { status: 401 }
+          { status: 401 },
         ),
       };
     }
@@ -38,18 +38,18 @@ export async function authenticateToken(request) {
       return {
         error: NextResponse.json(
           { message: "Authorization scheme must be Bearer" },
-          { status: 401 }
+          { status: 401 },
         ),
       };
     }
 
-    const secret = process.env.NEXT_PUBLIC_JWT_SECRET;
+    const secret = process.env.JWT_SECRET;
     if (!secret) {
       console.error("JWT secret not configured");
       return {
         error: NextResponse.json(
           { message: "Server configuration error" },
-          { status: 500 }
+          { status: 500 },
         ),
       };
     }
@@ -60,7 +60,7 @@ export async function authenticateToken(request) {
           return resolve({
             error: NextResponse.json(
               { message: "Invalid or expired token", error: err.message },
-              { status: 403 }
+              { status: 403 },
             ),
           });
         }
@@ -71,7 +71,7 @@ export async function authenticateToken(request) {
     return {
       error: NextResponse.json(
         { message: "Authentication error", error: error.message },
-        { status: 500 }
+        { status: 500 },
       ),
     };
   }

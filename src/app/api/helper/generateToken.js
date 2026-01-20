@@ -6,7 +6,7 @@ const gen_refresh_JWT = (data) => {
     eml: data.email,
     rol: data.role,
   };
-  const secret = process.env.NEXT_PUBLIC_JWT_SECRET;
+  const secret = process.env.JWT_SECRET;
 
   const token = jwt.sign(payload, secret, {
     expiresIn: "7d",
@@ -22,7 +22,7 @@ const gen_access_JWT = (data) => {
     eml: data.email,
     rol: data.role,
   };
-  const secret = process.env.NEXT_PUBLIC_JWT_SECRET;
+  const secret = process.env.JWT_SECRET;
   const token = jwt.sign(payload, secret, {
     expiresIn: "15m",
     issuer: "docval_api_js",

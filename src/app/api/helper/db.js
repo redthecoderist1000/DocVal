@@ -1,12 +1,13 @@
 import sql from "mssql";
 
-const PORT = process.env.NEXT_PUBLIC_PORT || 8000;
-const DB_NAME = process.env.NEXT_PUBLIC_DB_NAME;
-const DB_USERNAME = process.env.NEXT_PUBLIC_DB_USERNAME;
-const DB_PASSWORD = process.env.NEXT_PUBLIC_DB_PASSWORD;
-const DB_SERVER = process.env.NEXT_PUBLIC_DB_SERVER;
+const PORT = process.env.PORT;
+const DB_NAME = process.env.DB_NAME;
+const DB_USERNAME = process.env.DB_USERNAME;
+const DB_PASSWORD = process.env.DB_PASSWORD || "";
+const DB_SERVER = process.env.DB_SERVER;
 
 const config = {
+  port: parseInt(PORT, 10),
   user: DB_USERNAME,
   password: DB_PASSWORD,
   server: DB_SERVER,

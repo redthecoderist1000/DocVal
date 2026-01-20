@@ -15,6 +15,7 @@ import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 
 export default function DashboardLayout({ children }) {
   const { data: session, status } = useSession();
@@ -29,7 +30,25 @@ export default function DashboardLayout({ children }) {
     setActiveMenu(currentPath);
   }, [pathname]);
 
-  const menuItems = [
+  const menuUserItems = [
+    {
+      path: "home",
+      label: "Home",
+      icon: <HomeRoundedIcon />,
+    },
+    {
+      path: "files",
+      label: "Files",
+      icon: <ArticleRoundedIcon />,
+    },
+    {
+      path: "profile",
+      label: "Profile",
+      icon: <AccountCircleRoundedIcon />,
+    },
+  ];
+
+  const menuAdminItems = [
     {
       path: "home",
       label: "Home",
@@ -100,7 +119,10 @@ export default function DashboardLayout({ children }) {
 
           {/* Navigation Menu */}
           <nav className="flex-1 p-4 space-y-2">
-            {menuItems.map((item, index) => (
+            {(session.user?.role === "administrator"
+              ? menuAdminItems
+              : menuUserItems
+            ).map((item, index) => (
               <Link key={index} href={`/${item.path}`}>
                 <button
                   className={`w-full text-left px-4 py-3 rounded-lg transition ${
@@ -127,7 +149,7 @@ export default function DashboardLayout({ children }) {
                 sidebarOpen ? "w-full" : "p-2"
               }`}
             >
-              {sidebarOpen ? "LOGOUT" : "🚪"}
+              {sidebarOpen ? "LOGOUT" : <LogoutRoundedIcon />}
             </button>
           </div>
 

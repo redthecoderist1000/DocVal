@@ -24,7 +24,7 @@ export default function GlobalAlert() {
   return (
     <Snackbar
       open={errorData.open}
-      autoHideDuration={6000}
+      autoHideDuration={4000}
       onClose={handleClose}
       anchorOrigin={{ vertical: "top", horizontal: "right" }}
     >

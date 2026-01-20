@@ -58,7 +58,7 @@ export const authOptions = {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(credentials),
-            }
+            },
           );
 
           const user = await res.json();

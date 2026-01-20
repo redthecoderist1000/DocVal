@@ -64,17 +64,6 @@ export default function Profile() {
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Profile</h1>
 
-      {alertMessage && (
-        <Alert severity="success" sx={{ mb: 3 }}>
-          {alertMessage}
-        </Alert>
-      )}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
       {/* Profile Information Card */}
       <Card sx={{ mb: 4 }}>
         <CardContent>

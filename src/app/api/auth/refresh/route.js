@@ -27,16 +27,16 @@ export async function POST(request) {
     if (!refreshToken) {
       return NextResponse.json(
         { message: "Refresh token is required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
-    const secret = process.env.NEXT_PUBLIC_JWT_SECRET;
+    const secret = process.env.JWT_SECRET;
     if (!secret) {
       console.error("JWT secret not configured");
       return NextResponse.json(
         { message: "Server configuration error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -47,7 +47,7 @@ export async function POST(request) {
     } catch (error) {
       return NextResponse.json(
         { message: "Invalid or expired refresh token", error: error.message },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -65,7 +65,7 @@ export async function POST(request) {
     console.error("Error refreshing token:", error);
     return NextResponse.json(
       { message: "Error refreshing token", error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

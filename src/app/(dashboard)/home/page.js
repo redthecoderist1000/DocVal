@@ -2,20 +2,69 @@
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
 import Link from "next/link";
 import { useLoading } from "@/helper/LoadingContext";
-import { useEffect } from "react";
-import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import axiosInstance from "@/helper/Axios";
+import { useError } from "@/helper/ErrorContext";
+import { CircularProgress } from "@mui/material";
+import { getRelativeDate } from "@/helper/dateFormatter";
+import { useRouter } from "next/navigation";
+
+import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
+import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
 
 export default function home() {
+  const router = useRouter();
+  const { setError } = useError();
   const { session, status, isChecking } = useProtectedRoute();
   const { startLoading, stopLoading } = useLoading();
+  const [loading, setLoading] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
 
   useEffect(() => {
     if (isChecking) {
       startLoading();
     } else {
+      // console.log("Session:", session);
       stopLoading();
+      fetchData();
     }
   }, [isChecking, startLoading, stopLoading]);
+
+  const fetchData = () => {
+    setLoading(true);
+    axiosInstance
+      .get("/dashboard")
+      .then((res) => {
+        console.log("Dashboard data:", res);
+        setDashboardData(res.body);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch dashboard data:", err);
+        const message =
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to fetch dashboard data. Please try again.";
+        setError(message);
+        setLoading(false);
+      });
+  };
+
+  const handleFileClick = (docId) => {
+    // Navigate to the document detail page
+    router.push(`/files?id=${docId}`, {
+      replace: true,
+    });
+  };
+
+  if (loading) {
+    // center progress indicator
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularProgress />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -37,63 +86,50 @@ export default function home() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Total Documents */}
-        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-600">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Total Evaluated Documents */}
+        <div className="bg-white  rounded-lg shadow-md p-6 border-l-4 border-blue-600">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-500 text-sm font-medium">
-                Total Documents
+                Your total Evaluated Documents
               </p>
-              <h3 className="text-3xl font-bold text-gray-900 mt-2">284</h3>
-              <p className="text-xs text-green-600 mt-2">+12 this week</p>
+              <h3 className="text-3xl font-bold text-gray-900 mt-2">
+                {dashboardData?.doc_count ?? 0}
+              </h3>
+              <p className="text-xs text-green-600 mt-2">
+                {`+${dashboardData?.new_doc_count ?? 0} new documents this week`}
+              </p>
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">
-              <svg
-                className="w-6 h-6 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+              <DescriptionRoundedIcon sx={{ color: "blue" }} />
             </div>
           </div>
         </div>
 
         {/* User Accounts */}
-        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-600">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">User Accounts</p>
-              <h3 className="text-3xl font-bold text-gray-900 mt-2">45</h3>
-              <p className="text-xs text-yellow-600 mt-2">Active users</p>
-            </div>
-            <div className="bg-yellow-100 p-3 rounded-lg">
-              <svg
-                className="w-6 h-6 text-yellow-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4.354a4 4 0 110 8.646 4 4 0 010-8.646zM15 19H9a6 6 0 016-6h0a6 6 0 016 6v1H9v-1z"
-                />
-              </svg>
+        {session.user.role == "administrator" && (
+          <div className="bg-white  rounded-lg shadow-md p-6 border-l-4 border-yellow-600">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-500 text-sm font-medium">
+                  User Accounts
+                </p>
+                <h3 className="text-3xl font-bold text-gray-900 mt-2">
+                  {dashboardData?.user_count ?? 0}
+                </h3>
+                <p className="text-xs text-yellow-600 mt-2">
+                  {`+${dashboardData?.new_user_count ?? 0} new users this week`}
+                </p>
+              </div>
+              <div className="bg-yellow-100 p-3 rounded-lg">
+                <PersonOutlineRoundedIcon sx={{ color: "orange" }} />
+              </div>
             </div>
           </div>
-        </div>
-
+        )}
         {/* Active Users */}
-        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-600">
+        {/* <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-600">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-500 text-sm font-medium">Active Users</p>
@@ -116,10 +152,10 @@ export default function home() {
               </svg>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Failed Uploads */}
-        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-600">
+        {/* <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-600">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-500 text-sm font-medium">
@@ -144,7 +180,7 @@ export default function home() {
               </svg>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Recent Activity Section */}
@@ -155,70 +191,39 @@ export default function home() {
             <h3 className="text-xl font-bold text-gray-900">
               Recent Documents
             </h3>
-            <Link href="/dashboard/files">
+            <Link href="/files">
               <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                 View All
               </button>
             </Link>
           </div>
-          <div className="space-y-3">
-            {[
-              {
-                name: "TOR FORMS - REF-001",
-                date: "Today, 2:30 PM",
-                status: "Active",
-                type: "Confidential",
-              },
-              {
-                name: "Project Proposal - REF-002",
-                date: "Yesterday, 10:15 AM",
-                status: "Active",
-                type: "Internal",
-              },
-              {
-                name: "Monthly Report - REF-003",
-                date: "2 days ago",
-                status: "Active",
-                type: "Public",
-              },
-              {
-                name: "Policy Document - REF-004",
-                date: "3 days ago",
-                status: "Active",
-                type: "Restricted",
-              },
-            ].map((doc, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
-              >
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {doc.name}
-                  </p>
-                  <p className="text-xs text-gray-500">{doc.date}</p>
+          {(dashboardData?.recent_document?.length ?? 0) === 0 ? (
+            <p className="text-gray-500">No recent documents found.</p>
+          ) : (
+            <div className="space-y-3">
+              {dashboardData.recent_document.map((doc, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                  onClick={() => handleFileClick(doc.id)}
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {doc.title}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {getRelativeDate(doc.date_created)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
+                      {doc.doc_type}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-2 py-1 text-xs font-medium rounded ${
-                      doc.type === "Confidential"
-                        ? "bg-red-100 text-red-700"
-                        : doc.type === "Internal"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : doc.type === "Public"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-purple-100 text-purple-700"
-                    }`}
-                  >
-                    {doc.type}
-                  </span>
-                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
-                    {doc.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Quick Actions */}
@@ -226,8 +231,8 @@ export default function home() {
           <h3 className="text-xl font-bold text-gray-900 mb-4">
             Quick Actions
           </h3>
-          <div className="space-y-3">
-            <Link href="/dashboard/files/new-entry">
+          <div className="grid gap-y-4">
+            <Link href="/files/new">
               <button className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition text-left flex items-center gap-2">
                 <svg
                   className="w-5 h-5"
@@ -245,7 +250,7 @@ export default function home() {
                 New Document
               </button>
             </Link>
-            <Link href="/dashboard/files">
+            <Link href="/files">
               <button className="w-full px-4 py-3 bg-gray-100 text-gray-800 font-medium rounded-lg hover:bg-gray-200 transition text-left flex items-center gap-2">
                 <svg
                   className="w-5 h-5"
@@ -263,7 +268,7 @@ export default function home() {
                 View Files
               </button>
             </Link>
-            <Link href="/dashboard/utilities">
+            <Link href="/utilities">
               <button className="w-full px-4 py-3 bg-gray-100 text-gray-800 font-medium rounded-lg hover:bg-gray-200 transition text-left flex items-center gap-2">
                 <svg
                   className="w-5 h-5"
@@ -284,7 +289,7 @@ export default function home() {
           </div>
 
           {/* System Status */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
+          {/* <div className="mt-6 pt-6 border-t border-gray-200">
             <h4 className="text-sm font-semibold text-gray-900 mb-3">
               System Status
             </h4>
@@ -308,7 +313,7 @@ export default function home() {
                 </span>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

@@ -4,18 +4,14 @@ import { authenticateToken } from "../helper/authenticateToken";
 
 export async function GET(request) {
   try {
-    const pool = await getConnection();
-
-    const result = await pool.request().query("SELECT * FROM tbl_user");
+    const auth = await authenticateToken(request);
+    if (auth.error) {
+      return auth.error;
+    }
 
     return NextResponse.json({
       message: "GET request received successfully",
-      data: result.recordset,
-      method: request.method,
-      headers: Object.fromEntries(request.headers.entries()),
-      url: request.url,
-      timestamp: new Date().toISOString(),
-      status: "success",
+      data: auth,
     });
   } catch (error) {
     console.error("Error handling GET request:", error);
@@ -25,7 +21,7 @@ export async function GET(request) {
         error: error.message,
         status: "error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -64,7 +60,7 @@ export async function POST(request) {
         error: error.message,
         status: "error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
