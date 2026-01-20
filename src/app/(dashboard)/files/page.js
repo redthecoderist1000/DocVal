@@ -7,6 +7,7 @@ import {
   TextField,
   Typography,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
@@ -158,40 +159,42 @@ export default function files() {
                       </td>
                       <td className="px-6 py-2">
                         <div className="flex items-center justify-center gap-2">
-                          <Button
-                            variant="contained"
-                            color="success"
-                            disableElevation
-                            size="small"
-                            startIcon={
+                          <Tooltip title="View Details" arrow placement="top">
+                            <Button
+                              variant="outlined"
+                              color="success"
+                              disableElevation
+                              size="small"
+                              onClick={() =>
+                                router.push(`/files?id=${doc.id}`, {
+                                  replace: true,
+                                })
+                              }
+                            >
                               <RemoveRedEyeOutlinedIcon fontSize="small" />
-                            }
-                            onClick={() =>
-                              router.push(`/files?id=${doc.id}`, {
-                                replace: true,
-                              })
-                            }
+                            </Button>
+                          </Tooltip>
+                          <Tooltip
+                            title="Delete Document"
+                            arrow
+                            placement="top"
                           >
-                            View
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="error"
-                            startIcon={
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              disableElevation
+                              size="small"
+                              onClick={() => {
+                                setDeleteDoc({
+                                  open: true,
+                                  docId: doc.id,
+                                  docTitle: doc.title,
+                                });
+                              }}
+                            >
                               <DeleteOutlineRoundedIcon fontSize="small" />
-                            }
-                            disableElevation
-                            size="small"
-                            onClick={() => {
-                              setDeleteDoc({
-                                open: true,
-                                docId: doc.id,
-                                docTitle: doc.title,
-                              });
-                            }}
-                          >
-                            Delete
-                          </Button>
+                            </Button>
+                          </Tooltip>
                         </div>
                       </td>
                     </tr>

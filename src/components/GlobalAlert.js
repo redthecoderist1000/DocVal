@@ -28,12 +28,7 @@ export default function GlobalAlert() {
       onClose={handleClose}
       anchorOrigin={{ vertical: "top", horizontal: "right" }}
     >
-      <Alert
-        variant="outlined"
-        onClose={handleClose}
-        severity={errorData.severity}
-        sx={{ width: "100%", bgcolor: "background.paper" }}
-      >
+      <Alert onClose={handleClose} severity={errorData.severity}>
         {errorData.message}
       </Alert>
     </Snackbar>

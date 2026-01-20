@@ -97,7 +97,7 @@ export default function NewFile() {
       .post(
         "/document/generateReport",
         { base64_data: fileBase64 },
-        { signal: abortControllerRef.current.signal }
+        { signal: abortControllerRef.current.signal },
       )
       .then((res) => {
         // Store large file_base64 and report_data in IndexedDB to avoid session storage limits
@@ -131,7 +131,7 @@ export default function NewFile() {
               file_name: formData.file.name,
               report_id: reportId,
               generation_date: new Date().toISOString(),
-            })
+            }),
           );
 
           router.push(`/files/report`);
@@ -186,6 +186,7 @@ export default function NewFile() {
       })
       .catch((error) => {
         console.error("Error fetching classifications:", error);
+        setError("Error fetching classifications", "error");
       });
 
     axiosInstance
@@ -196,6 +197,7 @@ export default function NewFile() {
       })
       .catch((error) => {
         console.error("Error fetching types:", error);
+        setError("Error fetching types", "error");
       });
   }, []);
 

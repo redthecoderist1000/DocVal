@@ -41,11 +41,11 @@ export default function DashboardLayout({ children }) {
       label: "Files",
       icon: <ArticleRoundedIcon />,
     },
-    {
-      path: "profile",
-      label: "Profile",
-      icon: <AccountCircleRoundedIcon />,
-    },
+    // {
+    //   path: "profile",
+    //   label: "Profile",
+    //   icon: <AccountCircleRoundedIcon />,
+    // },
   ];
 
   const menuAdminItems = [
@@ -64,11 +64,11 @@ export default function DashboardLayout({ children }) {
       label: "Utilities",
       icon: <SettingsRoundedIcon />,
     },
-    {
-      path: "profile",
-      label: "Profile",
-      icon: <AccountCircleRoundedIcon />,
-    },
+    // {
+    //   path: "profile",
+    //   label: "Profile",
+    //   icon: <AccountCircleRoundedIcon />,
+    // },
   ];
 
   // Show loading while checking auth
