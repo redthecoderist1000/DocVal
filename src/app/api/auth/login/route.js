@@ -19,7 +19,7 @@ export async function POST(request) {
     if (!email || !password) {
       return NextResponse.json(
         { message: "Email and password are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function POST(request) {
     if (selectResult.recordset.length === 0) {
       return NextResponse.json(
         { message: "No user found with this email" },
-        { status: 400 }
+        { status: 400 },
       );
     }
     const user = selectResult.recordset[0];
@@ -40,7 +40,7 @@ export async function POST(request) {
     if (!isMatch) {
       return NextResponse.json(
         { message: "Invalid email or password" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -53,6 +53,9 @@ export async function POST(request) {
       message: "Login successful",
       body: {
         id: user.id,
+        f_name: user.f_name,
+        m_name: user.m_name,
+        l_name: user.l_name,
         full_name: user.full_name,
         email: user.email,
         role: user.role,
@@ -66,7 +69,7 @@ export async function POST(request) {
     console.error(err);
     return NextResponse.json(
       { message: "Server error", error: err.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

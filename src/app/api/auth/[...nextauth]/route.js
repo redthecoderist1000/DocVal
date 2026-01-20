@@ -82,6 +82,9 @@ export const authOptions = {
       // Initial sign in
       if (user) {
         token.id = user.body.id;
+        token.f_name = user.body.f_name;
+        token.m_name = user.body.m_name;
+        token.l_name = user.body.l_name;
         token.full_name = user.body.full_name;
         token.email = user.body.email;
         token.role = user.body.role;
@@ -111,6 +114,9 @@ export const authOptions = {
     },
     async session({ session, token }) {
       session.user.id = token.id;
+      session.user.f_name = token.f_name;
+      session.user.m_name = token.m_name;
+      session.user.l_name = token.l_name;
       session.user.full_name = token.full_name;
       session.user.email = token.email;
       session.user.role = token.role;
