@@ -26,7 +26,7 @@ export default function DocumentClassificationTab({ data, isActive }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editData, setEditData] = useState({
     open: false,
@@ -153,12 +153,12 @@ export default function DocumentClassificationTab({ data, isActive }) {
         ) : classifications && classifications.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
+                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
                     Name
                   </th>
-                  <th className="px-6 py-2 text-center text-xs uppercase text-gray-500">
+                  <th className="px-6 py-2 text-center text-xs uppercase text-gray-700">
                     Actions
                   </th>
                 </tr>

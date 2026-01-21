@@ -2,6 +2,8 @@
 
 import {
   Typography,
+  Stack,
+  Chip,
   Button,
   Divider,
   TablePagination,
@@ -9,40 +11,46 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
-import NewAccountDialog from "../NewAccountDialog";
-import ViewAccountModal from "../ViewAccountModal";
-import DeleteAccountDialog from "../DeleteAccountDialog";
+import NewDivDialog from "../NewDivDialog";
+import EditDivisionDialog from "../EditDivisionDialog";
+import DeleteDivisionDialog from "../DeleteDivisionDialog";
 
-export default function AccountsTab({ data, isActive }) {
-  //   const accounts = data?.accounts || [];
-  const [accounts, setAccounts] = useState([]);
+export default function ExternalTab({ data, isActive }) {
+  const [divisions, setDivisions] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [viewAccount, setViewAccount] = useState({});
-  const [deleteAccount, setDeleteAccount] = useState({
+
+  const [openNewDivDialog, setOpenNewDivDialog] = useState(false);
+  const [editDivDialog, setEditDivDialog] = useState({
     open: false,
-    userId: null,
-    email: "",
+    divisionId: null,
+    divisionName: "",
+  });
+  const [deleteDivDialog, setDeleteDivDialog] = useState({
+    open: false,
+    divisionId: null,
+    divisionName: "",
   });
 
   useEffect(() => {
     if (isActive) {
       setLoading(true);
       axiosInstance
-        .get("/user/getAllUser")
+        .get("/office/getAllDivision")
         .then((res) => {
-          //   console.log(res);
-          setAccounts(res.body);
+          // console.log(res.body);
+          const externalDivisions = res.body.filter(
+            (division) => division.office_type === "external",
+          );
+
+          setDivisions(externalDivisions);
           setLoading(false);
         })
         .catch((err) => {
@@ -52,17 +60,31 @@ export default function AccountsTab({ data, isActive }) {
     }
   }, [isActive]);
 
-  const handleView = (accountId) => {
-    setViewAccount({ ...viewAccount, open: true, userId: accountId }); //
-    meronHandel;
+  const handleEdit = (id, divisionName, divisionAbrv) => {
+    setEditDivDialog((prev) => ({
+      ...prev,
+      open: true,
+      divisionId: id,
+      divisionName: divisionName,
+      divisionAbrv: divisionAbrv,
+    }));
   };
 
-  const handleEdit = (id) => {
-    console.log("Edit account:", id);
+  const handleDelete = (id) => {
+    // console.log("Delete division:", id);
+    const divisionToDelete = divisions.find((div) => div.id === id);
+    setDeleteDivDialog((prev) => ({
+      ...prev,
+      open: true,
+      divisionId: id,
+      divisionName: divisionToDelete
+        ? divisionToDelete.division_name
+        : "Unknown Division",
+    }));
   };
 
-  const handleDelete = (id, email) => {
-    setDeleteAccount({ open: true, userId: id, email: email });
+  const handleNewEntry = () => {
+    setOpenNewDivDialog(true);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -74,53 +96,38 @@ export default function AccountsTab({ data, isActive }) {
     setPage(0);
   };
 
+  // Wrapper for setDivisions that filters to only external divisions
+  const setExternalDivisions = (callback) => {
+    setDivisions((prevDivisions) => {
+      const updatedDivisions =
+        typeof callback === "function" ? callback(prevDivisions) : callback;
+
+      return updatedDivisions.filter(
+        (division) => division.office_type === "external",
+      );
+    });
+  };
+
   const visibleRows = useMemo(
     () =>
-      accounts
-        .filter((account) => {
-          const matchFName = (account?.full_name ?? "")
+      divisions
+        .filter((division) =>
+          (division?.division_name ?? "")
             .toLowerCase()
-            .includes(searchQuery.toLowerCase());
-
-          const matchEmail = (account?.email ?? "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase());
-
-          const matchDivision = (account?.division_name ?? "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase());
-
-          return matchFName || matchEmail || matchDivision;
-        })
+            .includes(searchQuery.toLowerCase()),
+        )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [accounts, page, rowsPerPage, searchQuery],
+    [divisions, searchQuery, page, rowsPerPage],
   );
 
-  const handleNewEntry = () => {
-    setDialogOpen(true);
-  };
+  useEffect(() => {}, []);
 
   return (
     <div>
-      <ViewAccountModal
-        data={viewAccount}
-        setData={setViewAccount}
-        setAccounts={setAccounts}
-      />
-      <DeleteAccountDialog
-        data={deleteAccount}
-        setData={setDeleteAccount}
-        setAccounts={setAccounts}
-      />
-      <NewAccountDialog
-        open={dialogOpen}
-        setOpen={setDialogOpen}
-        setAccounts={setAccounts}
-      />
       <div className="mb-6">
         <TextField
           type="text"
-          placeholder="Search accounts..."
+          placeholder="Search divisions..."
           size="small"
           fullWidth
           value={searchQuery}
@@ -128,13 +135,14 @@ export default function AccountsTab({ data, isActive }) {
         />
       </div>
 
-      <div className="flex items-center justify-end mb-3">
+      <div className="flex items-center justify-between mb-3">
+        <div></div>
         <Button
           variant="contained"
           size="small"
           disableElevation
-          onClick={handleNewEntry}
           startIcon={<AddRoundedIcon fontSize="small" />}
+          onClick={handleNewEntry}
         >
           New Entry
         </Button>
@@ -145,22 +153,13 @@ export default function AccountsTab({ data, isActive }) {
           <div className="flex items-center justify-center py-12">
             <CircularProgress />
           </div>
-        ) : accounts && accounts.length > 0 ? (
+        ) : divisions && divisions.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
-                    Fullname
-                  </th>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
-                    Email
-                  </th>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
-                    Division
-                  </th>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
-                    Role
+                    Name
                   </th>
                   <th className="px-6 py-2 text-center text-xs uppercase text-gray-700">
                     Actions
@@ -168,50 +167,39 @@ export default function AccountsTab({ data, isActive }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {visibleRows.map((account, index) => (
+                {visibleRows.map((division, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
                       <Typography variant="body2" sx={{ color: "#000000" }}>
-                        {account?.full_name || "N/A"}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: "#000000" }}>
-                        {account?.email || "N/A"}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: "#000000" }}>
-                        {account?.division_name || "N/A"}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: "#000000" }}>
-                        {account?.role || "N/A"}
+                        {division?.division_name || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
                       <div className="flex items-center justify-center gap-2">
-                        <Tooltip title="View Account" placement="top" arrow>
+                        <Tooltip title="Edit Division" placement="top" arrow>
                           <Button
                             variant="outlined"
                             size="small"
-                            color="success"
+                            color="warning"
                             disableElevation
-                            onClick={() => handleView(account.id)}
+                            onClick={() =>
+                              handleEdit(
+                                division?.id,
+                                division?.division_name,
+                                division?.division_abrv,
+                              )
+                            }
                           >
-                            <RemoveRedEyeOutlinedIcon fontSize="small" />
+                            <EditOutlinedIcon fontSize="small" />
                           </Button>
                         </Tooltip>
-                        <Tooltip title="Delete Account" placement="top" arrow>
+                        <Tooltip title="Delete Division" placement="top" arrow>
                           <Button
                             variant="outlined"
                             color="error"
                             size="small"
                             disableElevation
-                            onClick={() =>
-                              handleDelete(account?.id, account?.email)
-                            }
+                            onClick={() => handleDelete(division?.id)}
                           >
                             <DeleteOutlineRoundedIcon fontSize="small" />
                           </Button>
@@ -226,7 +214,7 @@ export default function AccountsTab({ data, isActive }) {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={accounts.length}
+              count={divisions.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -253,13 +241,31 @@ export default function AccountsTab({ data, isActive }) {
         ) : (
           <div className="text-center py-12 text-gray-500">
             {searchQuery ? (
-              <p>No accounts found matching &quot;{searchQuery}&quot;</p>
+              <p>No divisions found matching &quot;{searchQuery}&quot;</p>
             ) : (
-              <p>No accounts found</p>
+              <p>No divisions found</p>
             )}
           </div>
         )}
       </div>
+
+      <NewDivDialog
+        open={openNewDivDialog}
+        setOpen={setOpenNewDivDialog}
+        setDivisions={setExternalDivisions}
+      />
+
+      <EditDivisionDialog
+        data={editDivDialog}
+        setData={setEditDivDialog}
+        setDivisions={setDivisions}
+      />
+
+      <DeleteDivisionDialog
+        deleteDivision={deleteDivDialog}
+        setDeleteDivision={setDeleteDivDialog}
+        setDivisions={setDivisions}
+      />
     </div>
   );
 }

@@ -417,7 +417,7 @@ export default function NewFile() {
                     }}
                   />
                   <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
-                    Click to upload or drag and drop
+                    Click to upload
                   </Typography>
                   <Typography
                     variant="caption"

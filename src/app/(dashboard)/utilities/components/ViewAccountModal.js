@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Autocomplete,
   Button,
   CircularProgress,
   IconButton,
@@ -14,6 +15,8 @@ import {
   TextField,
   Select,
   MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
@@ -52,7 +55,13 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
       axiosInstance
         .get("/office/getAllDivision")
         .then(async (res) => {
-          setDivOption(res.body || []);
+          const options = res.body.filter(
+            (division) =>
+              division.office_type === "internal" &&
+              division.parent_id !== null,
+          );
+
+          setDivOption(options);
           await fetchUserDetails();
         })
         .catch((err) => {
@@ -107,6 +116,24 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
   };
 
   const handleSave = async () => {
+    // validation
+    if (!formData.firstName.trim()) {
+      setError("First name is required", "warning");
+      return;
+    }
+    if (!formData.lastName.trim()) {
+      setError("Last name is required", "warning");
+      return;
+    }
+    if (!formData.email.trim()) {
+      setError("Email is required", "warning");
+      return;
+    }
+    if (!formData.divisionId) {
+      setError("Division is required", "warning");
+      return;
+    }
+
     // check for changes
     const changes = {};
     Object.keys(formData).forEach((key) => {
@@ -253,41 +280,52 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2 }}>
               Division
             </Typography>
-            <Select
-              name="divisionId"
-              value={formData.divisionId}
-              onChange={handleChange}
-              disabled={!isEditing}
+
+            <Autocomplete
+              options={divOption}
               size="small"
+              getOptionLabel={(option) => option.division_name || ""}
+              value={
+                divOption.find((d) => d.id === formData.divisionId) || null
+              }
+              onChange={(event, newValue) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  divisionId: newValue?.id || "",
+                }));
+              }}
+              disabled={!isEditing}
+              noOptionsText="No divisions available"
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Division"
+                  placeholder="Search Division"
+                />
+              )}
               fullWidth
-              variant="outlined"
-            >
-              <MenuItem value="">Select a Division</MenuItem>
-              {divOption.map((div) => (
-                <MenuItem key={div.id} value={div.id}>
-                  {div.division_name}
-                </MenuItem>
-              ))}
-            </Select>
+            />
 
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2 }}>
               Role
             </Typography>
-            <Select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              disabled={!isEditing}
-              size="small"
-              fullWidth
-              variant="outlined"
-            >
-              <MenuItem value="" disabled>
-                Select a Role
-              </MenuItem>
-              <MenuItem value="user">User</MenuItem>
-              <MenuItem value="administrator">Admin</MenuItem>
-            </Select>
+            <FormControl fullWidth size="small">
+              <InputLabel id="role-label">Role</InputLabel>
+              <Select
+                name="role"
+                labelId="role-label"
+                label="Role"
+                value={formData.role}
+                onChange={handleChange}
+                disabled={!isEditing}
+                size="small"
+                fullWidth
+                variant="outlined"
+              >
+                <MenuItem value="user">User</MenuItem>
+                <MenuItem value="administrator">Admin</MenuItem>
+              </Select>
+            </FormControl>
           </Stack>
         )}
       </DialogContent>

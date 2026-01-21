@@ -10,20 +10,26 @@ export async function POST(request) {
       return auth.error;
     }
 
-    const { name, abrv } = await request.json();
+    const { name, abrv, office_type, parent_office } = await request.json();
 
     if (!name || !abrv) {
       return NextResponse.json(
         { message: "name and abrv are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const pool = await getConnection();
     const sqlReq = pool.request();
+
+    if (parent_office !== "") {
+      sqlReq.input("parent_office", sql.UniqueIdentifier, parent_office);
+    }
+
     const sqlRes = await sqlReq
       .input("name", sql.VarChar(255), name)
       .input("abrv", sql.VarChar(50), abrv)
+      .input("office_type", sql.VarChar(50), office_type)
       .execute("dbo.createDivision");
 
     return NextResponse.json(
@@ -31,13 +37,13 @@ export async function POST(request) {
         message: "Division created successfully",
         body: sqlRes.recordset,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (err) {
     console.error(err);
     return NextResponse.json(
       { message: "Server error", error: err.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -115,6 +115,9 @@ export default function DashboardLayout({ children }) {
             <p className="text-xs text-gray-500 text-center">
               {session.user?.division_abrv}
             </p>
+            <p className="text-xs text-gray-500 text-center">
+              {session.user?.role}
+            </p>
           </div>
 
           {/* Navigation Menu */}

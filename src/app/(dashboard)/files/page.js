@@ -31,7 +31,7 @@ export default function files() {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [deleteDoc, setDeleteDoc] = useState({
     open: false,
     docId: null,
