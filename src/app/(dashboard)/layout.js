@@ -16,6 +16,8 @@ import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import axiosInstance from "@/helper/Axios";
+import { Button } from "@mui/material";
 
 export default function DashboardLayout({ children }) {
   const { data: session, status } = useSession();
@@ -70,6 +72,17 @@ export default function DashboardLayout({ children }) {
     //   icon: <AccountCircleRoundedIcon />,
     // },
   ];
+
+  const testEmail = () => {
+    axiosInstance
+      .post("/email/test", { name: "Red" })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
   // Show loading while checking auth
   if (status === "loading") return <LoadingScreen />;
@@ -143,6 +156,8 @@ export default function DashboardLayout({ children }) {
               </Link>
             ))}
           </nav>
+
+          <Button onClick={testEmail}>Test Email</Button>
 
           {/* Logout Button */}
           <div className={`p-4 ${!sidebarOpen && "flex justify-center"}`}>
