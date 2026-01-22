@@ -114,7 +114,10 @@ export default function Report() {
   };
 
   const handleExportPDF = () => {
-    Report_pdf(newReportData);
+    Report_pdf({
+      ...newReportData,
+      sender_office: newReportData.sender_office_name,
+    });
   };
 
   if (loading) {
@@ -168,7 +171,7 @@ export default function Report() {
               sender office
             </Typography>
             <Typography variant="body1" gutterBottom>
-              {newReportData.sender_office}
+              {newReportData.sender_office_name}
             </Typography>
             <Typography variant="body2" color="text.disabled">
               sender email
@@ -277,7 +280,7 @@ export default function Report() {
                               {data.explanation}
                             </Typography>
                           </div>
-                        )
+                        ),
                       )}
                     </>
                   )}
@@ -313,7 +316,7 @@ export default function Report() {
                               {data.explanation}
                             </Typography>
                           </div>
-                        )
+                        ),
                       )}
                     </>
                   )}
@@ -325,7 +328,7 @@ export default function Report() {
                       <Typography key={index} variant="body2" align="justify">
                         • {data}
                       </Typography>
-                    )
+                    ),
                   )}
                   <Typography variant="body1" gutterBottom fontWeight="bold">
                     References

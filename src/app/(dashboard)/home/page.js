@@ -35,7 +35,7 @@ export default function home() {
     axiosInstance
       .get("/dashboard")
       .then((res) => {
-        console.log("Dashboard data:", res);
+        // console.log("Dashboard data:", res);
         setDashboardData(res.body);
         setLoading(false);
       })

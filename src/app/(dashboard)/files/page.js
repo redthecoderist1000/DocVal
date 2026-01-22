@@ -125,14 +125,14 @@ export default function files() {
           ) : visibleRows.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-100 border-b border-gray-200">
                   <tr>
                     {headerCells.map((cell, index) => (
                       <th
                         key={index}
                         className={`px-6 py-2 text-${
                           index === 0 ? "left" : "center"
-                        } text-xs uppercase text-gray-500`}
+                        } text-xs uppercase text-gray-700`}
                       >
                         {cell}
                       </th>
