@@ -142,7 +142,12 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
   const generatePassword = (email) => {
     // Extract the part before @ symbol and take first 3 characters
     // const emailPrefix = email.split("@")[0].slice(0, 3).toUpperCase();
-    const emailPrefix = email.split("@")[0].toUpperCase();
+    // const emailPrefix = email.split("@")[0].toUpperCase();
+    // remove special characters from emailPrefix
+    const emailPrefix = email
+      .split("@")[0]
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase();
 
     // Generate a random 4-digit number
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
