@@ -2,6 +2,8 @@ import { getConnection } from "@/app/api/helper/db";
 import sql from "mssql";
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
+import { Resend } from "resend";
+import ResetOTPEmail from "@/helper/emailTemplates/reset_otp";
 
 export async function POST(request) {
   try {
@@ -33,6 +35,22 @@ export async function POST(request) {
         .execute("dbo.createOtp");
 
       // send otp to email
+
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { data, error } = await resend.emails.send({
+        from: "Acme <onboarding@resend.dev>",
+        to: [email],
+        subject: "DocVal Reset Password OTP",
+        react: ResetOTPEmail({ otp, expiryTime: `10 minutes` }),
+      });
+
+      if (error) {
+        return NextResponse.json(
+          { message: "Failed to send email", error: error.message },
+          { status: 500 },
+        );
+      }
+
       // kunyari email muna  to
       // console.log(`Sending OTP ${otp} to email ${email}`);
 
@@ -44,7 +62,7 @@ export async function POST(request) {
         { status: 200 },
       );
     } else {
-      return NextResponse.json({ message: "Invalid Email" }, { status: 200 });
+      return NextResponse.json({ message: "Invalid Email" }, { status: 403 });
     }
   } catch (error) {
     console.error("Error checking email:", error);

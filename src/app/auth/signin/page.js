@@ -170,15 +170,6 @@ export default function SignIn() {
                   Forgot Password?
                 </Button>
               </form>
-
-              {/* Bottom Footer Logo */}
-              <div className="flex justify-center mt-8 pt-6 border-t border-gray-200">
-                {/* <img
-                src="/pilipns.png"
-                alt="Philippines"
-                className="h-12 object-contain"
-              /> */}
-              </div>
             </div>
           </div>
         </div>
