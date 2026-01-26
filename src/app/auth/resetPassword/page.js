@@ -1,10 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { Button } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
 import { useError } from "@/helper/ErrorContext";
+import ResetPasswordContent from "./ResetPasswordContent";
 
 export default function ResetPassword() {
   const { setError } = useError();
@@ -137,175 +138,14 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Section - Background */}
-      <div className="hidden lg:flex lg:w-[80%] relative overflow-hidden bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Image
-            src="/dict_text.png"
-            alt="Watermark"
-            width={500}
-            height={500}
-            className="opacity-10"
-          />
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
         </div>
-      </div>
-
-      {/* Right Section - Form Card */}
-      <div className="w-full lg:w-[40%] flex items-center justify-center p-1 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        <div className="w-full max-w-md">
-          {/* Form Card */}
-          <div className="p-10">
-            {/* Top Logo */}
-            <div className="flex justify-center items-center gap-4 mb-6">
-              <Image src="/dict_logo.png" alt="Logo" width={50} height={50} />
-              <Image
-                src="/bagong_pilipinas.png"
-                alt="Bagong Pilipinas"
-                width={50}
-                height={50}
-              />
-            </div>
-
-            {/* Title */}
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-extrabold text-blue-900 tracking-wide">
-                DocVal
-              </h1>
-              <p className="text-sm text-gray-600 mt-2">
-                {step === "otp" ? "Verify Your Identity" : "Set New Password"}
-              </p>
-            </div>
-
-            {/* Error Message */}
-            {errors && (
-              <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-                {errors}
-              </div>
-            )}
-
-            {/* OTP Step */}
-            {step === "otp" && (
-              <form onSubmit={handleOtpSubmit} className="space-y-5">
-                {/* OTP Input */}
-                <div>
-                  <label
-                    htmlFor="otp"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    One-Time Password
-                  </label>
-                  <input
-                    id="otp"
-                    type="text"
-                    value={otp}
-                    onChange={(e) => {
-                      setOtp(e.target.value);
-                      setErrors("");
-                    }}
-                    required
-                    className="w-full px-4 py-3 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-black"
-                    placeholder="Enter 6-digit OTP"
-                    maxLength="6"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    Check your email for the OTP code
-                  </p>
-                  <div className="flex justify-center">
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={resendOtp}
-                      disabled={isSubmitting || timer > 0}
-                      sx={{ mt: 2 }}
-                    >
-                      {timer > 0 ? `Resend OTP (${timer}s)` : "Resend OTP"}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Verify Button */}
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  disableElevation
-                  loading={isSubmitting}
-                >
-                  Verify OTP
-                </Button>
-              </form>
-            )}
-
-            {/* Password Reset Step */}
-            {step === "password" && (
-              <form onSubmit={handlePasswordSubmit} className="space-y-5">
-                {/* New Password Input */}
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    New Password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setErrors("");
-                    }}
-                    required
-                    className="w-full px-4 py-3 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-black"
-                    placeholder="Enter new password"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    At least 8 characters
-                  </p>
-                </div>
-
-                {/* Confirm Password Input */}
-                <div>
-                  <label
-                    htmlFor="confirmPassword"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Confirm Password
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      setErrors("");
-                    }}
-                    required
-                    className="w-full px-4 py-3 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-black"
-                    placeholder="Confirm your password"
-                  />
-                </div>
-
-                {/* Reset Password Button */}
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  disableElevation
-                  loading={isSubmitting}
-                >
-                  Reset Password
-                </Button>
-              </form>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
