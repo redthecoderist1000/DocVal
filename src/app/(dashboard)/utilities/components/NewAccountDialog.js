@@ -13,6 +13,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Autocomplete,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 
@@ -43,7 +44,13 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
       axiosInstance
         .get("/office/getAllDivision")
         .then((res) => {
-          setDivisions(res.body || []);
+          const internal = res.body.filter(
+            (div) =>
+              div.office_type.toLowerCase() === "internal" &&
+              div.parent_id !== null,
+          );
+          setDivisions(internal);
+          //
         })
         .catch((err) => {
           console.error(err);
@@ -135,7 +142,12 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
   const generatePassword = (email) => {
     // Extract the part before @ symbol and take first 3 characters
     // const emailPrefix = email.split("@")[0].slice(0, 3).toUpperCase();
-    const emailPrefix = email.split("@")[0].toUpperCase();
+    // const emailPrefix = email.split("@")[0].toUpperCase();
+    // remove special characters from emailPrefix
+    const emailPrefix = email
+      .split("@")[0]
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase();
 
     // Generate a random 4-digit number
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
@@ -205,8 +217,11 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
         }, 1500);
       })
       .catch((err) => {
-        console.log("Error registering account", err);
-        setError("Submission failed. Please try again.", "error");
+        console.log(err.message, err);
+        setError(
+          err.message || "Submission failed. Please try again.",
+          "error",
+        );
         setLoading(false);
       });
   };
@@ -313,42 +328,26 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
                 </p>
               )}
             </FormControl>
-            <FormControl
+            <Autocomplete
+              options={divisions}
+              getOptionLabel={(option) => option.division_name || ""}
+              value={
+                divisions.find((d) => d.id === formData.division_id) || null
+              }
+              onChange={(event, newValue) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  division_id: newValue?.id || "",
+                }));
+              }}
               fullWidth
               size="small"
-              error={!!errors.division_id}
-              disabled={loading}
-            >
-              <InputLabel id="division-label">Division</InputLabel>
-              <Select
-                labelId="division-label"
-                id="division"
-                name="division_id"
-                value={formData.division_id}
-                onChange={handleInputChange}
-                label="Division"
-              >
-                <MenuItem value="" disabled>
-                  <em>Select a division</em>
-                </MenuItem>
-                {divisions.map((division) => (
-                  <MenuItem key={division.id} value={division.id}>
-                    {division.division_name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.division_id && (
-                <p
-                  style={{
-                    color: "#d32f2f",
-                    fontSize: "0.75rem",
-                    marginTop: "4px",
-                  }}
-                >
-                  {errors.division_id}
-                </p>
+              // disabled={loading || fetchingDivisions}
+              noOptionsText="No divisions available"
+              renderInput={(params) => (
+                <TextField {...params} placeholder="Search Division" />
               )}
-            </FormControl>
+            />
           </Stack>
         </form>
       </DialogContent>
