@@ -125,11 +125,13 @@ export default function DivisionTab({ data, isActive }) {
         // This is a parent division with children
         const parentId = division?.id;
         const parentName = division?.division_name || "Unknown";
+        const parentAbrv = division?.division_abrv || "N/A";
 
         if (!groupsMap.has(parentId)) {
           groupsMap.set(parentId, {
             parentId,
             parentName,
+            parentAbrv,
             divisions: [],
           });
         }
@@ -141,6 +143,7 @@ export default function DivisionTab({ data, isActive }) {
       groupsMap.set("unassigned", {
         parentId: "unassigned",
         parentName: "Others",
+        parentAbrv: "N/A",
         divisions: [],
       });
     }
@@ -157,6 +160,7 @@ export default function DivisionTab({ data, isActive }) {
           groupsMap.set(parentId, {
             parentId,
             parentName: parentDivision?.division_name || "Unknown Parent",
+            parentAbrv: parentDivision?.division_abrv || "N/A",
             divisions: [],
           });
         }
@@ -212,6 +216,7 @@ export default function DivisionTab({ data, isActive }) {
         group.divisions.map((division) => ({
           parentId: group.parentId,
           parentName: group.parentName,
+          parentAbrv: group.parentAbrv,
           division,
         })),
       ),
@@ -232,6 +237,7 @@ export default function DivisionTab({ data, isActive }) {
         groupsMap.set(row.parentId, {
           parentId: row.parentId,
           parentName: row.parentName,
+          parentAbrv: row.parentAbrv,
           divisions: [],
         });
       }
@@ -290,13 +296,55 @@ export default function DivisionTab({ data, isActive }) {
                 {visibleGroups.map((group) => (
                   <Fragment key={`group-${group.parentId}`}>
                     <tr className="bg-gray-50">
-                      <td className="px-6 py-2" colSpan={2}>
+                      <td className="px-6 py-2">
                         <Typography
                           variant="subtitle2"
                           sx={{ color: "#5c5b5b" }}
                         >
                           {group.parentName || "Others"}
                         </Typography>
+                      </td>
+                      <td className="px-6 py-2">
+                        {/* <Typography
+                          variant="subtitle2"
+                          sx={{ color: "#5c5b5b" }}
+                        >
+                          {group.parentId || "Others"}
+                        </Typography> */}
+                        <div className="flex items-center justify-center gap-2">
+                          <Tooltip title="Edit Division" placement="top" arrow>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              color="warning"
+                              disableElevation
+                              onClick={() =>
+                                handleEdit(
+                                  group?.parentId,
+                                  group?.parentName,
+                                  group?.parentAbrv,
+                                )
+                              }
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </Button>
+                          </Tooltip>
+                          <Tooltip
+                            title="Delete Division"
+                            placement="top"
+                            arrow
+                          >
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              disableElevation
+                              onClick={() => handleDelete(group?.parentId)}
+                            >
+                              <DeleteOutlineRoundedIcon fontSize="small" />
+                            </Button>
+                          </Tooltip>
+                        </div>
                       </td>
                     </tr>
                     {group.divisions.map((division) => (

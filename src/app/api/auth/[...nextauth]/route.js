@@ -130,7 +130,7 @@ export const authOptions = {
     },
   },
   pages: {
-    signIn: "/api/auth/signin",
+    signIn: "/auth/signin",
     signOut: "/",
   },
 };
