@@ -15,7 +15,7 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timer, setTimer] = useState(0);
+  const [timer, setTimer] = useState(30);
 
   // get user_id from router state
   const searchParams = useSearchParams();

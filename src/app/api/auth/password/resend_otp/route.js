@@ -2,6 +2,7 @@ import { getConnection } from "@/app/api/helper/db";
 import sql from "mssql";
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
+import { Resend } from "resend";
 
 export async function POST(request) {
   try {
@@ -26,6 +27,22 @@ export async function POST(request) {
 
     // send otp to email
     // kunyari email muna  to
+
+    // const resend = new Resend(process.env.RESEND_API_KEY);
+    // const { data, error } = await resend.emails.send({
+    //   from: "Acme <onboarding@resend.dev>",
+    //   to: [email],
+    //   subject: "DocVal Reset Password OTP",
+    //   react: ResetOTPEmail({ otp, expiryTime: `10 minutes` }),
+    // });
+
+    // if (error) {
+    //   return NextResponse.json(
+    //     { message: "Failed to send email", error: error.message },
+    //     { status: 500 },
+    //   );
+    // }
+
     // console.log(`Sending OTP ${otp}`);
 
     return NextResponse.json(

@@ -171,7 +171,7 @@ export default function ResetOTPEmail({ otp, expiryTime = "10 minutes" }) {
           }}
         >
           <p style={{ color: "#888888", fontSize: "11px", margin: "0" }}>
-            © 2024 DocVal. All rights reserved.
+            © 2026 DocVal. All rights reserved.
           </p>
           <p
             style={{ color: "#888888", fontSize: "11px", margin: "5px 0 0 0" }}

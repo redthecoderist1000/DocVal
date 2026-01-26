@@ -74,7 +74,7 @@ export default function home() {
           <div>
             <h3 className="text-4xl font-bold mb-2">Welcome Back!</h3>
             <p className="text-blue-100 text-lg">
-              Document Management System Dashboard
+              Document Evaluation System Dashboard
             </p>
           </div>
           <div className="hidden lg:block text-blue-300 opacity-20">
