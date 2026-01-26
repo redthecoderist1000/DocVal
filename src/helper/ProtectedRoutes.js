@@ -10,7 +10,7 @@ export function useProtectedRoute() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/api/auth/signin");
+      router.push("/auth/signin");
     } else if (status === "authenticated") {
       setIsChecking(false);
     }

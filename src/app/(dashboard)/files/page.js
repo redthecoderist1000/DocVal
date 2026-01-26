@@ -85,7 +85,11 @@ export default function files() {
     } else {
       stopLoading();
     }
-  }, [isChecking, startLoading, stopLoading]);
+    console.log("Status:", status);
+    if (status !== "authenticated") {
+      router.push("/", { replace: true });
+    }
+  }, [isChecking, startLoading, stopLoading, status, router]);
 
   return (
     <>

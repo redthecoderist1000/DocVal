@@ -14,12 +14,10 @@ import LoadingScreen from "@/components/LoadingScreen";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
-import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import axiosInstance from "@/helper/Axios";
-import { Button } from "@mui/material";
 
 export default function DashboardLayout({ children }) {
   const { data: session, status } = useSession();
@@ -242,8 +240,6 @@ export default function DashboardLayout({ children }) {
               </Link>
             ))}
           </nav>
-
-          <Button onClick={testEmail}>Test Email</Button>
 
           {/* Logout Button */}
           <div className={`p-4 ${!sidebarOpen && "flex justify-center"}`}>
