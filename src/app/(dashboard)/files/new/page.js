@@ -22,6 +22,7 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
 import StopCircleRoundedIcon from "@mui/icons-material/StopCircleRounded";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axiosInstance from "@/helper/Axios";
 import { useRouter } from "next/navigation";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
@@ -242,18 +243,29 @@ export default function NewFile() {
         }}
       >
         <CardContent sx={{ p: 4 }}>
-          {/* Header */}
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              fontWeight: 700,
-              mb: 1,
-              color: "text.primary",
-            }}
-          >
-            Upload New File
-          </Typography>
+          {/* Header with Back Button */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+            <IconButton
+              onClick={() => router.back()}
+              sx={{
+                border: "1px solid #e0e0e0",
+                "&:hover": { backgroundColor: "#f5f5f5" },
+              }}
+              size="small"
+            >
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                fontWeight: 700,
+                color: "text.primary",
+              }}
+            >
+              Upload New File
+            </Typography>
+          </Box>
 
           {/* Form */}
           <form onSubmit={handleSubmit}>
