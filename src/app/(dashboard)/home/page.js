@@ -72,7 +72,7 @@ export default function home() {
       <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-900 rounded-xl p-8 mb-8 text-white shadow-lg shadow-blue-400/30">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-4xl font-bold mb-2">Welcome Back!</h3>
+            <h3 className="text-4xl font-bold mb-2">Welcome back, {session?.user?.full_name}!</h3>
             <p className="text-blue-100 text-lg">
               Document Evaluation System Dashboard
             </p>
