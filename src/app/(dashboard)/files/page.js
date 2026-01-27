@@ -11,14 +11,18 @@ import {
   Select,
   MenuItem,
   FormControl,
+  IconButton,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
+import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
+import RotateLeftRoundedIcon from "@mui/icons-material/RotateLeftRounded";
+
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
 import { useError } from "@/helper/ErrorContext";
@@ -38,7 +42,7 @@ export default function files() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [sortBy, setSortBy] = useState("none"); // "none", "file-asc", "file-desc", "date-asc", "date-desc"
+  const [sortBy, setSortBy] = useState("date-desc"); // "none", "file-asc", "file-desc", "date-asc", "date-desc"
   const [filterClassification, setFilterClassification] = useState("");
   const [filterDocType, setFilterDocType] = useState("");
   const [deleteDoc, setDeleteDoc] = useState({
@@ -47,11 +51,15 @@ export default function files() {
     docTitle: "",
   });
 
+  const [classOption, setClassOption] = useState([]);
+  const [typeOption, setTypeOption] = useState([]);
+
   const headerCells = [
     "File",
     "Classification",
     "Type of Document",
     "Date Received",
+    // "Status",
     "Actions",
   ];
 
@@ -73,10 +81,28 @@ export default function files() {
 
   useEffect(() => {
     setLoading(true);
+
+    axiosInstance
+      .get("/document/getAllDocClass")
+      .then((res) => {
+        setClassOption(res.body);
+      })
+      .catch((error) => {
+        console.error("Error fetching classifications:", error);
+      });
+
+    axiosInstance
+      .get("/document/getAllDocType")
+      .then((res) => {
+        setTypeOption(res.body);
+      })
+      .catch((error) => {
+        console.error("Error fetching types:", error);
+      });
+
     axiosInstance
       .post("/document/getFileByUser")
       .then((res) => {
-        // console.log(res);
         setFiles(res.body);
         setLoading(false);
       })
@@ -143,6 +169,13 @@ export default function files() {
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setFilterClassification("");
+    setFilterDocType("");
     setPage(0);
   };
 
@@ -220,6 +253,11 @@ export default function files() {
               ))}
             </Select>
           </FormControl>
+          <Tooltip title="Reset Filters" arrow placement="top">
+            <IconButton color="error" size="small">
+              <RotateLeftRoundedIcon fontSize="medium" onClick={resetFilters} />
+            </IconButton>
+          </Tooltip>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -239,7 +277,7 @@ export default function files() {
                           index === 0 ? "left" : "center"
                         } text-xs uppercase text-gray-700`}
                       >
-                        <div className="flex items-center gap-2 justify-between">
+                        <div className="flex items-center gap-2 ">
                           {cell}
                           {(cell === "File" || cell === "Date Received") && (
                             <Tooltip
@@ -265,21 +303,25 @@ export default function files() {
                                     );
                                   }
                                 }}
-                                sx={{ padding: "4px", minWidth: "auto" }}
+                                sx={{
+                                  padding: "4px",
+                                  minWidth: "auto",
+                                  color: "inherit",
+                                }}
                               >
                                 {sortBy === "file-asc" && cell === "File" ? (
-                                  <ArrowUpwardIcon fontSize="small" />
+                                  <KeyboardArrowUpRoundedIcon fontSize="small" />
                                 ) : sortBy === "file-desc" &&
                                   cell === "File" ? (
-                                  <ArrowDownwardIcon fontSize="small" />
+                                  <KeyboardArrowDownRoundedIcon fontSize="small" />
                                 ) : sortBy === "date-asc" &&
                                   cell === "Date Received" ? (
-                                  <ArrowUpwardIcon fontSize="small" />
+                                  <KeyboardArrowUpRoundedIcon fontSize="small" />
                                 ) : sortBy === "date-desc" &&
                                   cell === "Date Received" ? (
-                                  <ArrowDownwardIcon fontSize="small" />
+                                  <KeyboardArrowDownRoundedIcon fontSize="small" />
                                 ) : (
-                                  <UnfoldMoreIcon fontSize="small" />
+                                  <UnfoldMoreRoundedIcon fontSize="small" />
                                 )}
                               </Button>
                             </Tooltip>
@@ -300,19 +342,22 @@ export default function files() {
                           </Typography>
                         </div>
                       </td>
-                      <td className="px-6 py-2 text-center text-sm text-gray-600">
+                      <td className="px-6 py-2 text-left text-sm text-gray-600">
                         {doc.doc_class || "-"}
                       </td>
-                      <td className="px-6 py-2 text-center text-sm text-gray-600">
+                      <td className="px-6 py-2 text-left text-sm text-gray-600">
                         {doc.doc_type || "-"}
                       </td>
-                      <td className="px-6 py-2 text-center text-sm text-gray-600">
+                      <td className="px-6 py-2 text-left text-sm text-gray-600">
                         {doc.date_created
                           ? new Date(doc.date_created)
                               .toISOString()
                               .split("T")[0]
                           : "-"}
                       </td>
+                      {/* <td className="px-6 py-2 text-left text-sm text-gray-600">
+                        {doc.status || "-"}
+                      </td> */}
                       <td className="px-6 py-2">
                         <div className="flex items-center justify-center gap-2">
                           <Tooltip title="View Details" arrow placement="top">
