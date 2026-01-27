@@ -17,6 +17,8 @@ import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import DriveFileMoveRoundedIcon from "@mui/icons-material/DriveFileMoveRounded";
+
 import axiosInstance from "@/helper/Axios";
 
 export default function DashboardLayout({ children }) {
@@ -46,8 +48,13 @@ export default function DashboardLayout({ children }) {
     },
     {
       path: "files",
-      label: "Files",
+      label: "Evaluation",
       icon: <ArticleRoundedIcon />,
+    },
+    {
+      path: "incoming",
+      label: "Incoming",
+      icon: <DriveFileMoveRoundedIcon />,
     },
     // {
     //   path: "profile",
@@ -64,8 +71,13 @@ export default function DashboardLayout({ children }) {
     },
     {
       path: "files",
-      label: "Files",
+      label: "Evaluation",
       icon: <ArticleRoundedIcon />,
+    },
+    {
+      path: "incoming",
+      label: "Incoming",
+      icon: <DriveFileMoveRoundedIcon />,
     },
     {
       path: "utilities",
