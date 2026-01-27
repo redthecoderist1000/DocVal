@@ -47,10 +47,21 @@ export default function files() {
     docTitle: "",
   });
 
-  const headerCells = ["File", "Classification", "Type of Document", "Date Received", "Actions"];
+  const headerCells = [
+    "File",
+    "Classification",
+    "Type of Document",
+    "Date Received",
+    "Actions",
+  ];
 
   // Static classification and document type options
-  const classificationOptions = ["Complex", "Highly Technical", "Simple", "Urgent"];
+  const classificationOptions = [
+    "Complex",
+    "Highly Technical",
+    "Simple",
+    "Urgent",
+  ];
   const docTypeOptions = [
     "Accomplishment Report",
     "Memorandum",
@@ -80,40 +91,51 @@ export default function files() {
       });
   }, []);
 
-  let visibleRows = useMemo(
-    () => {
-      let filtered = files.filter((file) => {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch =
-          (file.title && file.title.toLowerCase().includes(query)) ||
-          (file.reference_no && file.reference_no.toLowerCase().includes(query)) ||
-          (file.doc_class && file.doc_class.toLowerCase().includes(query)) ||
-          (file.doc_type && file.doc_type.toLowerCase().includes(query)) ||
-          (file.sender_office && file.sender_office.toLowerCase().includes(query));
+  let visibleRows = useMemo(() => {
+    let filtered = files.filter((file) => {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        (file.title && file.title.toLowerCase().includes(query)) ||
+        (file.reference_no &&
+          file.reference_no.toLowerCase().includes(query)) ||
+        (file.doc_class && file.doc_class.toLowerCase().includes(query)) ||
+        (file.doc_type && file.doc_type.toLowerCase().includes(query)) ||
+        (file.sender_office &&
+          file.sender_office.toLowerCase().includes(query));
 
-        const matchesClassification =
-          filterClassification === "" || file.doc_class === filterClassification;
-        const matchesDocType =
-          filterDocType === "" || file.doc_type === filterDocType;
+      const matchesClassification =
+        filterClassification === "" || file.doc_class === filterClassification;
+      const matchesDocType =
+        filterDocType === "" || file.doc_type === filterDocType;
 
-        return matchesSearch && matchesClassification && matchesDocType;
-      });
+      return matchesSearch && matchesClassification && matchesDocType;
+    });
 
-      // Apply sorting
-      if (sortBy === "file-asc") {
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
-      } else if (sortBy === "file-desc") {
-        filtered.sort((a, b) => b.title.localeCompare(a.title));
-      } else if (sortBy === "date-asc") {
-        filtered.sort((a, b) => new Date(a.date_created) - new Date(b.date_created));
-      } else if (sortBy === "date-desc") {
-        filtered.sort((a, b) => new Date(b.date_created) - new Date(a.date_created));
-      }
+    // Apply sorting
+    if (sortBy === "file-asc") {
+      filtered.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === "file-desc") {
+      filtered.sort((a, b) => b.title.localeCompare(a.title));
+    } else if (sortBy === "date-asc") {
+      filtered.sort(
+        (a, b) => new Date(a.date_created) - new Date(b.date_created),
+      );
+    } else if (sortBy === "date-desc") {
+      filtered.sort(
+        (a, b) => new Date(b.date_created) - new Date(a.date_created),
+      );
+    }
 
-      return filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    },
-    [files, searchQuery, page, rowsPerPage, sortBy, filterClassification, filterDocType],
-  );
+    return filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [
+    files,
+    searchQuery,
+    page,
+    rowsPerPage,
+    sortBy,
+    filterClassification,
+    filterDocType,
+  ]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -130,7 +152,7 @@ export default function files() {
     } else {
       stopLoading();
     }
-    console.log("Status:", status);
+    // console.log("Status:", status);
     if (status !== "authenticated") {
       router.push("/", { replace: true });
     }
@@ -233,13 +255,13 @@ export default function files() {
                                     setSortBy(
                                       sortBy === "file-asc"
                                         ? "file-desc"
-                                        : "file-asc"
+                                        : "file-asc",
                                     );
                                   } else if (cell === "Date Received") {
                                     setSortBy(
                                       sortBy === "date-asc"
                                         ? "date-desc"
-                                        : "date-asc"
+                                        : "date-asc",
                                     );
                                   }
                                 }}
@@ -247,7 +269,8 @@ export default function files() {
                               >
                                 {sortBy === "file-asc" && cell === "File" ? (
                                   <ArrowUpwardIcon fontSize="small" />
-                                ) : sortBy === "file-desc" && cell === "File" ? (
+                                ) : sortBy === "file-desc" &&
+                                  cell === "File" ? (
                                   <ArrowDownwardIcon fontSize="small" />
                                 ) : sortBy === "date-asc" &&
                                   cell === "Date Received" ? (
