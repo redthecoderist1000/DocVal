@@ -3,7 +3,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default withAuth({
   pages: {
-    signIn: "/api/auth/signin",
+    signIn: "/auth/signin",
   },
 });
 
