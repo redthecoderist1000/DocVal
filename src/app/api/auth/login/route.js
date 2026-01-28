@@ -36,6 +36,9 @@ export async function POST(request) {
       );
     }
     const user = selectResult.recordset[0];
+    // console.log("User found:", user);
+
+    // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return NextResponse.json(
@@ -58,7 +61,7 @@ export async function POST(request) {
         l_name: user.l_name,
         full_name: user.full_name,
         email: user.email,
-        role: user.role,
+        role: JSON.parse(user.role),
         division: user.division,
         division_abrv: user.division_abrv,
       },

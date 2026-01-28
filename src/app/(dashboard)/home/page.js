@@ -20,11 +20,21 @@ export default function home() {
   const [loading, setLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
 
+  const roleValue = session?.user?.role;
+  const roleNames = Array.isArray(roleValue)
+    ? roleValue.map((role) => role?.name).filter(Boolean)
+    : roleValue
+      ? [typeof roleValue === "string" ? roleValue : roleValue?.name].filter(
+          Boolean,
+        )
+      : [];
+  const isAdmin = roleNames.some((role) => role === "admin");
+
   useEffect(() => {
     if (isChecking) {
       startLoading();
     } else {
-      // console.log("Session:", session);
+      console.log("Session:", session);
       stopLoading();
       fetchData();
     }
@@ -110,7 +120,7 @@ export default function home() {
         </div>
 
         {/* User Accounts */}
-        {session.user.role == "administrator" && (
+        {isAdmin && (
           <div className="bg-white  rounded-lg shadow-md p-6 border-l-4 border-yellow-600">
             <div className="flex justify-between items-start">
               <div>
