@@ -12,6 +12,7 @@ import {
   MenuItem,
   FormControl,
   IconButton,
+  Container,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
@@ -192,7 +193,7 @@ export default function files() {
   }, [isChecking, startLoading, stopLoading, status, router]);
 
   return (
-    <>
+    <Container maxWidth="lg" className="py-8">
       <div className={`${isModalOpen ? "blur-sm" : ""}`}>
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Files</h1>
@@ -208,8 +209,9 @@ export default function files() {
         </div>
 
         {/* Search and Filter Bar */}
-        <div className="mb-6 flex gap-4">
-          <div className="flex-1">
+        <div className="mb-6 grid grid-cols-1  md:grid-cols-4 gap-4 items-end">
+          {/* Search bar - full width on mobile, 1 column on desktop */}
+          <div className="md:col-span-2">
             <TextField
               type="text"
               placeholder="Search files..."
@@ -219,45 +221,56 @@ export default function files() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <Select
-              value={filterClassification}
-              onChange={(e) => {
-                setFilterClassification(e.target.value);
-                setPage(0);
-              }}
-              displayEmpty
-            >
-              <MenuItem value="">All Classifications</MenuItem>
-              {classificationOptions.map((classification) => (
-                <MenuItem key={classification} value={classification}>
-                  {classification}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <Select
-              value={filterDocType}
-              onChange={(e) => {
-                setFilterDocType(e.target.value);
-                setPage(0);
-              }}
-              displayEmpty
-            >
-              <MenuItem value="">All Document Types</MenuItem>
-              {docTypeOptions.map((docType) => (
-                <MenuItem key={docType} value={docType}>
-                  {docType}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Tooltip title="Reset Filters" arrow placement="top">
-            <IconButton color="error" size="small">
-              <RotateLeftRoundedIcon fontSize="medium" onClick={resetFilters} />
-            </IconButton>
-          </Tooltip>
+
+          {/* Classification filter - full width on mobile */}
+          <div>
+            <FormControl size="small" fullWidth>
+              <Select
+                value={filterClassification}
+                onChange={(e) => {
+                  setFilterClassification(e.target.value);
+                  setPage(0);
+                }}
+                displayEmpty
+              >
+                <MenuItem value="">All Classifications</MenuItem>
+                {classOption.map((data, index) => (
+                  <MenuItem key={index} value={data.name}>
+                    {data.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+
+          {/* Document type filter - full width on mobile */}
+          <div className="flex gap-2">
+            <FormControl size="small" fullWidth>
+              <Select
+                value={filterDocType}
+                onChange={(e) => {
+                  setFilterDocType(e.target.value);
+                  setPage(0);
+                }}
+                displayEmpty
+              >
+                <MenuItem value="">All Document Types</MenuItem>
+                {typeOption.map((data, index) => (
+                  <MenuItem key={index} value={data.name}>
+                    {data.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Tooltip title="Reset Filters" arrow placement="top">
+              <IconButton color="error" size="small">
+                <RotateLeftRoundedIcon
+                  fontSize="medium"
+                  onClick={resetFilters}
+                />
+              </IconButton>
+            </Tooltip>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -454,6 +467,6 @@ export default function files() {
         setDeleteDoc={setDeleteDoc}
         setFiles={setFiles}
       />
-    </>
+    </Container>
   );
 }
