@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -17,10 +17,12 @@ import {
   MenuItem,
   Chip,
   IconButton,
+  Autocomplete,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
 import StopCircleRoundedIcon from "@mui/icons-material/StopCircleRounded";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axiosInstance from "@/helper/Axios";
 import { useRouter } from "next/navigation";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
@@ -39,6 +41,7 @@ export default function NewFile() {
     classification_name: "",
     type: "",
     type_name: "",
+    office_type: "internal",
     sender_office: "",
     sender_office_name: "",
     sender_person: "",
@@ -97,25 +100,52 @@ export default function NewFile() {
       .post(
         "/document/generateReport",
         { base64_data: fileBase64 },
-        { signal: abortControllerRef.current.signal }
+        { signal: abortControllerRef.current.signal },
       )
       .then((res) => {
-        // store in session storage
-        sessionStorage.setItem(
-          "newReportData",
-          JSON.stringify({
-            ...formData,
-            file_name: formData.file.name,
+        // Store large file_base64 and report_data in IndexedDB to avoid session storage limits
+        const request = indexedDB.open("docval_db", 1);
+
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains("reports")) {
+            db.createObjectStore("reports", { keyPath: "id" });
+          }
+        };
+
+        request.onsuccess = () => {
+          const db = request.result;
+          const transaction = db.transaction("reports", "readwrite");
+          const store = transaction.objectStore("reports");
+          const reportId = `report_${Date.now()}`;
+
+          store.put({
+            id: reportId,
             file_base64: fileBase64,
             report_data: res.body,
-            generation_date: new Date().toLocaleString("en-PH", {
-              timeZone: "Asia/Manila",
-            }),
-          })
-        );
+            timestamp: Date.now(),
+          });
 
-        router.push(`/files/report`);
-        setLoading(false);
+          // Store only metadata in session storage (much smaller)
+          sessionStorage.setItem(
+            "newReportData",
+            JSON.stringify({
+              ...formData,
+              // sender_office: formData.sender_office_name,
+              file_name: formData.file.name,
+              report_id: reportId,
+              generation_date: new Date().toISOString().split("T")[0],
+            }),
+          );
+
+          router.push(`/files/report`);
+          setLoading(false);
+        };
+
+        request.onerror = () => {
+          setError("Error storing report data", "error");
+          setLoading(false);
+        };
       })
       .catch((err) => {
         console.log(err);
@@ -136,6 +166,7 @@ export default function NewFile() {
       classification_name: "",
       type: "",
       type_name: "",
+      office_type: "internal",
       sender_office: "",
       sender_office_name: "",
       sender_person: "",
@@ -160,18 +191,49 @@ export default function NewFile() {
       })
       .catch((error) => {
         console.error("Error fetching classifications:", error);
+        setError("Error fetching classifications", "error");
       });
 
     axiosInstance
       .get("/document/getAllDocType")
       .then((res) => {
-        // console.log("Fetched types:", res.body);
         setTypes(res.body);
       })
       .catch((error) => {
         console.error("Error fetching types:", error);
+        setError("Error fetching types", "error");
+      });
+
+    axiosInstance
+      .get("/office/getAllDivision")
+      .then((res) => {
+        setOffices(res.body);
+      })
+      .catch((error) => {
+        console.error("Error fetching divisions:", error);
+        setError("Error fetching divisions", "error");
       });
   }, []);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  let filteredOffices = useMemo(() => {
+    if (formData.office_type === "internal") {
+      return offices.filter(
+        (office) =>
+          office.office_type === "internal" && office.parent_id !== null,
+      );
+    } else {
+      return offices.filter(
+        (office) =>
+          office.office_type === "external" && office.parent_id === null,
+      );
+    }
+  }, [formData.office_type, offices]);
 
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
@@ -181,18 +243,29 @@ export default function NewFile() {
         }}
       >
         <CardContent sx={{ p: 4 }}>
-          {/* Header */}
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              fontWeight: 700,
-              mb: 1,
-              color: "text.primary",
-            }}
-          >
-            Upload New File
-          </Typography>
+          {/* Header with Back Button */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+            <IconButton
+              onClick={() => router.back()}
+              sx={{
+                border: "1px solid #e0e0e0",
+                "&:hover": { backgroundColor: "#f5f5f5" },
+              }}
+              size="small"
+            >
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                fontWeight: 700,
+                color: "text.primary",
+              }}
+            >
+              Upload New File
+            </Typography>
+          </Box>
 
           {/* Form */}
           <form onSubmit={handleSubmit}>
@@ -226,64 +299,56 @@ export default function NewFile() {
                 />
               </Stack>
               <Stack direction="row" spacing={2}>
-                <FormControl fullWidth size="small" required>
-                  <InputLabel id="classification-label">
-                    Classification
-                  </InputLabel>
-                  <Select
-                    labelId="classification-label"
-                    label="Classification"
-                    name="classification"
-                    onChange={handleInputChange}
-                    value={formData.classification}
-                  >
-                    <MenuItem value="" disabled>
-                      Select Classification
-                    </MenuItem>
-                    {classifications?.map((data, index) => (
-                      <MenuItem
-                        key={index}
-                        value={data.id}
-                        onClick={() => {
-                          setFormData({
-                            ...formData,
-                            classification_name: data.name,
-                          });
-                        }}
-                      >
-                        {data.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth size="small" required>
-                  <InputLabel id="type-label">Type of Document</InputLabel>
-                  <Select
-                    labelId="type-label"
-                    label="Type of Document"
-                    name="type"
-                    onChange={handleInputChange}
-                    value={formData.type}
-                  >
-                    <MenuItem value="" disabled>
-                      Select Type
-                    </MenuItem>
-                    {types?.map((data, index) => (
-                      <MenuItem
-                        key={index}
-                        value={data.id}
-                        onClick={() => {
-                          setFormData({
-                            ...formData,
-                            type_name: data.name,
-                          });
-                        }}
-                      >
-                        {data.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={classifications}
+                  size="small"
+                  getOptionLabel={(option) => option.name || ""}
+                  value={
+                    classifications.find(
+                      (c) => c.id === formData.classification,
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    setFormData({
+                      ...formData,
+                      classification: newValue ? newValue.id : "",
+                      classification_name: newValue ? newValue.name : "",
+                    });
+                  }}
+                  noOptionsText="No classifications available"
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Classification"
+                      placeholder="Search Classification"
+                      required
+                    />
+                  )}
+                  fullWidth
+                />
+                <Autocomplete
+                  options={types}
+                  size="small"
+                  getOptionLabel={(option) => option.name || ""}
+                  value={types.find((t) => t.id === formData.type) || null}
+                  onChange={(event, newValue) => {
+                    setFormData({
+                      ...formData,
+                      type: newValue ? newValue.id : "",
+                      type_name: newValue ? newValue.name : "",
+                    });
+                  }}
+                  noOptionsText="No types available"
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Type of Document"
+                      placeholder="Search Type"
+                      required
+                    />
+                  )}
+                  fullWidth
+                />
               </Stack>
 
               {/* sender details */}
@@ -291,27 +356,58 @@ export default function NewFile() {
                 Sender Details
               </Typography>
               <Stack direction="row" spacing={2}>
-                <TextField
-                  label="Sender Office"
-                  name="sender_office"
-                  value={formData.sender_office}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Department of Agrarian Reform"
-                  fullWidth
-                  variant="outlined"
+                <FormControl fullWidth size="small" required>
+                  <InputLabel id="office-type-label">Office Type</InputLabel>
+                  <Select
+                    labelId="office-type-label"
+                    label="Office Type"
+                    name="office_type"
+                    onChange={handleInputChange}
+                    value={formData.office_type}
+                  >
+                    <MenuItem value="internal">Internal (DICT)</MenuItem>
+                    <MenuItem value="external">Exernal</MenuItem>
+                  </Select>
+                </FormControl>
+                <Autocomplete
+                  options={filteredOffices}
                   size="small"
-                  required
-                />
-                <TextField
-                  label="Contact Person"
-                  name="sender_person"
-                  value={formData.sender_person}
-                  onChange={handleInputChange}
-                  placeholder="e.g., John Doe"
+                  getOptionLabel={(option) => option.division_name || ""}
+                  filterOptions={(options, state) => {
+                    const inputValue = state.inputValue.toLowerCase();
+                    return options.filter(
+                      (option) =>
+                        option.division_name
+                          .toLowerCase()
+                          .includes(inputValue) ||
+                        (option.division_abrv &&
+                          option.division_abrv
+                            .toLowerCase()
+                            .includes(inputValue)),
+                    );
+                  }}
+                  value={
+                    offices.find((d) => d.id === formData.sender_office) || null
+                  }
+                  onChange={(event, newValue) => {
+                    setFormData({
+                      ...formData,
+                      sender_office: newValue ? newValue.id : "",
+                      sender_office_name: newValue
+                        ? newValue.division_name
+                        : "",
+                    });
+                  }}
+                  noOptionsText={`No ${formData.office_type === "internal" ? "division" : "office"} available`}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Sender Office"
+                      placeholder="Search Sender Office"
+                      required
+                    />
+                  )}
                   fullWidth
-                  variant="outlined"
-                  size="small"
-                  required
                 />
               </Stack>
               <Stack direction="row" spacing={2}>
@@ -323,6 +419,17 @@ export default function NewFile() {
                   placeholder="e.g., john@example.com"
                   fullWidth
                   type="email"
+                  variant="outlined"
+                  size="small"
+                  required
+                />
+                <TextField
+                  label="Contact Person"
+                  name="sender_person"
+                  value={formData.sender_person}
+                  onChange={handleInputChange}
+                  placeholder="e.g., John Doe"
+                  fullWidth
                   variant="outlined"
                   size="small"
                   required
@@ -389,7 +496,7 @@ export default function NewFile() {
                     }}
                   />
                   <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
-                    Click to upload or drag and drop
+                    Click to upload
                   </Typography>
                   <Typography
                     variant="caption"

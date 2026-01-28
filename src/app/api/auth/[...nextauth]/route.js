@@ -7,16 +7,13 @@ async function refreshAccessToken(token) {
     const apiBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
     const res = await axios.post(`${apiBaseUrl}/auth/refresh`, {
-      refresh_token: token.refresh_token,
       refreshToken: token.refresh_token,
     });
 
     const newAccessToken =
-      res.data?.access_token ??
-      res.data?.body?.access_token;
+      res.data?.access_token ?? res.data?.body?.access_token;
     const newRefreshToken =
-      res.data?.refresh_token ??
-      res.data?.body?.refresh_token;
+      res.data?.refresh_token ?? res.data?.body?.refresh_token;
 
     if (!newAccessToken) {
       throw new Error("Refresh response missing access token");
@@ -61,7 +58,7 @@ export const authOptions = {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(credentials),
-            }
+            },
           );
 
           const user = await res.json();
@@ -71,7 +68,8 @@ export const authOptions = {
           }
 
           // Return error with message from server
-          const errorMessage = user?.message || user?.error || "Invalid email or password";
+          const errorMessage =
+            user?.message || user?.error || "Invalid email or password";
           throw new Error(errorMessage);
         } catch (error) {
           throw new Error(error.message || "An error occurred during sign in");
@@ -84,6 +82,9 @@ export const authOptions = {
       // Initial sign in
       if (user) {
         token.id = user.body.id;
+        token.f_name = user.body.f_name;
+        token.m_name = user.body.m_name;
+        token.l_name = user.body.l_name;
         token.full_name = user.body.full_name;
         token.email = user.body.email;
         token.role = user.body.role;
@@ -113,6 +114,9 @@ export const authOptions = {
     },
     async session({ session, token }) {
       session.user.id = token.id;
+      session.user.f_name = token.f_name;
+      session.user.m_name = token.m_name;
+      session.user.l_name = token.l_name;
       session.user.full_name = token.full_name;
       session.user.email = token.email;
       session.user.role = token.role;
@@ -126,7 +130,7 @@ export const authOptions = {
     },
   },
   pages: {
-    signIn: "/api/auth/signin",
+    signIn: "/auth/signin",
     signOut: "/",
   },
 };

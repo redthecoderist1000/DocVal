@@ -14,7 +14,7 @@ export default function InfoTab({ data }) {
       .post(
         "/document/downloadFile",
         { fileName: data?.url },
-        { responseType: "blob" }
+        { responseType: "blob" },
       )
       .then((res) => {
         const url = window.URL.createObjectURL(res);

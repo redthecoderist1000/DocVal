@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useError } from "@/helper/ErrorContext";
+import axiosInstance from "@/helper/Axios";
 
 export default function EditDocumentTypeDialog({
   data,
@@ -26,6 +27,7 @@ export default function EditDocumentTypeDialog({
 
   const handleClose = () => {
     setFormData({ name: "" });
+    setErrors({ name: "" });
     setData((prev) => ({
       ...prev,
       open: false,
@@ -38,13 +40,43 @@ export default function EditDocumentTypeDialog({
       ...prev,
       [name]: value,
     }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add your submit logic here
-    console.log("data:", data);
-    console.log("Form submitted with data:", formData);
+    // console.log("data:", data);
+    // console.log("Form submitted with data:", formData);
+    // Validation
+    if (formData.name.trim() === "") {
+      setErrors({ name: "Document type name is required." });
+      return;
+    }
+
+    setLoading(true);
+    axiosInstance
+      .post("/document/editDocType", {
+        docTypeId: data.id,
+        newName: formData.name.trim(),
+      })
+      .then((res) => {
+        // Update document types list
+        const updatedType = res.body;
+        setDocumentTypes((prev) =>
+          prev.map((type) => (type.id === data.id ? updatedType : type))
+        );
+        setError("Document type updated successfully!", "success");
+        setLoading(false);
+        handleClose();
+      })
+      .catch((err) => {
+        setError("Failed to update document type. Please try again.", "error");
+        setLoading(false);
+      });
   };
 
   return (

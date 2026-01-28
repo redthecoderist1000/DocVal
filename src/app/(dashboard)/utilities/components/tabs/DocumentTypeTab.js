@@ -9,6 +9,7 @@ import {
   TablePagination,
   CircularProgress,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -17,18 +18,24 @@ import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
 import NewDocumentTypeDialog from "../NewDocumentTypeDialog";
 import EditDocumentTypeDialog from "../EditDocumentTypeDialog";
+import DeleteDocumentTypeDialog from "../DeleteDocumentTypeDialog";
 
 export default function DocumentTypeTab({ data, isActive }) {
   const [documentTypes, setDocumentTypes] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editData, setEditData] = useState({
     open: false,
     documentTypeName: "",
     id: null,
+  });
+  const [deleteData, setDeleteData] = useState({
+    open: false,
+    docTypeId: null,
+    docTypeName: "",
   });
 
   useEffect(() => {
@@ -60,7 +67,14 @@ export default function DocumentTypeTab({ data, isActive }) {
   };
 
   const handleDelete = (id) => {
-    console.log("Delete document type:", id);
+    const docType = documentTypes.find((dt) => dt.id === id);
+    if (docType) {
+      setDeleteData({
+        open: true,
+        docTypeId: id,
+        docTypeName: docType.name,
+      });
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -76,10 +90,10 @@ export default function DocumentTypeTab({ data, isActive }) {
     () =>
       documentTypes
         .filter((docType) =>
-          docType.name.toLowerCase().includes(searchQuery.toLowerCase())
+          docType.name.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [documentTypes, page, rowsPerPage, searchQuery]
+    [documentTypes, page, rowsPerPage, searchQuery],
   );
 
   const handleNewEntry = () => {
@@ -96,6 +110,11 @@ export default function DocumentTypeTab({ data, isActive }) {
       <EditDocumentTypeDialog
         data={editData}
         setData={setEditData}
+        setDocumentTypes={setDocumentTypes}
+      />
+      <DeleteDocumentTypeDialog
+        deleteDocType={deleteData}
+        setDeleteDocType={setDeleteData}
         setDocumentTypes={setDocumentTypes}
       />
       <div className="mb-6">
@@ -130,12 +149,12 @@ export default function DocumentTypeTab({ data, isActive }) {
         ) : documentTypes && documentTypes.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
+                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
                     Name
                   </th>
-                  <th className="px-6 py-2 text-center text-xs uppercase text-gray-500">
+                  <th className="px-6 py-2 text-center text-xs uppercase text-gray-700">
                     Actions
                   </th>
                 </tr>
@@ -144,34 +163,42 @@ export default function DocumentTypeTab({ data, isActive }) {
                 {visibleRows.map((docType, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: '#000000' }}>
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
                         {docType?.name || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
                       <div className="flex items-center justify-center gap-2">
-                        <Button
-                          variant="contained"
-                          size="small"
-                          color="warning"
-                          disableElevation
-                          startIcon={<EditOutlinedIcon fontSize="small" />}
-                          onClick={() => handleEdit(docType?.id)}
+                        <Tooltip
+                          title="Edit Document Type"
+                          placement="top"
+                          arrow
                         >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          size="small"
-                          startIcon={
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            color="warning"
+                            disableElevation
+                            onClick={() => handleEdit(docType?.id)}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip
+                          title="Delete Document Type"
+                          placement="top"
+                          arrow
+                        >
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            disableElevation
+                            onClick={() => handleDelete(docType?.id)}
+                          >
                             <DeleteOutlineRoundedIcon fontSize="small" />
-                          }
-                          disableElevation
-                          onClick={() => handleDelete(docType?.id)}
-                        >
-                          Delete
-                        </Button>
+                          </Button>
+                        </Tooltip>
                       </div>
                     </td>
                   </tr>

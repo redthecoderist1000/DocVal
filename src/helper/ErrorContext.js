@@ -22,8 +22,8 @@ export function ErrorProvider({ children }) {
   const clearError = () => {
     setErrorData({
       open: false,
-      message: "",
-      severity: "info",
+      // message: "",
+      // severity: "info",
     });
   };
 

@@ -9,6 +9,7 @@ import {
   TablePagination,
   CircularProgress,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -17,6 +18,7 @@ import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
 import NewDocumentClassificationDialog from "../NewDocumentClassificationDialog";
 import EditDocumentClassificationDialog from "../EditDocumentClassificationDialog";
+import DeleteDocumentClassificationDialog from "../DeleteDocumentClassificationDialog";
 
 export default function DocumentClassificationTab({ data, isActive }) {
   //   const classifications = data?.classifications || [];
@@ -24,12 +26,17 @@ export default function DocumentClassificationTab({ data, isActive }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editData, setEditData] = useState({
     open: false,
     classificationName: "",
     id: null,
+  });
+  const [deleteData, setDeleteData] = useState({
+    open: false,
+    docClassId: null,
+    docClassName: "",
   });
 
   useEffect(() => {
@@ -38,8 +45,9 @@ export default function DocumentClassificationTab({ data, isActive }) {
       axiosInstance
         .get("/document/getAllDocClass")
         .then((res) => {
-          //   console.log(res);
+          console.log(res);
           setClassifications(res.body);
+
           setLoading(false);
         })
         .catch((err) => {
@@ -61,7 +69,14 @@ export default function DocumentClassificationTab({ data, isActive }) {
   };
 
   const handleDelete = (id) => {
-    console.log("Delete classification:", id);
+    const classification = classifications.find((c) => c.id === id);
+    if (classification) {
+      setDeleteData({
+        open: true,
+        docClassId: id,
+        docClassName: classification.name,
+      });
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -79,10 +94,10 @@ export default function DocumentClassificationTab({ data, isActive }) {
         .filter((classification) =>
           (classification?.name ?? "")
             .toLowerCase()
-            .includes(searchQuery.toLowerCase())
+            .includes(searchQuery.toLowerCase()),
         )
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [classifications, searchQuery, page, rowsPerPage]
+    [classifications, searchQuery, page, rowsPerPage],
   );
 
   const handleNewEntry = () => {
@@ -99,6 +114,11 @@ export default function DocumentClassificationTab({ data, isActive }) {
       <EditDocumentClassificationDialog
         data={editData}
         setData={setEditData}
+        setClassifications={setClassifications}
+      />
+      <DeleteDocumentClassificationDialog
+        deleteDocClass={deleteData}
+        setDeleteDocClass={setDeleteData}
         setClassifications={setClassifications}
       />
       <div className="mb-6">
@@ -133,12 +153,12 @@ export default function DocumentClassificationTab({ data, isActive }) {
         ) : classifications && classifications.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
+                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
                     Name
                   </th>
-                  <th className="px-6 py-2 text-center text-xs uppercase text-gray-500">
+                  <th className="px-6 py-2 text-center text-xs uppercase text-gray-700">
                     Actions
                   </th>
                 </tr>
@@ -147,34 +167,44 @@ export default function DocumentClassificationTab({ data, isActive }) {
                 {visibleRows.map((classification, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: '#000000' }}>
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
                         {classification?.name || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
                       <div className="flex items-center justify-center gap-2">
-                        <Button
-                          variant="contained"
-                          size="small"
-                          color="warning"
-                          disableElevation
-                          startIcon={<EditOutlinedIcon fontSize="small" />}
-                          onClick={() => handleEdit(classification?.id)}
+                        <Tooltip
+                          title="Edit Classification"
+                          placement="top"
+                          arrow
                         >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          size="small"
-                          startIcon={
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            color="warning"
+                            disableElevation
+                            onClick={() => {
+                              handleEdit(classification?.id);
+                            }}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip
+                          title="Delete Classification"
+                          placement="top"
+                          arrow
+                        >
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            disableElevation
+                            onClick={() => handleDelete(classification?.id)}
+                          >
                             <DeleteOutlineRoundedIcon fontSize="small" />
-                          }
-                          disableElevation
-                          onClick={() => handleDelete(classification?.id)}
-                        >
-                          Delete
-                        </Button>
+                          </Button>
+                        </Tooltip>
                       </div>
                     </td>
                   </tr>

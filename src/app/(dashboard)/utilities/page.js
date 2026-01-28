@@ -15,6 +15,7 @@ import DivisionTab from "@/app/(dashboard)/utilities/components/tabs/DivisionTab
 import DocumentTypeTab from "./components/tabs/DocumentTypeTab";
 import DocumentClassificationTab from "./components/tabs/DocumentClassificationTab";
 import AccountsTab from "./components/tabs/AccountsTab";
+import ExternalTab from "./components/tabs/ExternalTab";
 
 export default function utilities() {
   const { session, status, isChecking } = useProtectedRoute();
@@ -32,10 +33,11 @@ export default function utilities() {
   }, [isChecking, startLoading, stopLoading]);
 
   const tabs = [
-    { label: "Division", id: 0 },
-    { label: "Document Type", id: 1 },
-    { label: "Document Classification", id: 2 },
-    { label: "Accounts", id: 3 },
+    { label: "DICT Offices", id: 0 },
+    { label: "External Offices", id: 1 },
+    { label: "Document Type", id: 2 },
+    { label: "Document Classification", id: 3 },
+    { label: "Accounts", id: 4 },
   ];
 
   return (
@@ -83,16 +85,19 @@ export default function utilities() {
               <DivisionTab data={data} isActive={activeTab === 0} />
             )}
             {activeTab === 1 && (
-              <DocumentTypeTab data={data} isActive={activeTab === 1} />
+              <ExternalTab data={data} isActive={activeTab === 1} />
             )}
             {activeTab === 2 && (
-              <DocumentClassificationTab
-                data={data}
-                isActive={activeTab === 2}
-              />
+              <DocumentTypeTab data={data} isActive={activeTab === 2} />
             )}
             {activeTab === 3 && (
-              <AccountsTab data={data} isActive={activeTab === 3} />
+              <DocumentClassificationTab
+                data={data}
+                isActive={activeTab === 3}
+              />
+            )}
+            {activeTab === 4 && (
+              <AccountsTab data={data} isActive={activeTab === 4} />
             )}
           </>
         )}

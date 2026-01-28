@@ -7,6 +7,7 @@ import {
   TablePagination,
   CircularProgress,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -15,6 +16,8 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { useState, useMemo, useEffect } from "react";
 import axiosInstance from "@/helper/Axios";
 import NewAccountDialog from "../NewAccountDialog";
+import ViewAccountModal from "../ViewAccountModal";
+import DeleteAccountDialog from "../DeleteAccountDialog";
 
 export default function AccountsTab({ data, isActive }) {
   //   const accounts = data?.accounts || [];
@@ -22,8 +25,15 @@ export default function AccountsTab({ data, isActive }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [modalOpen, setModalOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [viewAccount, setViewAccount] = useState({});
+  const [deleteAccount, setDeleteAccount] = useState({
+    open: false,
+    userId: null,
+    email: "",
+  });
 
   useEffect(() => {
     if (isActive) {
@@ -42,16 +52,17 @@ export default function AccountsTab({ data, isActive }) {
     }
   }, [isActive]);
 
-  const handleView = (id) => {
-    console.log("View account:", id);
+  const handleView = (accountId) => {
+    setViewAccount({ ...viewAccount, open: true, userId: accountId }); //
+    meronHandel;
   };
 
   const handleEdit = (id) => {
     console.log("Edit account:", id);
   };
 
-  const handleDelete = (id) => {
-    console.log("Delete account:", id);
+  const handleDelete = (id, email) => {
+    setDeleteAccount({ open: true, userId: id, email: email });
   };
 
   const handleChangePage = (event, newPage) => {
@@ -82,7 +93,7 @@ export default function AccountsTab({ data, isActive }) {
           return matchFName || matchEmail || matchDivision;
         })
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [accounts, page, rowsPerPage, searchQuery]
+    [accounts, page, rowsPerPage, searchQuery],
   );
 
   const handleNewEntry = () => {
@@ -91,6 +102,16 @@ export default function AccountsTab({ data, isActive }) {
 
   return (
     <div>
+      <ViewAccountModal
+        data={viewAccount}
+        setData={setViewAccount}
+        setAccounts={setAccounts}
+      />
+      <DeleteAccountDialog
+        data={deleteAccount}
+        setData={setDeleteAccount}
+        setAccounts={setAccounts}
+      />
       <NewAccountDialog
         open={dialogOpen}
         setOpen={setDialogOpen}
@@ -107,8 +128,7 @@ export default function AccountsTab({ data, isActive }) {
         />
       </div>
 
-      <div className="flex items-center justify-between mb-3">
-        <div></div>
+      <div className="flex items-center justify-end mb-3">
         <Button
           variant="contained"
           size="small"
@@ -128,18 +148,21 @@ export default function AccountsTab({ data, isActive }) {
         ) : accounts && accounts.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
+                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
                     Fullname
                   </th>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
+                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
                     Email
                   </th>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-500">
+                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
                     Division
                   </th>
-                  <th className="px-6 py-2 text-center text-xs uppercase text-gray-500">
+                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
+                    Role
+                  </th>
+                  <th className="px-6 py-2 text-center text-xs uppercase text-gray-700">
                     Actions
                   </th>
                 </tr>
@@ -148,56 +171,51 @@ export default function AccountsTab({ data, isActive }) {
                 {visibleRows.map((account, index) => (
                   <tr key={index}>
                     <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: '#000000' }}>
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
                         {account?.full_name || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: '#000000' }}>
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
                         {account?.email || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: '#000000' }}>
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
                         {account?.division_name || "N/A"}
                       </Typography>
                     </td>
                     <td className="px-6 py-2">
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
+                        {account?.role || "N/A"}
+                      </Typography>
+                    </td>
+                    <td className="px-6 py-2">
                       <div className="flex items-center justify-center gap-2">
-                        <Button
-                          variant="contained"
-                          size="small"
-                          color="success"
-                          disableElevation
-                          startIcon={
+                        <Tooltip title="View Account" placement="top" arrow>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            color="success"
+                            disableElevation
+                            onClick={() => handleView(account.id)}
+                          >
                             <RemoveRedEyeOutlinedIcon fontSize="small" />
-                          }
-                          onClick={() => handleView(account?.id)}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          color="warning"
-                          disableElevation
-                          startIcon={<EditOutlinedIcon fontSize="small" />}
-                          onClick={() => handleEdit(account?.id)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          size="small"
-                          startIcon={
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="Delete Account" placement="top" arrow>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            disableElevation
+                            onClick={() =>
+                              handleDelete(account?.id, account?.email)
+                            }
+                          >
                             <DeleteOutlineRoundedIcon fontSize="small" />
-                          }
-                          disableElevation
-                          onClick={() => handleDelete(account?.id)}
-                        >
-                          Delete
-                        </Button>
+                          </Button>
+                        </Tooltip>
                       </div>
                     </td>
                   </tr>
