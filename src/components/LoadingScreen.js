@@ -1,13 +1,11 @@
 "use client";
-
 import { CircularProgress, Box, Typography, Backdrop } from "@mui/material";
 import { useLoading } from "@/helper/LoadingContext";
 
 export default function LoadingScreen() {
   const { isLoading } = useLoading();
 
-  return (
-    <Backdrop
+  return <Backdrop
       sx={{
         color: "#fff",
         zIndex: (theme) => theme.zIndex.drawer + 1,
@@ -42,5 +40,4 @@ export default function LoadingScreen() {
         </Typography>
       </Box>
     </Backdrop>
-  );
 }

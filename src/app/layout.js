@@ -1,3 +1,4 @@
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -5,7 +6,8 @@ import SessionProvider from "../helper/SessionProvider";
 import { ErrorProvider } from "../helper/ErrorContext";
 import { LoadingProvider } from "../helper/LoadingContext";
 import GlobalAlert from "../components/GlobalAlert";
-import LoadingScreen from "../components/LoadingScreen";
+// import dynamic from "next/dynamic";
+// import LoadingScreen from "../components/ClientLoadingScreen";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +35,7 @@ export default function RootLayout({ children }) {
             <SessionProvider>
               {children}
               <GlobalAlert />
-              <LoadingScreen />
+              {/* <LoadingScreen /> */}
             </SessionProvider>
           </ErrorProvider>
         </LoadingProvider>
