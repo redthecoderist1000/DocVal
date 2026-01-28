@@ -11,11 +11,12 @@ export async function GET(request) {
     }
     const role = auth.user.rol;
     const userId = auth.user.uid;
-
     const pool = await getConnection();
     const selectReq = pool.request();
 
-    if (role === "administrator") {
+    const userRole = JSON.parse(role);
+
+    if (userRole.some((r) => r.name === "admin")) {
       const selectRes = await selectReq
         .input("userId", sql.UniqueIdentifier, userId)
         .execute("dbo.getDashAdmin");
@@ -28,7 +29,7 @@ export async function GET(request) {
       });
     }
 
-    if (role === "user") {
+    if (userRole.some((r) => r.name === "user" || r.name === "CRRU")) {
       const selectRes = await selectReq
         .input("userId", sql.UniqueIdentifier, userId)
         .execute("dbo.getDashUser");
@@ -36,10 +37,17 @@ export async function GET(request) {
       const response = JSON.parse(selectRes.recordset[0].JsonOutput);
 
       return NextResponse.json({
-        message: "Dashboard data retrieved successfully",
+        error: "Dashboard data retrieved successfully",
         body: response,
       });
     }
+
+    return NextResponse.json(
+      {
+        error: "Unauthorized role for dashboard access",
+      },
+      { status: 403 },
+    );
   } catch (error) {
     console.error(error);
     return NextResponse.json(

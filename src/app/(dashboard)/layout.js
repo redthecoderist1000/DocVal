@@ -31,6 +31,8 @@ export default function DashboardLayout({ children }) {
 
   // Set active menu based on current route
   useEffect(() => {
+    // signOut({ callbackUrl: "/" });
+
     const currentPath = pathname.split("/").filter(Boolean)[0] || "home";
     setActiveMenu(currentPath);
   }, [pathname]);
@@ -105,8 +107,17 @@ export default function DashboardLayout({ children }) {
   // Show loading while checking auth
   if (status === "loading") return <LoadingScreen />;
 
-  const menuItems =
-    session.user?.role === "administrator" ? menuAdminItems : menuUserItems;
+  const roleValue = session?.user?.role;
+  const roleNames = Array.isArray(roleValue)
+    ? roleValue.map((role) => role?.name).filter(Boolean)
+    : roleValue
+      ? [typeof roleValue === "string" ? roleValue : roleValue?.name].filter(
+          Boolean,
+        )
+      : [];
+  const isAdmin = roleNames.some((role) => role === "admin");
+
+  const menuItems = isAdmin ? menuAdminItems : menuUserItems;
 
   return (
     <>
@@ -141,7 +152,9 @@ export default function DashboardLayout({ children }) {
             <p className="text-xs text-gray-500">
               {session.user?.division_abrv}
             </p>
-            <p className="text-xs text-gray-500">{session.user?.role}</p>
+            <p className="text-xs text-gray-500">
+              {session.user?.role.map((r) => r.name).join(", ")}
+            </p>
           </div>
 
           {/* Mobile Navigation Menu */}
@@ -228,7 +241,7 @@ export default function DashboardLayout({ children }) {
               {session.user?.division_abrv}
             </p>
             <p className="text-xs text-gray-500 text-center">
-              {session.user?.role}
+              {roleNames.join(", ")}
             </p>
           </div>
 
