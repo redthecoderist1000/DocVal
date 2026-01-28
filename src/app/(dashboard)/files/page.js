@@ -193,7 +193,7 @@ export default function files() {
   }, [isChecking, startLoading, stopLoading, status, router]);
 
   return (
-    <Container maxWidth="lg" className="py-8">
+    <Container maxWidth="lg" className="py-8 min-h-[80vh]">
       <div className={`${isModalOpen ? "blur-sm" : ""}`}>
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Files</h1>

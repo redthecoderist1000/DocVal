@@ -4,6 +4,7 @@ import {
   Autocomplete,
   Button,
   CircularProgress,
+  Chip,
   IconButton,
   Typography,
   Stack,
@@ -29,6 +30,7 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [divOption, setDivOption] = useState([]);
+  const [roleOption, setRoleOption] = useState([]);
   const [oldData, setOldData] = useState({
     firstName: "",
     middleName: "",
@@ -36,7 +38,7 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
     email: "",
     divisionName: "",
     divisionId: "",
-    role: "",
+    role: [],
   });
   const [formData, setFormData] = useState({
     firstName: "",
@@ -45,7 +47,7 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
     email: "",
     divisionName: "",
     divisionId: "",
-    role: "",
+    role: [],
   });
 
   useEffect(() => {
@@ -70,6 +72,17 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
           setLoading(false);
           console.error(err);
         });
+
+      axiosInstance
+        .get("/roles/getAllRoles")
+        .then((res) => {
+          // console.log("Fetched roles:", res.body);
+          setRoleOption(res.body);
+        })
+        .catch((err) => {
+          setError("Failed to fetch roles. Please try again.");
+          console.error(err);
+        });
     }
   }, [data.open, data.userId]);
 
@@ -78,6 +91,16 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
       .post("/user/getUserDetail", { userId: data.userId })
       .then((res) => {
         const user = res.body;
+        const parsedRole = (() => {
+          try {
+            return Array.isArray(user.role) ? user.role : JSON.parse(user.role);
+          } catch (err) {
+            return [];
+          }
+        })();
+        const roleIds = Array.isArray(parsedRole)
+          ? parsedRole.map((role) => role.id).filter(Boolean)
+          : [];
         setFormData({
           firstName: user.f_name || "",
           middleName: user.m_name || "",
@@ -85,7 +108,7 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
           email: user.email || "",
           divisionName: user.division_name || "",
           divisionId: user.division_id || "",
-          role: user.role || "",
+          role: roleIds,
         });
         setOldData({
           firstName: user.f_name || "",
@@ -94,8 +117,10 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
           email: user.email || "",
           divisionName: user.division_name || "",
           divisionId: user.division_id || "",
-          role: user.role || "",
+          role: roleIds,
         });
+
+        console.log("Fetched user details:", roleIds);
 
         setLoading(false);
       })
@@ -137,6 +162,12 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
     // check for changes
     const changes = {};
     Object.keys(formData).forEach((key) => {
+      if (key === "role") {
+        if (JSON.stringify(formData.role) !== JSON.stringify(oldData.role)) {
+          changes[key] = formData[key];
+        }
+        return;
+      }
       if (formData[key] !== oldData[key]) {
         changes[key] = formData[key];
       }
@@ -160,7 +191,9 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
     if (formData.email !== oldData.email) updateData.newEmail = formData.email;
     if (formData.divisionId !== oldData.divisionId)
       updateData.newDiv = formData.divisionId;
-    if (formData.role !== oldData.role) updateData.newRole = formData.role;
+    if (JSON.stringify(formData.role) !== JSON.stringify(oldData.role)) {
+      updateData.newRole = formData.role;
+    }
 
     axiosInstance
       .post("/user/editUser", updateData)
@@ -189,6 +222,11 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "role") {
+      const nextValue = typeof value === "string" ? value.split(",") : value;
+      setFormData({ ...formData, [name]: nextValue });
+      return;
+    }
     setFormData({ ...formData, [name]: value });
   };
 
@@ -321,9 +359,27 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
                 size="small"
                 fullWidth
                 variant="outlined"
+                multiple
+                renderValue={(selected) => (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                    {selected.map((roleId) => {
+                      const role = roleOption.find((r) => r.id === roleId);
+                      return (
+                        <Chip
+                          key={roleId}
+                          label={role?.name || roleId}
+                          size="small"
+                        />
+                      );
+                    })}
+                  </Box>
+                )}
               >
-                <MenuItem value="user">User</MenuItem>
-                <MenuItem value="administrator">Admin</MenuItem>
+                {roleOption.map((role) => (
+                  <MenuItem key={role.id} value={role.id}>
+                    {role.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Stack>
