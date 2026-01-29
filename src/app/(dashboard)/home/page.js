@@ -5,7 +5,7 @@ import { useLoading } from "@/helper/LoadingContext";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/helper/Axios";
 import { useError } from "@/helper/ErrorContext";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Container } from "@mui/material";
 import { getRelativeDate } from "@/helper/dateFormatter";
 import { useRouter } from "next/navigation";
 
@@ -19,6 +19,16 @@ export default function home() {
   const { startLoading, stopLoading } = useLoading();
   const [loading, setLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
+
+  const roleValue = session?.user?.role;
+  const roleNames = Array.isArray(roleValue)
+    ? roleValue.map((role) => role?.name).filter(Boolean)
+    : roleValue
+      ? [typeof roleValue === "string" ? roleValue : roleValue?.name].filter(
+          Boolean,
+        )
+      : [];
+  const isAdmin = roleNames.some((role) => role === "admin" || role === "CRRU");
 
   useEffect(() => {
     if (isChecking) {
@@ -67,7 +77,7 @@ export default function home() {
   }
 
   return (
-    <>
+    <Container maxWidth="lg" className="py-8">
       {/* Hero Banner */}
       <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-900 rounded-xl p-8 mb-8 text-white shadow-lg shadow-blue-400/30">
         <div className="flex items-center justify-between">
@@ -110,7 +120,7 @@ export default function home() {
         </div>
 
         {/* User Accounts */}
-        {session.user.role == "administrator" && (
+        {isAdmin && (
           <div className="bg-white  rounded-lg shadow-md p-6 border-l-4 border-yellow-600">
             <div className="flex justify-between items-start">
               <div>
@@ -270,7 +280,7 @@ export default function home() {
                 View Files
               </button>
             </Link>
-            {session.user.role == "administrator" && (
+            {isAdmin && (
               <Link href="/utilities">
                 <button className="w-full px-4 py-3 bg-gray-100 text-gray-800 font-medium rounded-lg hover:bg-gray-200 transition text-left flex items-center gap-2">
                   <svg
@@ -320,6 +330,6 @@ export default function home() {
           </div> */}
         </div>
       </div>
-    </>
+    </Container>
   );
 }

@@ -54,7 +54,7 @@ export default function AccountsTab({ data, isActive }) {
 
   const handleView = (accountId) => {
     setViewAccount({ ...viewAccount, open: true, userId: accountId }); //
-    meronHandel;
+    // meronHandel;
   };
 
   const handleEdit = (id) => {

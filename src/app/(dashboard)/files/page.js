@@ -12,6 +12,7 @@ import {
   MenuItem,
   FormControl,
   IconButton,
+  Container,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
@@ -55,7 +56,7 @@ export default function files() {
   const [typeOption, setTypeOption] = useState([]);
 
   const headerCells = [
-    "File",
+    "Documents",
     "Classification",
     "Type of Document",
     "Date Received",
@@ -138,9 +139,9 @@ export default function files() {
     });
 
     // Apply sorting
-    if (sortBy === "file-asc") {
+    if (sortBy === "documents-asc") {
       filtered.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortBy === "file-desc") {
+    } else if (sortBy === "documents-desc") {
       filtered.sort((a, b) => b.title.localeCompare(a.title));
     } else if (sortBy === "date-asc") {
       filtered.sort(
@@ -192,10 +193,15 @@ export default function files() {
   }, [isChecking, startLoading, stopLoading, status, router]);
 
   return (
-    <>
+    <Container maxWidth="lg" className="py-8 min-h-[80vh]">
       <div className={`${isModalOpen ? "blur-sm" : ""}`}>
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Files</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Evaluation</h1>
+            <h2 className="text-sm text-gray-600">
+              Manage your evaluated documents or create new evaluations
+            </h2>
+          </div>
           <Button
             variant="contained"
             size="small"
@@ -208,56 +214,68 @@ export default function files() {
         </div>
 
         {/* Search and Filter Bar */}
-        <div className="mb-6 flex gap-4">
-          <div className="flex-1">
+        <div className="mb-6 grid grid-cols-1  md:grid-cols-4 gap-4 items-end">
+          {/* Search bar - full width on mobile, 1 column on desktop */}
+          <div className="md:col-span-2">
             <TextField
               type="text"
-              placeholder="Search files..."
+              placeholder="Search documents..."
               size="small"
               fullWidth
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <Select
-              value={filterClassification}
-              onChange={(e) => {
-                setFilterClassification(e.target.value);
-                setPage(0);
-              }}
-              displayEmpty
-            >
-              <MenuItem value="">All Classifications</MenuItem>
-              {classificationOptions.map((classification) => (
-                <MenuItem key={classification} value={classification}>
-                  {classification}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <Select
-              value={filterDocType}
-              onChange={(e) => {
-                setFilterDocType(e.target.value);
-                setPage(0);
-              }}
-              displayEmpty
-            >
-              <MenuItem value="">All Document Types</MenuItem>
-              {docTypeOptions.map((docType) => (
-                <MenuItem key={docType} value={docType}>
-                  {docType}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Tooltip title="Reset Filters" arrow placement="top">
-            <IconButton color="error" size="small">
-              <RotateLeftRoundedIcon fontSize="medium" onClick={resetFilters} />
-            </IconButton>
-          </Tooltip>
+
+          {/* Classification filter - full width on mobile */}
+          <div>
+            <FormControl size="small" fullWidth>
+              <Select
+                value={filterClassification}
+                onChange={(e) => {
+                  setFilterClassification(e.target.value);
+                  setPage(0);
+                }}
+                displayEmpty
+              >
+                <MenuItem value="">All Classifications</MenuItem>
+                {classOption.map((data, index) => (
+                  <MenuItem key={index} value={data.name}>
+                    {data.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+
+          {/* Document type filter - full width on mobile */}
+          <div className="flex gap-2">
+            <FormControl size="small" fullWidth>
+              <Select
+                value={filterDocType}
+                onChange={(e) => {
+                  setFilterDocType(e.target.value);
+                  setPage(0);
+                }}
+                displayEmpty
+              >
+                <MenuItem value="">All Document Types</MenuItem>
+                {typeOption.map((data, index) => (
+                  <MenuItem key={index} value={data.name}>
+                    {data.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Tooltip title="Reset Filters" arrow placement="top">
+              <IconButton color="error" size="small">
+                <RotateLeftRoundedIcon
+                  fontSize="medium"
+                  onClick={resetFilters}
+                />
+              </IconButton>
+            </Tooltip>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -279,7 +297,8 @@ export default function files() {
                       >
                         <div className="flex items-center gap-2 ">
                           {cell}
-                          {(cell === "File" || cell === "Date Received") && (
+                          {(cell === "Documents" ||
+                            cell === "Date Received") && (
                             <Tooltip
                               title={`Sort by ${cell}`}
                               arrow
@@ -289,11 +308,11 @@ export default function files() {
                                 size="small"
                                 variant="text"
                                 onClick={() => {
-                                  if (cell === "File") {
+                                  if (cell === "Documents") {
                                     setSortBy(
-                                      sortBy === "file-asc"
-                                        ? "file-desc"
-                                        : "file-asc",
+                                      sortBy === "documents-asc"
+                                        ? "documents-desc"
+                                        : "documents-asc",
                                     );
                                   } else if (cell === "Date Received") {
                                     setSortBy(
@@ -309,10 +328,11 @@ export default function files() {
                                   color: "inherit",
                                 }}
                               >
-                                {sortBy === "file-asc" && cell === "File" ? (
+                                {sortBy === "documents-asc" &&
+                                cell === "Documents" ? (
                                   <KeyboardArrowUpRoundedIcon fontSize="small" />
-                                ) : sortBy === "file-desc" &&
-                                  cell === "File" ? (
+                                ) : sortBy === "documents-desc" &&
+                                  cell === "Documents" ? (
                                   <KeyboardArrowDownRoundedIcon fontSize="small" />
                                 ) : sortBy === "date-asc" &&
                                   cell === "Date Received" ? (
@@ -454,6 +474,6 @@ export default function files() {
         setDeleteDoc={setDeleteDoc}
         setFiles={setFiles}
       />
-    </>
+    </Container>
   );
 }

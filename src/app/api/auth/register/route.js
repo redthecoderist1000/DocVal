@@ -56,6 +56,11 @@ export async function POST(request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Prepare role table-valued parameter
+    const roleTable = new sql.Table();
+    roleTable.columns.add("RoleIdList", sql.UniqueIdentifier);
+    (role || []).forEach((r) => roleTable.rows.add(r));
+
     // Insert user into database
     const insertReq = pool.request();
     const insertRes = await insertReq
@@ -64,7 +69,7 @@ export async function POST(request) {
       .input("l_name", sql.VarChar(100), l_name || "")
       .input("email", sql.VarChar(255), email)
       .input("password", sql.VarChar(255), hashedPassword)
-      .input("role", sql.VarChar(20), role || "")
+      .input("role", roleTable)
       .input("division", sql.UniqueIdentifier, division || "")
       .execute("dbo.registerUser");
 
@@ -89,10 +94,12 @@ export async function POST(request) {
     if (error) {
       return NextResponse.json(
         {
-          message: "Failed to send email",
-          error: "User created, but failed to send email",
+          message: "User created, but failed to send email",
+          body: insertRes.recordset,
+          refresh_token: refreshToken,
+          access_token: accessToken,
         },
-        { status: 500 },
+        { status: 210 },
       );
     }
 
