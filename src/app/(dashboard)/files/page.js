@@ -196,7 +196,12 @@ export default function files() {
     <Container maxWidth="lg" className="py-8 min-h-[80vh]">
       <div className={`${isModalOpen ? "blur-sm" : ""}`}>
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Files</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Evaluation</h1>
+            <h2 className="text-sm text-gray-600">
+              Manage your evaluated documents or create new evaluations
+            </h2>
+          </div>
           <Button
             variant="contained"
             size="small"
