@@ -22,7 +22,8 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
 import StopCircleRoundedIcon from "@mui/icons-material/StopCircleRounded";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+// import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import KeyboardBackspaceRoundedIcon from "@mui/icons-material/KeyboardBackspaceRounded";
 import axiosInstance from "@/helper/Axios";
 import { useRouter } from "next/navigation";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
@@ -50,9 +51,27 @@ export default function NewFile() {
     file: null,
   });
   const [loading, setLoading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const [classifications, setClassifications] = useState([]);
   const [types, setTypes] = useState([]);
   const [offices, setOffices] = useState([]);
+
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+
+  const validateFile = (file) => {
+    if (!file) return { valid: false, message: "No file selected" };
+    console.log(file);
+    if (file.type !== "application/pdf") {
+      return { valid: false, message: "Only PDF files are allowed" };
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        valid: false,
+        message: `File size must be less than 10MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`,
+      };
+    }
+    return { valid: true, message: "" };
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -65,10 +84,45 @@ export default function NewFile() {
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData((prev) => ({
-        ...prev,
-        file,
-      }));
+      const validation = validateFile(file);
+      if (validation.valid) {
+        setFormData((prev) => ({
+          ...prev,
+          file,
+        }));
+      } else {
+        setError(validation.message, "error");
+      }
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const validation = validateFile(file);
+      if (validation.valid) {
+        setFormData((prev) => ({
+          ...prev,
+          file,
+        }));
+      } else {
+        setError(validation.message, "error");
+      }
     }
   };
 
@@ -184,6 +238,8 @@ export default function NewFile() {
   };
 
   useEffect(() => {
+    // console.log(session);
+
     axiosInstance
       .get("/document/getAllDocClass")
       .then((res) => {
@@ -221,6 +277,51 @@ export default function NewFile() {
     }
   }, [status, router]);
 
+  useEffect(() => {
+    const handleDocumentDragOver = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragOver(true);
+    };
+
+    const handleDocumentDragLeave = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Only set to false if leaving the window
+      if (e.clientX === 0 && e.clientY === 0) {
+        setDragOver(false);
+      }
+    };
+
+    const handleDocumentDrop = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragOver(false);
+      const file = e.dataTransfer.files?.[0];
+      if (file) {
+        const validation = validateFile(file);
+        if (validation.valid) {
+          setFormData((prev) => ({
+            ...prev,
+            file,
+          }));
+        } else {
+          setError(validation.message, "error");
+        }
+      }
+    };
+
+    document.addEventListener("dragover", handleDocumentDragOver);
+    document.addEventListener("dragleave", handleDocumentDragLeave);
+    document.addEventListener("drop", handleDocumentDrop);
+
+    return () => {
+      document.removeEventListener("dragover", handleDocumentDragOver);
+      document.removeEventListener("dragleave", handleDocumentDragLeave);
+      document.removeEventListener("drop", handleDocumentDrop);
+    };
+  }, []);
+
   let filteredOffices = useMemo(() => {
     if (formData.office_type === "internal") {
       return offices.filter(
@@ -245,15 +346,8 @@ export default function NewFile() {
         <CardContent sx={{ p: 4 }}>
           {/* Header with Back Button */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-            <IconButton
-              onClick={() => router.back()}
-              sx={{
-                border: "1px solid #e0e0e0",
-                "&:hover": { backgroundColor: "#f5f5f5" },
-              }}
-              size="small"
-            >
-              <ArrowBackIcon />
+            <IconButton onClick={() => router.back()} size="small">
+              <KeyboardBackspaceRoundedIcon />
             </IconButton>
             <Typography
               variant="h4"
@@ -263,18 +357,79 @@ export default function NewFile() {
                 color: "text.primary",
               }}
             >
-              Upload New File
+              Upload new document
             </Typography>
           </Box>
 
           {/* Form */}
           <form onSubmit={handleSubmit}>
             <Stack spacing={3}>
+              {/* File Upload */}
+              <Typography variant="body1" color="textDisabled" fontWeight="700">
+                Document Upload
+              </Typography>
+              {formData.file ? (
+                <Chip
+                  label={`${formData.file.name} (${(
+                    formData.file.size /
+                    (1024 * 1024)
+                  ).toFixed(2)} MB)`}
+                  variant="outlined"
+                  icon={<PictureAsPdfRoundedIcon color="error" />}
+                  sx={{ borderStyle: "dashed", bgcolor: "#f7f7f7ff" }}
+                  onDelete={() => {
+                    setFormData({ ...formData, file: null });
+                  }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    border: "2px dashed",
+                    borderColor: dragOver ? "primary.main" : "divider",
+                    borderRadius: 1,
+                    p: 3,
+                    textAlign: "center",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    backgroundColor: dragOver
+                      ? "action.selected"
+                      : "action.hover",
+                    "&:hover": {
+                      borderColor: "primary.main",
+                      backgroundColor: "action.selected",
+                    },
+                  }}
+                  component="label"
+                >
+                  <input
+                    type="file"
+                    hidden
+                    onChange={handleFileChange}
+                    accept=".pdf"
+                  />
+                  <CloudUploadIcon
+                    sx={{
+                      fontSize: 40,
+                      color: "primary.main",
+                      mb: 1,
+                    }}
+                  />
+                  <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
+                    Drag and drop or click to upload
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary" }}
+                  >
+                    PDF (Max 10MB)
+                  </Typography>
+                </Box>
+              )}
               {/* Document Details */}
               <Typography variant="body1" color="textDisabled" fontWeight="700">
                 Document Details
               </Typography>
-              <Stack direction="row" spacing={2}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   label="Reference No."
                   name="refno"
@@ -298,7 +453,7 @@ export default function NewFile() {
                   required
                 />
               </Stack>
-              <Stack direction="row" spacing={2}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <Autocomplete
                   options={classifications}
                   size="small"
@@ -355,20 +510,23 @@ export default function NewFile() {
               <Typography variant="body1" color="textDisabled" fontWeight="700">
                 Sender Details
               </Typography>
-              <Stack direction="row" spacing={2}>
-                <FormControl fullWidth size="small" required>
-                  <InputLabel id="office-type-label">Office Type</InputLabel>
-                  <Select
-                    labelId="office-type-label"
-                    label="Office Type"
-                    name="office_type"
-                    onChange={handleInputChange}
-                    value={formData.office_type}
-                  >
-                    <MenuItem value="internal">Internal (DICT)</MenuItem>
-                    <MenuItem value="external">Exernal</MenuItem>
-                  </Select>
-                </FormControl>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                {session?.user?.role.some((role) => role.name === "CRRU") && (
+                  <FormControl fullWidth size="small" required>
+                    <InputLabel id="office-type-label">Office Type</InputLabel>
+                    <Select
+                      labelId="office-type-label"
+                      label="Office Type"
+                      name="office_type"
+                      onChange={handleInputChange}
+                      value={formData.office_type}
+                    >
+                      <MenuItem value="internal">Internal (DICT)</MenuItem>
+                      <MenuItem value="external">Exernal</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+
                 <Autocomplete
                   options={filteredOffices}
                   size="small"
@@ -410,7 +568,7 @@ export default function NewFile() {
                   fullWidth
                 />
               </Stack>
-              <Stack direction="row" spacing={2}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   label="Email"
                   name="sender_email"
@@ -447,68 +605,8 @@ export default function NewFile() {
                 />
               </Stack>
 
-              {/* File Upload */}
-              <Typography variant="body1" color="textDisabled" fontWeight="700">
-                File Upload
-              </Typography>
-              {formData.file ? (
-                <Chip
-                  label={`${formData.file.name} (${(
-                    formData.file.size /
-                    (1024 * 1024)
-                  ).toFixed(2)} MB)`}
-                  variant="outlined"
-                  icon={<PictureAsPdfRoundedIcon color="error" />}
-                  sx={{ borderStyle: "dashed", bgcolor: "#f7f7f7ff" }}
-                  onDelete={() => {
-                    setFormData({ ...formData, file: null });
-                  }}
-                />
-              ) : (
-                <Box
-                  sx={{
-                    border: "2px dashed",
-                    borderColor: "divider",
-                    borderRadius: 1,
-                    p: 3,
-                    textAlign: "center",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    backgroundColor: "action.hover",
-                    "&:hover": {
-                      borderColor: "primary.main",
-                      backgroundColor: "action.selected",
-                    },
-                  }}
-                  component="label"
-                >
-                  <input
-                    type="file"
-                    hidden
-                    onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.txt,.xlsx,.xls"
-                  />
-                  <CloudUploadIcon
-                    sx={{
-                      fontSize: 40,
-                      color: "primary.main",
-                      mb: 1,
-                    }}
-                  />
-                  <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
-                    Click to upload
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "text.secondary" }}
-                  >
-                    PDF (Max 10MB)
-                  </Typography>
-                </Box>
-              )}
-
               {/* Action Buttons */}
-              <Stack direction="row" spacing={2}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <Button
                   type="button"
                   variant="outlined"

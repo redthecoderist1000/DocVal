@@ -56,7 +56,7 @@ export default function files() {
   const [typeOption, setTypeOption] = useState([]);
 
   const headerCells = [
-    "File",
+    "Documents",
     "Classification",
     "Type of Document",
     "Date Received",
@@ -139,9 +139,9 @@ export default function files() {
     });
 
     // Apply sorting
-    if (sortBy === "file-asc") {
+    if (sortBy === "documents-asc") {
       filtered.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortBy === "file-desc") {
+    } else if (sortBy === "documents-desc") {
       filtered.sort((a, b) => b.title.localeCompare(a.title));
     } else if (sortBy === "date-asc") {
       filtered.sort(
@@ -219,7 +219,7 @@ export default function files() {
           <div className="md:col-span-2">
             <TextField
               type="text"
-              placeholder="Search files..."
+              placeholder="Search documents..."
               size="small"
               fullWidth
               value={searchQuery}
@@ -297,7 +297,8 @@ export default function files() {
                       >
                         <div className="flex items-center gap-2 ">
                           {cell}
-                          {(cell === "File" || cell === "Date Received") && (
+                          {(cell === "Documents" ||
+                            cell === "Date Received") && (
                             <Tooltip
                               title={`Sort by ${cell}`}
                               arrow
@@ -307,11 +308,11 @@ export default function files() {
                                 size="small"
                                 variant="text"
                                 onClick={() => {
-                                  if (cell === "File") {
+                                  if (cell === "Documents") {
                                     setSortBy(
-                                      sortBy === "file-asc"
-                                        ? "file-desc"
-                                        : "file-asc",
+                                      sortBy === "documents-asc"
+                                        ? "documents-desc"
+                                        : "documents-asc",
                                     );
                                   } else if (cell === "Date Received") {
                                     setSortBy(
@@ -327,10 +328,11 @@ export default function files() {
                                   color: "inherit",
                                 }}
                               >
-                                {sortBy === "file-asc" && cell === "File" ? (
+                                {sortBy === "documents-asc" &&
+                                cell === "Documents" ? (
                                   <KeyboardArrowUpRoundedIcon fontSize="small" />
-                                ) : sortBy === "file-desc" &&
-                                  cell === "File" ? (
+                                ) : sortBy === "documents-desc" &&
+                                  cell === "Documents" ? (
                                   <KeyboardArrowDownRoundedIcon fontSize="small" />
                                 ) : sortBy === "date-asc" &&
                                   cell === "Date Received" ? (
