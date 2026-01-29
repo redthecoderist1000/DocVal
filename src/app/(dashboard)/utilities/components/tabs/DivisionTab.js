@@ -253,7 +253,7 @@ export default function DivisionTab({ data, isActive }) {
       <div className="mb-6">
         <TextField
           type="text"
-          placeholder="Search divisions..."
+          placeholder="Search DICT offices..."
           size="small"
           fullWidth
           value={searchQuery}

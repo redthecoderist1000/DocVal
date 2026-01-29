@@ -43,7 +43,12 @@ export default function utilities() {
   return (
     <>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Utilities</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Utilities</h1>
+          <h2 className="text-sm text-gray-600">
+            Manage your utilities or create new entries
+          </h2>
+        </div>
       </div>
 
       {/* Tabs as Buttons */}

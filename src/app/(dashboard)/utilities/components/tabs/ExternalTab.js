@@ -127,7 +127,7 @@ export default function ExternalTab({ data, isActive }) {
       <div className="mb-6">
         <TextField
           type="text"
-          placeholder="Search divisions..."
+          placeholder="Search external offices..."
           size="small"
           fullWidth
           value={searchQuery}
