@@ -60,7 +60,6 @@ export default function NewFile() {
 
   const validateFile = (file) => {
     if (!file) return { valid: false, message: "No file selected" };
-    console.log(file);
     if (file.type !== "application/pdf") {
       return { valid: false, message: "Only PDF files are allowed" };
     }
@@ -83,36 +82,6 @@ export default function NewFile() {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const validation = validateFile(file);
-      if (validation.valid) {
-        setFormData((prev) => ({
-          ...prev,
-          file,
-        }));
-      } else {
-        setError(validation.message, "error");
-      }
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOver(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOver(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
     if (file) {
       const validation = validateFile(file);
       if (validation.valid) {

@@ -3,7 +3,7 @@ import { getSession, signOut } from "next-auth/react";
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+  baseURL: process.env.BASE_URL,
   //   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -102,7 +102,7 @@ axiosInstance.interceptors.response.use(
 
 //           const { data } = await axios.post(
 //             `${
-//               process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+//               process.env.BASE_URL || "http://localhost:3000"
 //             }/auth/refresh`,
 //             {
 //               refresh_token: session?.refresh_token,
