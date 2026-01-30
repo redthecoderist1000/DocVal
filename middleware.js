@@ -1,12 +1,14 @@
 import { withAuth } from "next-auth/middleware";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default withAuth({
   pages: {
     signIn: "/auth/signin",
   },
+  callbacks: {
+    authorized: ({ token }) => Boolean(token),
+  },
 });
 
 export const config = {
-  matcher: ["/((?!api/auth).*)"],
+  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
 };
