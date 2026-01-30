@@ -49,6 +49,7 @@ export default function SignIn() {
       setError(result.error || "Failed to sign in. Please try again.");
       setIsSubmitting(false);
     } else {
+      // console.log("Sign in successful:", result);
       router.push("/home");
     }
   };

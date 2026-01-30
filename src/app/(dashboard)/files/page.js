@@ -8,11 +8,22 @@ import {
   Typography,
   CircularProgress,
   Tooltip,
+  Select,
+  MenuItem,
+  FormControl,
+  IconButton,
+  Container,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
+import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
+import RotateLeftRoundedIcon from "@mui/icons-material/RotateLeftRounded";
+
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
 import { useError } from "@/helper/ErrorContext";
@@ -32,20 +43,67 @@ export default function files() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sortBy, setSortBy] = useState("date-desc"); // "none", "file-asc", "file-desc", "date-asc", "date-desc"
+  const [filterClassification, setFilterClassification] = useState("");
+  const [filterDocType, setFilterDocType] = useState("");
   const [deleteDoc, setDeleteDoc] = useState({
     open: false,
     docId: null,
     docTitle: "",
   });
 
-  const headerCells = ["File", "Date Received", "Actions"];
+  const [classOption, setClassOption] = useState([]);
+  const [typeOption, setTypeOption] = useState([]);
+
+  const headerCells = [
+    "Documents",
+    "Classification",
+    "Type of Document",
+    "Date Received",
+    // "Status",
+    "Actions",
+  ];
+
+  // Static classification and document type options
+  const classificationOptions = [
+    "Complex",
+    "Highly Technical",
+    "Simple",
+    "Urgent",
+  ];
+  const docTypeOptions = [
+    "Accomplishment Report",
+    "Memorandum",
+    "Progress Report",
+    "Project Proposal",
+    "Service Agreement",
+    "Terms of Reference",
+  ];
 
   useEffect(() => {
     setLoading(true);
+
+    axiosInstance
+      .get("/document/getAllDocClass")
+      .then((res) => {
+        setClassOption(res.body);
+      })
+      .catch((error) => {
+        console.error("Error fetching classifications:", error);
+      });
+
+    axiosInstance
+      .get("/document/getAllDocType")
+      .then((res) => {
+        setTypeOption(res.body);
+      })
+      .catch((error) => {
+        console.error("Error fetching types:", error);
+      });
+
     axiosInstance
       .post("/document/getFileByUser")
       .then((res) => {
-        // console.log(res);
         setFiles(res.body);
         setLoading(false);
       })
@@ -60,15 +118,51 @@ export default function files() {
       });
   }, []);
 
-  let visibleRows = useMemo(
-    () =>
-      files
-        .filter((file) =>
-          file.title.toLowerCase().includes(searchQuery.toLowerCase()),
-        )
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [files, searchQuery, page, rowsPerPage],
-  );
+  let visibleRows = useMemo(() => {
+    let filtered = files.filter((file) => {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        (file.title && file.title.toLowerCase().includes(query)) ||
+        (file.reference_no &&
+          file.reference_no.toLowerCase().includes(query)) ||
+        (file.doc_class && file.doc_class.toLowerCase().includes(query)) ||
+        (file.doc_type && file.doc_type.toLowerCase().includes(query)) ||
+        (file.sender_office &&
+          file.sender_office.toLowerCase().includes(query));
+
+      const matchesClassification =
+        filterClassification === "" || file.doc_class === filterClassification;
+      const matchesDocType =
+        filterDocType === "" || file.doc_type === filterDocType;
+
+      return matchesSearch && matchesClassification && matchesDocType;
+    });
+
+    // Apply sorting
+    if (sortBy === "documents-asc") {
+      filtered.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === "documents-desc") {
+      filtered.sort((a, b) => b.title.localeCompare(a.title));
+    } else if (sortBy === "date-asc") {
+      filtered.sort(
+        (a, b) => new Date(a.date_created) - new Date(b.date_created),
+      );
+    } else if (sortBy === "date-desc") {
+      filtered.sort(
+        (a, b) => new Date(b.date_created) - new Date(a.date_created),
+      );
+    }
+
+    return filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [
+    files,
+    searchQuery,
+    page,
+    rowsPerPage,
+    sortBy,
+    filterClassification,
+    filterDocType,
+  ]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -79,23 +173,35 @@ export default function files() {
     setPage(0);
   };
 
+  const resetFilters = () => {
+    setSearchQuery("");
+    setFilterClassification("");
+    setFilterDocType("");
+    setPage(0);
+  };
+
   useEffect(() => {
     if (isChecking) {
       startLoading();
     } else {
       stopLoading();
     }
-    console.log("Status:", status);
+    // console.log("Status:", status);
     if (status !== "authenticated") {
       router.push("/", { replace: true });
     }
   }, [isChecking, startLoading, stopLoading, status, router]);
 
   return (
-    <>
+    <Container maxWidth="lg" className="py-8 min-h-[80vh]">
       <div className={`${isModalOpen ? "blur-sm" : ""}`}>
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Files</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Evaluation</h1>
+            <h2 className="text-sm text-gray-600">
+              Manage your evaluated documents or create new evaluations
+            </h2>
+          </div>
           <Button
             variant="contained"
             size="small"
@@ -107,17 +213,68 @@ export default function files() {
           </Button>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative">
+        {/* Search and Filter Bar */}
+        <div className="mb-6 grid grid-cols-1  md:grid-cols-4 gap-4 items-end">
+          {/* Search bar - full width on mobile, 1 column on desktop */}
+          <div className="md:col-span-2">
             <TextField
               type="text"
-              placeholder="Search files..."
+              placeholder="Search documents..."
               size="small"
               fullWidth
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+          </div>
+
+          {/* Classification filter - full width on mobile */}
+          <div>
+            <FormControl size="small" fullWidth>
+              <Select
+                value={filterClassification}
+                onChange={(e) => {
+                  setFilterClassification(e.target.value);
+                  setPage(0);
+                }}
+                displayEmpty
+              >
+                <MenuItem value="">All Classifications</MenuItem>
+                {classOption.map((data, index) => (
+                  <MenuItem key={index} value={data.name}>
+                    {data.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+
+          {/* Document type filter - full width on mobile */}
+          <div className="flex gap-2">
+            <FormControl size="small" fullWidth>
+              <Select
+                value={filterDocType}
+                onChange={(e) => {
+                  setFilterDocType(e.target.value);
+                  setPage(0);
+                }}
+                displayEmpty
+              >
+                <MenuItem value="">All Document Types</MenuItem>
+                {typeOption.map((data, index) => (
+                  <MenuItem key={index} value={data.name}>
+                    {data.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Tooltip title="Reset Filters" arrow placement="top">
+              <IconButton color="error" size="small">
+                <RotateLeftRoundedIcon
+                  fontSize="medium"
+                  onClick={resetFilters}
+                />
+              </IconButton>
+            </Tooltip>
           </div>
         </div>
 
@@ -138,7 +295,58 @@ export default function files() {
                           index === 0 ? "left" : "center"
                         } text-xs uppercase text-gray-700`}
                       >
-                        {cell}
+                        <div className="flex items-center gap-2 ">
+                          {cell}
+                          {(cell === "Documents" ||
+                            cell === "Date Received") && (
+                            <Tooltip
+                              title={`Sort by ${cell}`}
+                              arrow
+                              placement="top"
+                            >
+                              <Button
+                                size="small"
+                                variant="text"
+                                onClick={() => {
+                                  if (cell === "Documents") {
+                                    setSortBy(
+                                      sortBy === "documents-asc"
+                                        ? "documents-desc"
+                                        : "documents-asc",
+                                    );
+                                  } else if (cell === "Date Received") {
+                                    setSortBy(
+                                      sortBy === "date-asc"
+                                        ? "date-desc"
+                                        : "date-asc",
+                                    );
+                                  }
+                                }}
+                                sx={{
+                                  padding: "4px",
+                                  minWidth: "auto",
+                                  color: "inherit",
+                                }}
+                              >
+                                {sortBy === "documents-asc" &&
+                                cell === "Documents" ? (
+                                  <KeyboardArrowUpRoundedIcon fontSize="small" />
+                                ) : sortBy === "documents-desc" &&
+                                  cell === "Documents" ? (
+                                  <KeyboardArrowDownRoundedIcon fontSize="small" />
+                                ) : sortBy === "date-asc" &&
+                                  cell === "Date Received" ? (
+                                  <KeyboardArrowUpRoundedIcon fontSize="small" />
+                                ) : sortBy === "date-desc" &&
+                                  cell === "Date Received" ? (
+                                  <KeyboardArrowDownRoundedIcon fontSize="small" />
+                                ) : (
+                                  <UnfoldMoreRoundedIcon fontSize="small" />
+                                )}
+                              </Button>
+                            </Tooltip>
+                          )}
+                        </div>
                       </th>
                     ))}
                   </tr>
@@ -154,13 +362,22 @@ export default function files() {
                           </Typography>
                         </div>
                       </td>
-                      <td className="px-6 py-2 text-center text-sm text-gray-600">
+                      <td className="px-6 py-2 text-left text-sm text-gray-600">
+                        {doc.doc_class || "-"}
+                      </td>
+                      <td className="px-6 py-2 text-left text-sm text-gray-600">
+                        {doc.doc_type || "-"}
+                      </td>
+                      <td className="px-6 py-2 text-left text-sm text-gray-600">
                         {doc.date_created
                           ? new Date(doc.date_created)
                               .toISOString()
                               .split("T")[0]
                           : "-"}
                       </td>
+                      {/* <td className="px-6 py-2 text-left text-sm text-gray-600">
+                        {doc.status || "-"}
+                      </td> */}
                       <td className="px-6 py-2">
                         <div className="flex items-center justify-center gap-2">
                           <Tooltip title="View Details" arrow placement="top">
@@ -257,6 +474,6 @@ export default function files() {
         setDeleteDoc={setDeleteDoc}
         setFiles={setFiles}
       />
-    </>
+    </Container>
   );
 }

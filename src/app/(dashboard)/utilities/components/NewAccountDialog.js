@@ -3,16 +3,19 @@ import { useError } from "@/helper/ErrorContext";
 import {
   Button,
   CircularProgress,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Box,
   Stack,
   TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  Autocomplete,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 
@@ -23,10 +26,11 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
     m_name: "",
     l_name: "",
     email: "",
-    role: "",
+    role: [],
     division_id: "",
   });
   const [divisions, setDivisions] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [errors, setErrors] = useState({
     f_name: "",
     m_name: "",
@@ -43,9 +47,26 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
       axiosInstance
         .get("/office/getAllDivision")
         .then((res) => {
-          setDivisions(res.body || []);
+          const internal = res.body.filter(
+            (div) =>
+              div.office_type.toLowerCase() === "internal" &&
+              div.parent_id !== null,
+          );
+          setDivisions(internal);
+          //
         })
         .catch((err) => {
+          console.error(err);
+        });
+
+      axiosInstance
+        .get("/roles/getAllRoles")
+        .then((res) => {
+          // console.log("Fetched roles:", res.body);
+          setRoles(res.body);
+        })
+        .catch((err) => {
+          setError("Failed to fetch roles. Please try again.");
           console.error(err);
         });
     }
@@ -58,7 +79,7 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
       m_name: "",
       l_name: "",
       email: "",
-      role: "",
+      role: [],
       division_id: "",
     });
     setErrors({
@@ -73,6 +94,18 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === "role") {
+      const nextValue = typeof value === "string" ? value.split(",") : value;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: nextValue,
+      }));
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -118,7 +151,7 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
       isValid = false;
     }
 
-    if (!formData.role) {
+    if (!formData.role || formData.role.length === 0) {
       newErrors.role = "Role is required";
       isValid = false;
     }
@@ -135,7 +168,12 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
   const generatePassword = (email) => {
     // Extract the part before @ symbol and take first 3 characters
     // const emailPrefix = email.split("@")[0].slice(0, 3).toUpperCase();
-    const emailPrefix = email.split("@")[0].toUpperCase();
+    // const emailPrefix = email.split("@")[0].toUpperCase();
+    // remove special characters from emailPrefix
+    const emailPrefix = email
+      .split("@")[0]
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase();
 
     // Generate a random 4-digit number
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
@@ -180,15 +218,15 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
             full_name: res.body[0].full_name,
             email: res.body[0].email,
             division_name: res.body[0].division,
+            role: res.body[0].role,
           },
         ]);
-        setError("Account added successfully!", "success");
         setFormData({
           f_name: "",
           m_name: "",
           l_name: "",
           email: "",
-          role: "",
+          role: [],
           division_id: "",
         });
         setErrors({
@@ -199,14 +237,23 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
           role: "",
           division_id: "",
         });
+        if (res.status === 210) {
+          setError(res.message, "warning");
+        } else {
+          setError("Account added successfully!", "success");
+        }
+
         setTimeout(() => {
           setOpen(false);
           setLoading(false);
         }, 1500);
       })
       .catch((err) => {
-        console.log("Error registering account", err);
-        setError("Submission failed. Please try again.", "error");
+        console.log(err.message, err);
+        setError(
+          err.message || "Submission failed. Please try again.",
+          "error",
+        );
         setLoading(false);
       });
   };
@@ -294,12 +341,30 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
                 value={formData.role}
                 onChange={handleInputChange}
                 label="Role"
+                multiple
+                renderValue={(selected) => (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                    {selected.map((roleId) => {
+                      const role = roles.find((r) => r.id === roleId);
+                      return (
+                        <Chip
+                          key={roleId}
+                          label={role?.name || roleId}
+                          size="small"
+                        />
+                      );
+                    })}
+                  </Box>
+                )}
               >
                 <MenuItem value="" disabled>
                   <em>Select a role</em>
                 </MenuItem>
-                <MenuItem value="administrator">Admin</MenuItem>
-                <MenuItem value="user">User</MenuItem>
+                {roles.map((role) => (
+                  <MenuItem key={role.id} value={role.id}>
+                    {role.name}
+                  </MenuItem>
+                ))}
               </Select>
               {errors.role && (
                 <p
@@ -313,42 +378,25 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
                 </p>
               )}
             </FormControl>
-            <FormControl
+            <Autocomplete
+              options={divisions}
+              getOptionLabel={(option) => option.division_name || ""}
+              value={
+                divisions.find((d) => d.id === formData.division_id) || null
+              }
+              onChange={(event, newValue) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  division_id: newValue?.id || "",
+                }));
+              }}
               fullWidth
               size="small"
-              error={!!errors.division_id}
-              disabled={loading}
-            >
-              <InputLabel id="division-label">Division</InputLabel>
-              <Select
-                labelId="division-label"
-                id="division"
-                name="division_id"
-                value={formData.division_id}
-                onChange={handleInputChange}
-                label="Division"
-              >
-                <MenuItem value="" disabled>
-                  <em>Select a division</em>
-                </MenuItem>
-                {divisions.map((division) => (
-                  <MenuItem key={division.id} value={division.id}>
-                    {division.division_name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.division_id && (
-                <p
-                  style={{
-                    color: "#d32f2f",
-                    fontSize: "0.75rem",
-                    marginTop: "4px",
-                  }}
-                >
-                  {errors.division_id}
-                </p>
+              noOptionsText="No divisions available"
+              renderInput={(params) => (
+                <TextField {...params} placeholder="Search Division" />
               )}
-            </FormControl>
+            />
           </Stack>
         </form>
       </DialogContent>
