@@ -2,6 +2,7 @@ import { authenticateToken } from "../../helper/authenticateToken";
 import { getConnection } from "../../helper/db";
 import sql from "mssql";
 import { NextResponse } from "next/server";
+import { getErrorMessage } from "../../helper/errorHandler";
 
 export async function POST(request) {
   try {
@@ -27,11 +28,9 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error(error);
-    const errorMessage =
-      error.originalError?.message || error.message || "Unknown error";
     return NextResponse.json(
-      { message: "Server error", error: errorMessage },
-      { status: 500 }
+      { message: "Server error", error: getErrorMessage(error) },
+      { status: 500 },
     );
   }
 }

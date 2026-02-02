@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { getConnection } from "@/app/api/helper/db";
 import { authenticateToken } from "@/app/api/helper/authenticateToken";
+import { getErrorMessage } from "@/app/api/helper/errorHandler";
 
 export async function POST(request) {
   try {
@@ -41,7 +42,7 @@ export async function POST(request) {
     ) {
       return NextResponse.json(
         { message: "All fields are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -87,13 +88,13 @@ export async function POST(request) {
         message: "File created successfully",
         body: insertRes.recordset,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (err) {
     console.error(err);
     return NextResponse.json(
-      { message: "Server error", error: err.message },
-      { status: 500 }
+      { message: "Server error", error: getErrorMessage(err) },
+      { status: 500 },
     );
   }
 }

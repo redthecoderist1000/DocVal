@@ -76,10 +76,9 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error(error);
-    const errorMessage =
-      error.originalError?.message || error.message || "Unknown error";
+    const { getErrorMessage } = await import("../../helper/errorHandler");
     return NextResponse.json(
-      { message: "Server error", error: errorMessage },
+      { message: "Server error", error: getErrorMessage(error) },
       { status: 500 },
     );
   }

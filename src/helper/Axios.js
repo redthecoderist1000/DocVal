@@ -1,9 +1,10 @@
 import axios from "axios";
 import { getSession, signOut } from "next-auth/react";
 
+const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: process.env.BASE_URL,
+  baseURL: baseURL,
   //   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -53,7 +54,7 @@ axiosInstance.interceptors.response.use(
       // If refresh failed (e.g., refresh token expired), bail out early
       if (session?.error) {
         try {
-          await signOut({ redirect: true, callbackUrl: "/api/auth/signin" });
+          await signOut({ redirect: true, callbackUrl: "/auth/signin" });
         } catch {
           // no-op
         }
