@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { authenticateToken } from "@/app/api/helper/authenticateToken";
+import { getErrorMessage } from "@/app/api/helper/errorHandler";
 
 export async function POST(request) {
   try {
@@ -20,7 +21,7 @@ export async function POST(request) {
     ) {
       return NextResponse.json(
         { message: "Invalid file name" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -29,7 +30,7 @@ export async function POST(request) {
       process.cwd(),
       "public",
       "uploaded_files",
-      fileName
+      fileName,
     );
 
     // Check if file exists
@@ -42,7 +43,7 @@ export async function POST(request) {
     const response = new NextResponse(fileBuffer);
     response.headers.set(
       "Content-Disposition",
-      `attachment; filename="${fileName}"`
+      `attachment; filename="${fileName}"`,
     );
     response.headers.set("Content-Type", "application/pdf");
 
@@ -50,8 +51,8 @@ export async function POST(request) {
   } catch (err) {
     console.error(err);
     return NextResponse.json(
-      { message: "Server error", error: err.message },
-      { status: 500 }
+      { message: "Server error", error: getErrorMessage(err) },
+      { status: 500 },
     );
   }
 }

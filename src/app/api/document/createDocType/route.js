@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import sql from "mssql";
 import { getConnection } from "@/app/api/helper/db";
 import { authenticateToken } from "@/app/api/helper/authenticateToken";
+import { getErrorMessage } from "@/app/api/helper/errorHandler";
 
 export async function POST(request) {
   try {
@@ -15,7 +16,7 @@ export async function POST(request) {
     if (!name) {
       return NextResponse.json(
         { message: "name is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,13 +31,13 @@ export async function POST(request) {
         message: "Document type created successfully",
         body: insertRes.recordset,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (err) {
     console.error(err);
     return NextResponse.json(
-      { message: "Server error", error: err.message },
-      { status: 500 }
+      { message: "Server error", error: getErrorMessage(err) },
+      { status: 500 },
     );
   }
 }

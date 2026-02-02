@@ -8,6 +8,7 @@ import {
 } from "@/app/api/helper/generateToken";
 import { Resend } from "resend";
 import NewAccountEmail from "@/helper/emailTemplates/new_account";
+import { getErrorMessage } from "@/app/api/helper/errorHandler";
 
 /**
  * POST /api/auth/register
@@ -114,8 +115,9 @@ export async function POST(request) {
     );
   } catch (err) {
     console.error(err);
+
     return NextResponse.json(
-      { message: "Server error", error: err.message },
+      { message: "Server error", error: getErrorMessage(err) },
       { status: 500 },
     );
   }

@@ -6,6 +6,7 @@ import {
   gen_access_JWT,
   gen_refresh_JWT,
 } from "@/app/api/helper/generateToken";
+import { getErrorMessage } from "@/app/api/helper/errorHandler";
 
 /**
  * POST /api/auth/login
@@ -71,7 +72,7 @@ export async function POST(request) {
   } catch (err) {
     console.error(err);
     return NextResponse.json(
-      { message: "Server error", error: err.message },
+      { message: "Server error", error: getErrorMessage(err) },
       { status: 500 },
     );
   }

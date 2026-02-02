@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { authenticateToken } from "../../helper/authenticateToken";
 import { getConnection } from "../../helper/db";
+import { getErrorMessage } from "../../helper/errorHandler";
 
 export async function GET(request) {
   try {
@@ -18,7 +19,7 @@ export async function GET(request) {
   } catch (err) {
     console.error(err);
     return NextResponse.json(
-      { message: "Server error", error: err.message },
+      { message: "Server error", error: getErrorMessage(err) },
       { status: 500 },
     );
   }

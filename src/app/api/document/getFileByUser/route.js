@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import sql from "mssql";
 import { getConnection } from "@/app/api/helper/db";
 import { authenticateToken } from "@/app/api/helper/authenticateToken";
+import { getErrorMessage } from "@/app/api/helper/errorHandler";
 
 export async function POST(request) {
   try {
@@ -24,8 +25,8 @@ export async function POST(request) {
   } catch (err) {
     console.error(err);
     return NextResponse.json(
-      { message: "Server error", error: err.message },
-      { status: 500 }
+      { message: "Server error", error: getErrorMessage(err) },
+      { status: 500 },
     );
   }
 }
