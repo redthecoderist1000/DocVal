@@ -4,7 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 async function refreshAccessToken(token) {
   try {
-    const apiBaseUrl = process.env.BASE_URL;
+    const apiBaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
     const res = await axios.post(`${apiBaseUrl}/auth/refresh`, {
       refreshToken: token.refresh_token,
@@ -52,11 +52,14 @@ export const authOptions = {
       },
       async authorize(credentials) {
         try {
-          const res = await fetch(`${process.env.BASE_URL}/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(credentials),
-          });
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(credentials),
+            },
+          );
 
           const user = await res.json();
 
