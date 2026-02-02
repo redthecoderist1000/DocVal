@@ -197,7 +197,7 @@ export default function files() {
       <div className={`${isModalOpen ? "blur-sm" : ""}`}>
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Evaluation</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Evaluate</h1>
             <h2 className="text-sm text-gray-600">
               Manage your evaluated documents or create new evaluations
             </h2>
@@ -209,7 +209,7 @@ export default function files() {
             startIcon={<AddRoundedIcon fontSize="small" />}
             onClick={() => router.push("/files/new")}
           >
-            Add Document
+            Evaluate
           </Button>
         </div>
 

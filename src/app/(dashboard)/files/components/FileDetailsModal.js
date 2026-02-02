@@ -22,10 +22,12 @@ export default function FileDetailsModal({ isModalOpen, setIsModalOpen }) {
   const [activeTab, setActiveTab] = useState(0);
   const [data, setData] = useState(null);
 
-  const tabs = [
-    { label: "Info", id: 0 },
-    { label: "Report", id: 1 },
-  ];
+  const tabs = data?.report
+    ? [
+        { label: "Info", id: 0 },
+        { label: "Report", id: 1 },
+      ]
+    : [{ label: "Info", id: 0 }];
 
   const handleClose = () => {
     setIsModalOpen(false);

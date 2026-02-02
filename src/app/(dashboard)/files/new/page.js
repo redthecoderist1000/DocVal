@@ -18,6 +18,8 @@ import {
   Chip,
   IconButton,
   Autocomplete,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
@@ -29,6 +31,7 @@ import { useRouter } from "next/navigation";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
 import { useError } from "@/helper/ErrorContext";
 import LoadingDialog from "@/components/LoadingDialog";
+import ConfirmExternalDocumentDialog from "./components/ConfirmExternalDocumentDialog";
 
 export default function NewFile() {
   const { session, status } = useProtectedRoute();
@@ -49,12 +52,19 @@ export default function NewFile() {
     sender_email: "",
     sender_phone: "",
     file: null,
+    receiving_office: "",
+    receiving_office_name: "",
   });
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [classifications, setClassifications] = useState([]);
   const [types, setTypes] = useState([]);
   const [offices, setOffices] = useState([]);
+  const [internalOffices, setInternalOffices] = useState([]);
+  const [validation, setValidation] = useState({
+    file: { valid: true, message: "" },
+  });
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 
@@ -82,6 +92,7 @@ export default function NewFile() {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
+    setValidation({ file: { valid: true, message: "" } });
     if (file) {
       const validation = validateFile(file);
       if (validation.valid) {
@@ -90,16 +101,29 @@ export default function NewFile() {
           file,
         }));
       } else {
+        setValidation({ file: validation });
         setError(validation.message, "error");
       }
     }
+  };
+
+  const submitExternal = () => {
+    setConfirmDialogOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.file) {
-      setError("Please fill in all required fields", "error");
+      // setError("Please upload a file", "error");
+      setValidation({
+        file: { valid: false, message: "Please upload a file" },
+      });
+      return;
+    }
+
+    if (formData.office_type === "external") {
+      submitExternal();
       return;
     }
 
@@ -196,6 +220,8 @@ export default function NewFile() {
       sender_email: "",
       sender_phone: "",
       file: null,
+      receiving_office: "",
+      receiving_office_name: "",
     });
   };
 
@@ -233,6 +259,12 @@ export default function NewFile() {
       .get("/office/getAllDivision")
       .then((res) => {
         setOffices(res.body);
+        // Filter internal offices without parent_id for CRRU autocomplete
+        const internalNoParent = res.body.filter(
+          (office) =>
+            office.office_type === "internal" && office.parent_id !== null,
+        );
+        setInternalOffices(internalNoParent);
       })
       .catch((error) => {
         console.error("Error fetching divisions:", error);
@@ -292,6 +324,10 @@ export default function NewFile() {
   }, []);
 
   let filteredOffices = useMemo(() => {
+    setFormData((prev) => ({
+      ...prev,
+      sender_office: "",
+    }));
     if (formData.office_type === "internal") {
       return offices.filter(
         (office) =>
@@ -337,6 +373,10 @@ export default function NewFile() {
               <Typography variant="body1" color="textDisabled" fontWeight="700">
                 Document Upload
               </Typography>
+              {/* error file */}
+              {validation.file.valid === false && (
+                <Alert severity="error">{validation.file.message}</Alert>
+              )}
               {formData.file ? (
                 <Chip
                   label={`${formData.file.name} (${(
@@ -481,7 +521,7 @@ export default function NewFile() {
               </Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 {session?.user?.role.some((role) => role.name === "CRRU") && (
-                  <FormControl fullWidth size="small" required>
+                  <FormControl fullWidth size="small" sx={{ flex: 1 }} required>
                     <InputLabel id="office-type-label">Office Type</InputLabel>
                     <Select
                       labelId="office-type-label"
@@ -499,6 +539,7 @@ export default function NewFile() {
                 <Autocomplete
                   options={filteredOffices}
                   size="small"
+                  sx={{ flex: 2 }}
                   getOptionLabel={(option) => option.division_name || ""}
                   filterOptions={(options, state) => {
                     const inputValue = state.inputValue.toLowerCase();
@@ -536,6 +577,52 @@ export default function NewFile() {
                   )}
                   fullWidth
                 />
+                {session?.user?.role.some((role) => role.name === "CRRU") &&
+                  formData.office_type == "external" && (
+                    <Autocomplete
+                      options={internalOffices}
+                      size="small"
+                      sx={{ flex: 2 }}
+                      getOptionLabel={(option) => option.division_name || ""}
+                      filterOptions={(options, state) => {
+                        const inputValue = state.inputValue.toLowerCase();
+                        return options.filter(
+                          (option) =>
+                            option.division_name
+                              .toLowerCase()
+                              .includes(inputValue) ||
+                            (option.division_abrv &&
+                              option.division_abrv
+                                .toLowerCase()
+                                .includes(inputValue)),
+                        );
+                      }}
+                      value={
+                        internalOffices.find(
+                          (d) => d.id === formData.receiving_office,
+                        ) || null
+                      }
+                      onChange={(event, newValue) => {
+                        setFormData({
+                          ...formData,
+                          receiving_office: newValue ? newValue.id : "",
+                          receiving_office_name: newValue
+                            ? newValue.division_name
+                            : "",
+                        });
+                      }}
+                      noOptionsText="No internal offices available"
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Receiving Office"
+                          placeholder="Search Receiving Office"
+                          required
+                        />
+                      )}
+                      fullWidth
+                    />
+                  )}
               </Stack>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
@@ -609,6 +696,15 @@ export default function NewFile() {
         </CardContent>
       </Card>
       <LoadingDialog open={loading} />
+      <ConfirmExternalDocumentDialog
+        open={confirmDialogOpen}
+        setOpen={setConfirmDialogOpen}
+        formData={formData}
+        onConfirm={() => {
+          handleReset();
+          router.push("/files", { replace: true });
+        }}
+      />
     </Container>
   );
 }
