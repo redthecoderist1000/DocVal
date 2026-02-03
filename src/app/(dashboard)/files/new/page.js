@@ -661,69 +661,6 @@ export default function NewFile() {
                 />
               </Stack>
 
-<<<<<<< HEAD
-              {/* File Upload */}
-              <Typography variant="body1" color="textDisabled" fontWeight="700">
-                File Upload
-              </Typography>
-              {formData.file ? (
-                <Chip
-                  label={`${formData.file.name} (${(
-                    formData.file.size /
-                    (1024 * 1024)
-                  ).toFixed(2)} MB)`}
-                  variant="outlined"
-                  icon={<PictureAsPdfRoundedIcon color="error" />}
-                  sx={{ borderStyle: "dashed", bgcolor: "#f7f7f7ff" }}
-                  onDelete={() => {
-                    setFormData({ ...formData, file: null });
-                  }}
-                />
-              ) : (
-                <Box
-                  sx={{
-                    border: "2px dashed",
-                    borderColor: "divider",
-                    borderRadius: 1,
-                    p: 3,
-                    textAlign: "center",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    backgroundColor: "action.hover",
-                    "&:hover": {
-                      borderColor: "primary.main",
-                      backgroundColor: "action.selected",
-                    },
-                  }}
-                  component="label"
-                >
-                  <input
-                    type="file"
-                    hidden
-                    onChange={handleFileChange}
-                    accept=".pdf"
-                  />
-                  <CloudUploadIcon
-                    sx={{
-                      fontSize: 40,
-                      color: "primary.main",
-                      mb: 1,
-                    }}
-                  />
-                  <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }}>
-                    Click to upload
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "text.secondary" }}
-                  >
-                    PDF (Max 10MB)
-                  </Typography>
-                </Box>
-              )}
-
-=======
->>>>>>> 5a08ec877f214686ca5e7219a196b73861a24a5b
               {/* Action Buttons */}
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <Button
