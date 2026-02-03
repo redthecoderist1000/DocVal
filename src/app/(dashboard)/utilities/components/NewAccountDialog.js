@@ -210,7 +210,7 @@ export default function NewAccountDialog({ open, setOpen, setAccounts }) {
         division: formData.division_id,
       })
       .then((res) => {
-        console.log("Account created:", res);
+        // console.log("Account created:", res);
         setAccounts((prev) => [
           ...prev,
           {

@@ -23,9 +23,9 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
+import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
 import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
 import RotateLeftRoundedIcon from "@mui/icons-material/RotateLeftRounded";
-import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
@@ -68,22 +68,6 @@ export default function files() {
     "Date Received",
     // "Status",
     "Actions",
-  ];
-
-  // Static classification and document type options
-  const classificationOptions = [
-    "Complex",
-    "Highly Technical",
-    "Simple",
-    "Urgent",
-  ];
-  const docTypeOptions = [
-    "Accomplishment Report",
-    "Memorandum",
-    "Progress Report",
-    "Project Proposal",
-    "Service Agreement",
-    "Terms of Reference",
   ];
 
   useEffect(() => {
@@ -275,9 +259,6 @@ export default function files() {
         </div>
 
         {/* File Count by Office Box */}
-        {/* <div className="mb-6">
-          <div className="overflow-x-auto" style={{ maxWidth: "100%" }}>
-            <div className="flex gap-2" style={{ minWidth: "min-content" }}> */}
         <Stack
           direction="row"
           spacing={2}
@@ -287,7 +268,13 @@ export default function files() {
           {filesByOffice.map((item, index) => (
             <div
               key={index}
-              className="bg-white rounded-lg p-4 border-l-4 border-blue-600 max-w-xs shadow-sm w-75 "
+              onClick={() => {
+                setFilterOffice(
+                  item.office === filterOffice ? "" : item.office,
+                );
+                setPage(0);
+              }}
+              className="cursor-pointer bg-white rounded-lg p-4 border-l-4 border-blue-600 max-w-xs shadow-sm w-75 transition-all hover:shadow-md"
             >
               <div className="flex flex-col justify-between h-full">
                 <p className="text-gray-500 text-sm font-medium">
@@ -300,10 +287,6 @@ export default function files() {
             </div>
           ))}
         </Stack>
-
-        {/* </div>
-          </div>
-        </div> */}
 
         {/* Search and Filter Bar */}
         <div className="mb-6 grid grid-cols-1  md:grid-cols-5 gap-4 items-end">
