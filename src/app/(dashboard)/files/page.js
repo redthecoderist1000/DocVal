@@ -46,6 +46,7 @@ export default function files() {
   const [sortBy, setSortBy] = useState("date-desc"); // "none", "file-asc", "file-desc", "date-asc", "date-desc"
   const [filterClassification, setFilterClassification] = useState("");
   const [filterDocType, setFilterDocType] = useState("");
+  const [filterOffice, setFilterOffice] = useState("");
   const [deleteDoc, setDeleteDoc] = useState({
     open: false,
     docId: null,
@@ -54,6 +55,8 @@ export default function files() {
 
   const [classOption, setClassOption] = useState([]);
   const [typeOption, setTypeOption] = useState([]);
+  const [officeOption, setOfficeOption] = useState([]);
+  const [officeEditLabels, setOfficeEditLabels] = useState({});
 
   const headerCells = [
     "File",
@@ -102,6 +105,15 @@ export default function files() {
       });
 
     axiosInstance
+      .get("/office/getAllDivision")
+      .then((res) => {
+        setOfficeOption(res.body);
+      })
+      .catch((error) => {
+        console.error("Error fetching offices:", error);
+      });
+
+    axiosInstance
       .post("/document/getFileByUser")
       .then((res) => {
         setFiles(res.body);
@@ -134,8 +146,10 @@ export default function files() {
         filterClassification === "" || file.doc_class === filterClassification;
       const matchesDocType =
         filterDocType === "" || file.doc_type === filterDocType;
+      const matchesOffice =
+        filterOffice === "" || file.sender_office === filterOffice;
 
-      return matchesSearch && matchesClassification && matchesDocType;
+      return matchesSearch && matchesClassification && matchesDocType && matchesOffice;
     });
 
     // Apply sorting
@@ -162,8 +176,28 @@ export default function files() {
     sortBy,
     filterClassification,
     filterDocType,
+    filterOffice,
   ]);
-
+  // Calculate count of files by office
+  let filesByOffice = useMemo(() => {
+    const countMap = {};
+    
+    // Initialize all offices with 0 count
+    officeOption.forEach((office) => {
+      countMap[office.division_name] = 0;
+    });
+    
+    // Count files for each office
+    files.forEach((file) => {
+      const office = file.sender_office || "Unknown";
+      countMap[office] = (countMap[office] || 0) + 1;
+    });
+    
+    return Object.entries(countMap).map(([office, count]) => ({
+      office,
+      count,
+    }));
+  }, [files, officeOption]);
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -177,6 +211,7 @@ export default function files() {
     setSearchQuery("");
     setFilterClassification("");
     setFilterDocType("");
+    setFilterOffice("");
     setPage(0);
   };
 
@@ -213,8 +248,35 @@ export default function files() {
           </Button>
         </div>
 
+        {/* File Count by Office Box */}
+        <div className="mb-6">
+          <div className="overflow-x-auto" style={{ maxWidth: "100%" }}>
+            <div className="flex gap-2" style={{ minWidth: "min-content" }}>
+              {filesByOffice.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setFilterOffice(item.office === filterOffice ? "" : item.office);
+                    setPage(0);
+                  }}
+                  className={`flex flex-col items-center justify-center px-4 py-2 rounded-full font-semibold text-sm transition-all whitespace-nowrap ${
+                    filterOffice === item.office
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "bg-white border-2 border-gray-300 text-gray-600 hover:border-gray-400"
+                  }`}
+                >
+                  <span>{officeEditLabels[item.office] || item.office}</span>
+                  <span className={`text-xs mt-1 ${filterOffice === item.office ? "text-blue-100" : "text-gray-500"}`}>
+                    {item.count} files
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Search and Filter Bar */}
-        <div className="mb-6 grid grid-cols-1  md:grid-cols-4 gap-4 items-end">
+        <div className="mb-6 grid grid-cols-1  md:grid-cols-5 gap-4 items-end">
           {/* Search bar - full width on mobile, 1 column on desktop */}
           <div className="md:col-span-2">
             <TextField
@@ -249,7 +311,7 @@ export default function files() {
           </div>
 
           {/* Document type filter - full width on mobile */}
-          <div className="flex gap-2">
+          <div>
             <FormControl size="small" fullWidth>
               <Select
                 value={filterDocType}
@@ -263,6 +325,27 @@ export default function files() {
                 {typeOption.map((data, index) => (
                   <MenuItem key={index} value={data.name}>
                     {data.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+
+          {/* Office filter - full width on mobile */}
+          <div className="flex gap-2">
+            <FormControl size="small" fullWidth>
+              <Select
+                value={filterOffice}
+                onChange={(e) => {
+                  setFilterOffice(e.target.value);
+                  setPage(0);
+                }}
+                displayEmpty
+              >
+                <MenuItem value="">All Offices</MenuItem>
+                {officeOption.map((data, index) => (
+                  <MenuItem key={index} value={data.division_name}>
+                    {data.division_name}
                   </MenuItem>
                 ))}
               </Select>
@@ -291,9 +374,9 @@ export default function files() {
                     {headerCells.map((cell, index) => (
                       <th
                         key={index}
-                        className={`px-6 py-2 text-${
-                          index === 0 ? "left" : "center"
-                        } text-xs uppercase text-gray-700`}
+                        className={`px-6 py-3 text-${
+                          index === 0 ? "left" : "left"
+                        } text-xs font-semibold uppercase text-gray-700 bg-gray-50`}
                       >
                         <div className="flex items-center gap-2 ">
                           {cell}
@@ -352,31 +435,31 @@ export default function files() {
                 <tbody className="divide-y divide-gray-200">
                   {visibleRows.map((doc, index) => (
                     <tr key={index}>
-                      <td className="px-6 py-2">
+                      <td className="px-6 py-3">
                         <div className="flex flex-col">
-                          <Typography variant="body1">{doc.title}</Typography>
-                          <Typography variant="caption">
+                          <Typography variant="body2" className="font-semibold text-gray-900">{doc.title}</Typography>
+                          <Typography variant="caption" className="text-gray-500 mt-1">
                             {doc.sender_office}
                           </Typography>
                         </div>
                       </td>
-                      <td className="px-6 py-2 text-left text-sm text-gray-600">
+                      <td className="px-6 py-3 text-left text-sm font-medium text-gray-700">
                         {doc.doc_class || "-"}
                       </td>
-                      <td className="px-6 py-2 text-left text-sm text-gray-600">
+                      <td className="px-6 py-3 text-left text-sm font-medium text-gray-700">
                         {doc.doc_type || "-"}
                       </td>
-                      <td className="px-6 py-2 text-left text-sm text-gray-600">
+                      <td className="px-6 py-3 text-left text-sm font-medium text-gray-700">
                         {doc.date_created
                           ? new Date(doc.date_created)
                               .toISOString()
                               .split("T")[0]
                           : "-"}
                       </td>
-                      {/* <td className="px-6 py-2 text-left text-sm text-gray-600">
+                      {/* <td className="px-6 py-3 text-left text-sm text-gray-600">
                         {doc.status || "-"}
                       </td> */}
-                      <td className="px-6 py-2">
+                      <td className="px-6 py-3">
                         <div className="flex items-center justify-center gap-2">
                           <Tooltip title="View Details" arrow placement="top">
                             <Button

@@ -486,7 +486,7 @@ export default function NewFile() {
                     type="file"
                     hidden
                     onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.txt,.xlsx,.xls"
+                    accept=".pdf"
                   />
                   <CloudUploadIcon
                     sx={{
