@@ -50,7 +50,7 @@ export default function DashboardLayout({ children }) {
     },
     {
       path: "files",
-      label: "Evaluation",
+      label: "Evaluate",
       icon: <ArticleRoundedIcon />,
     },
     {
@@ -73,7 +73,7 @@ export default function DashboardLayout({ children }) {
     },
     {
       path: "files",
-      label: "Evaluation",
+      label: "Evaluate",
       icon: <ArticleRoundedIcon />,
     },
     {

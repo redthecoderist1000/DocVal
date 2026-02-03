@@ -14,7 +14,11 @@ import axiosInstance from "@/helper/Axios";
 import InfoTab from "./tabs/InfoTab";
 import ReportTab from "./tabs/ReportTab";
 
-export default function FileDetailsModal({ isModalOpen, setIsModalOpen }) {
+export default function FileDetailsModal({
+  isModalOpen,
+  setIsModalOpen,
+  basePath = "/files",
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fileId = searchParams.get("id");
@@ -22,14 +26,16 @@ export default function FileDetailsModal({ isModalOpen, setIsModalOpen }) {
   const [activeTab, setActiveTab] = useState(0);
   const [data, setData] = useState(null);
 
-  const tabs = [
-    { label: "Info", id: 0 },
-    { label: "Report", id: 1 },
-  ];
+  const tabs = data?.report
+    ? [
+        { label: "Info", id: 0 },
+        { label: "Report", id: 1 },
+      ]
+    : [{ label: "Info", id: 0 }];
 
   const handleClose = () => {
     setIsModalOpen(false);
-    router.push("/files", { replace: true });
+    router.push(basePath, { replace: true });
   };
 
   const fetchData = () => {

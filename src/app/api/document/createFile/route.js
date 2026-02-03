@@ -5,6 +5,7 @@ import path from "path";
 import { getConnection } from "@/app/api/helper/db";
 import { authenticateToken } from "@/app/api/helper/authenticateToken";
 import { getErrorMessage } from "@/app/api/helper/errorHandler";
+import { error } from "console";
 
 export async function POST(request) {
   try {
@@ -25,6 +26,8 @@ export async function POST(request) {
       sender_phone,
       base64_data,
       report,
+      receiving_office,
+      office_type,
     } = await request.json();
 
     // Basic validation
@@ -38,10 +41,13 @@ export async function POST(request) {
       !sender_email ||
       !sender_phone ||
       !base64_data ||
-      !report
+      !office_type
     ) {
       return NextResponse.json(
-        { message: "All fields are required" },
+        {
+          message: "All fields are required",
+          error: "All fields are required",
+        },
         { status: 400 },
       );
     }
@@ -74,13 +80,15 @@ export async function POST(request) {
       .input("title", sql.VarChar(255), title)
       .input("doc_type", sql.UniqueIdentifier, doc_type)
       .input("doc_class", sql.UniqueIdentifier, doc_class)
-      .input("sender_office", sql.VarChar(255), sender_office)
+      .input("sender_office", sql.UniqueIdentifier, sender_office)
       .input("sender_person", sql.VarChar(255), sender_person)
       .input("sender_email", sql.VarChar(255), sender_email)
       .input("sender_phone", sql.VarChar(50), sender_phone)
       .input("created_by", sql.UniqueIdentifier, userId)
       .input("url", sql.VarChar(255), fileName)
-      .input("report", sql.NVarChar(sql.MAX), JSON.stringify(report))
+      .input("report", sql.NVarChar(sql.MAX), JSON.stringify(report) || null)
+      .input("receiving_office", sql.UniqueIdentifier, receiving_office || null)
+      .input("origin", sql.VarChar(20), office_type)
       .execute("dbo.createFile");
 
     return NextResponse.json(
