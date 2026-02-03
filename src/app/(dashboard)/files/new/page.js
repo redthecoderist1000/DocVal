@@ -146,7 +146,10 @@ export default function NewFile() {
     axiosInstance
       .post(
         "/document/generateReport",
-        { base64_data: fileBase64 },
+        {
+          base64_data: fileBase64,
+          document_type: formData.type_name || formData.type,
+        },
         { signal: abortControllerRef.current.signal },
       )
       .then((res) => {

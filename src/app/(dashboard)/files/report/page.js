@@ -57,6 +57,8 @@ export default function Report() {
             file_base64: indexedData.file_base64,
             report_data: indexedData.report_data,
           });
+
+          // console.log("report:", indexedData.report_data);
           setLoading(false);
         };
 
@@ -118,6 +120,7 @@ export default function Report() {
   };
 
   const handleExportPDF = () => {
+    console.log("report", newReportData.report_data);
     Report_pdf({
       ...newReportData,
       sender_office: newReportData.sender_office_name,

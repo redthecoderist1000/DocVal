@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { authenticateToken } from "@/app/api/helper/authenticateToken";
-import { generateAIReport } from "../../helper/gemini";
+import { generateAIReport } from "./helper/gemini";
 
 /**
  * POST /api/document/generateReport
@@ -14,30 +14,32 @@ export async function POST(request) {
       return auth.error;
     }
 
-    const { base64_data } = await request.json();
+    const { base64_data, document_type } = await request.json();
 
     if (!base64_data) {
       return NextResponse.json(
         { message: "File is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // TODO: Implement generateAIReport function
-    const report = await generateAIReport(base64_data);
+    const report = await generateAIReport(base64_data, {
+      documentType: document_type,
+    });
 
     return NextResponse.json(
       {
         message: "AI report generated successfully",
         body: report, // Replace with actual report
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { message: "Server error", error: error.message },
-      { status: 500 }
+      { message: "Server error", error: error },
+      { status: 500 },
     );
   }
 }
