@@ -13,6 +13,8 @@ import {
   FormControl,
   IconButton,
   Container,
+  Autocomplete,
+  Stack,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
@@ -23,6 +25,7 @@ import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownR
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
 import RotateLeftRoundedIcon from "@mui/icons-material/RotateLeftRounded";
+import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
@@ -46,6 +49,7 @@ export default function files() {
   const [sortBy, setSortBy] = useState("date-desc"); // "none", "file-asc", "file-desc", "date-asc", "date-desc"
   const [filterClassification, setFilterClassification] = useState("");
   const [filterDocType, setFilterDocType] = useState("");
+  const [filterOffice, setFilterOffice] = useState("");
   const [deleteDoc, setDeleteDoc] = useState({
     open: false,
     docId: null,
@@ -54,6 +58,8 @@ export default function files() {
 
   const [classOption, setClassOption] = useState([]);
   const [typeOption, setTypeOption] = useState([]);
+  const [officeOption, setOfficeOption] = useState([]);
+  const [officeEditLabels, setOfficeEditLabels] = useState({});
 
   const headerCells = [
     "Documents",
@@ -102,6 +108,15 @@ export default function files() {
       });
 
     axiosInstance
+      .get("/office/getAllDivision")
+      .then((res) => {
+        setOfficeOption(res.body);
+      })
+      .catch((error) => {
+        console.error("Error fetching offices:", error);
+      });
+
+    axiosInstance
       .post("/document/getFileByUser")
       .then((res) => {
         setFiles(res.body);
@@ -134,8 +149,15 @@ export default function files() {
         filterClassification === "" || file.doc_class === filterClassification;
       const matchesDocType =
         filterDocType === "" || file.doc_type === filterDocType;
+      const matchesOffice =
+        filterOffice === "" || file.sender_office === filterOffice;
 
-      return matchesSearch && matchesClassification && matchesDocType;
+      return (
+        matchesSearch &&
+        matchesClassification &&
+        matchesDocType &&
+        matchesOffice
+      );
     });
 
     // Apply sorting
@@ -162,7 +184,45 @@ export default function files() {
     sortBy,
     filterClassification,
     filterDocType,
+    filterOffice,
   ]);
+
+  let filesByOffice = useMemo(() => {
+    const temp = files.reduce((acc, file) => {
+      const office = file.sender_office || "Unknown";
+      if (!acc[office]) {
+        acc[office] = 0;
+      }
+      acc[office] += 1;
+      return acc;
+    }, {});
+
+    const result = Object.entries(temp).map(([office, count]) => ({
+      office,
+      count,
+    }));
+
+    return result;
+  }, [files, officeOption]);
+
+  // Organize offices by division type
+  const organizedOffices = useMemo(() => {
+    const external = [];
+    const internal = [];
+
+    officeOption.forEach((office) => {
+      if (office.office_type?.toLowerCase() === "external") {
+        external.push(office);
+      } else if (office.office_type?.toLowerCase() === "internal") {
+        // Only include internal offices where parent_id is not null
+        if (office.parent_id) {
+          internal.push(office);
+        }
+      }
+    });
+
+    return { external, internal };
+  }, [officeOption]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -177,6 +237,7 @@ export default function files() {
     setSearchQuery("");
     setFilterClassification("");
     setFilterDocType("");
+    setFilterOffice("");
     setPage(0);
   };
 
@@ -213,8 +274,39 @@ export default function files() {
           </Button>
         </div>
 
+        {/* File Count by Office Box */}
+        {/* <div className="mb-6">
+          <div className="overflow-x-auto" style={{ maxWidth: "100%" }}>
+            <div className="flex gap-2" style={{ minWidth: "min-content" }}> */}
+        <Stack
+          direction="row"
+          spacing={2}
+          mb={3}
+          sx={{ overflowX: "auto", pb: 1 }}
+        >
+          {filesByOffice.map((item, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg p-4 border-l-4 border-blue-600 max-w-xs shadow-sm w-75 "
+            >
+              <div className="flex flex-col justify-between h-full">
+                <p className="text-gray-500 text-sm font-medium">
+                  {item?.office ?? "-"}
+                </p>
+                <h3 className="text-3xl font-bold text-gray-900">
+                  {item?.count ?? 0}
+                </h3>
+              </div>
+            </div>
+          ))}
+        </Stack>
+
+        {/* </div>
+          </div>
+        </div> */}
+
         {/* Search and Filter Bar */}
-        <div className="mb-6 grid grid-cols-1  md:grid-cols-4 gap-4 items-end">
+        <div className="mb-6 grid grid-cols-1  md:grid-cols-5 gap-4 items-end">
           {/* Search bar - full width on mobile, 1 column on desktop */}
           <div className="md:col-span-2">
             <TextField
@@ -249,7 +341,7 @@ export default function files() {
           </div>
 
           {/* Document type filter - full width on mobile */}
-          <div className="flex gap-2">
+          <div>
             <FormControl size="small" fullWidth>
               <Select
                 value={filterDocType}
@@ -267,6 +359,41 @@ export default function files() {
                 ))}
               </Select>
             </FormControl>
+          </div>
+
+          {/* Office filter - full width on mobile */}
+          <div className="flex gap-2">
+            <Autocomplete
+              size="small"
+              fullWidth
+              options={[
+                ...organizedOffices.external,
+                ...organizedOffices.internal,
+              ]}
+              groupBy={(option) => {
+                if (option.office_type?.toLowerCase() === "external") {
+                  return "External";
+                } else if (option.office_type?.toLowerCase() === "internal") {
+                  return "Internal";
+                }
+                return "Other";
+              }}
+              getOptionLabel={(option) =>
+                typeof option === "string" ? option : option.division_name || ""
+              }
+              value={
+                officeOption.find(
+                  (office) => office.division_name === filterOffice,
+                ) || null
+              }
+              onChange={(event, value) => {
+                setFilterOffice(value ? value.division_name : "");
+                setPage(0);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} placeholder="All Offices" />
+              )}
+            />
             <Tooltip title="Reset Filters" arrow placement="top">
               <IconButton color="error" size="small">
                 <RotateLeftRoundedIcon
@@ -291,9 +418,9 @@ export default function files() {
                     {headerCells.map((cell, index) => (
                       <th
                         key={index}
-                        className={`px-6 py-2 text-${
-                          index === 0 ? "left" : "center"
-                        } text-xs uppercase text-gray-700`}
+                        className={`px-6 py-3 text-${
+                          index === 0 ? "left" : "left"
+                        } text-xs font-semibold uppercase text-gray-700 bg-gray-50`}
                       >
                         <div className="flex items-center gap-2 ">
                           {cell}
@@ -354,31 +481,39 @@ export default function files() {
                 <tbody className="divide-y divide-gray-200">
                   {visibleRows.map((doc, index) => (
                     <tr key={index}>
-                      <td className="px-6 py-2">
+                      <td className="px-6 py-3">
                         <div className="flex flex-col">
-                          <Typography variant="body1">{doc.title}</Typography>
-                          <Typography variant="caption">
+                          <Typography
+                            variant="body2"
+                            className="font-semibold text-gray-900"
+                          >
+                            {doc.title}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            className="text-gray-500 mt-1"
+                          >
                             {doc.sender_office}
                           </Typography>
                         </div>
                       </td>
-                      <td className="px-6 py-2 text-left text-sm text-gray-600">
+                      <td className="px-6 py-3 text-left text-sm font-medium text-gray-700">
                         {doc.doc_class || "-"}
                       </td>
-                      <td className="px-6 py-2 text-left text-sm text-gray-600">
+                      <td className="px-6 py-3 text-left text-sm font-medium text-gray-700">
                         {doc.doc_type || "-"}
                       </td>
-                      <td className="px-6 py-2 text-left text-sm text-gray-600">
+                      <td className="px-6 py-3 text-left text-sm font-medium text-gray-700">
                         {doc.date_created
                           ? new Date(doc.date_created)
                               .toISOString()
                               .split("T")[0]
                           : "-"}
                       </td>
-                      {/* <td className="px-6 py-2 text-left text-sm text-gray-600">
+                      {/* <td className="px-6 py-3 text-left text-sm text-gray-600">
                         {doc.status || "-"}
                       </td> */}
-                      <td className="px-6 py-2">
+                      <td className="px-6 py-3">
                         <div className="flex items-center justify-center gap-2">
                           <Tooltip title="View Details" arrow placement="top">
                             <Button
