@@ -98,6 +98,10 @@ export default function Report() {
         sender_phone: newReportData.sender_phone,
         base64_data: newReportData.file_base64,
         report: newReportData.report_data,
+        receiving_office: newReportData.receiving_office,
+        office_type: newReportData.office_type,
+        // receiving_office: "string",
+        // receiving_office_name: "string",
       })
       .then((res) => {
         // console.log(res);
@@ -167,6 +171,16 @@ export default function Report() {
             <Typography variant="body1" gutterBottom>
               {newReportData.classification_name}
             </Typography>
+            {newReportData.office_type === "external" && (
+              <>
+                <Typography variant="body2" color="text.disabled">
+                  receiving office
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  {newReportData.receiving_office_name}
+                </Typography>
+              </>
+            )}
             <Typography variant="body2" color="text.disabled">
               sender office
             </Typography>
@@ -191,6 +205,7 @@ export default function Report() {
             <Typography variant="body1" gutterBottom>
               {newReportData.sender_person}
             </Typography>
+
             <Typography variant="body2" color="text.disabled">
               file
             </Typography>

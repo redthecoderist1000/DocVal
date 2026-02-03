@@ -46,12 +46,15 @@ export async function GET(request) {
       {
         error: "Unauthorized role for dashboard access",
       },
-      { status: 403 },
+      {
+        status: 403,
+      },
     );
   } catch (error) {
     console.error(error);
+    const { getErrorMessage } = await import("../helper/errorHandler");
     return NextResponse.json(
-      { message: error.name, error: error.message },
+      { message: "Server error", error: getErrorMessage(error) },
       { status: 500 },
     );
   }

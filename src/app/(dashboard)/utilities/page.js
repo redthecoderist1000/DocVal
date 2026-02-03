@@ -8,6 +8,7 @@ import {
   Typography,
   Card,
   CardContent,
+  Container,
 } from "@mui/material";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
 import { useLoading } from "@/helper/LoadingContext";
@@ -41,7 +42,7 @@ export default function utilities() {
   ];
 
   return (
-    <>
+    <Container maxWidth="lg" className="py-8 min-h-[80vh]">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Utilities</h1>
@@ -107,6 +108,6 @@ export default function utilities() {
           </>
         )}
       </div>
-    </>
+    </Container>
   );
 }

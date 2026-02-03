@@ -2,7 +2,7 @@
 
 ## Introduction
 
-**DocVal** is an AI-based tool designed for evaluating and validating official documents. This system leverages artificial intelligence to analyze, verify, and assess the authenticity and completeness of official documents with high accuracy. Whether you need to validate certificates, identification documents, official records, or other critical paperwork, DocVal provides HELLLLLLoa reliable and efficient solution for document verification.
+**DocVal** is an AI-based tool designed for evaluating and validating official documents. This system leverages artificial intelligence to analyze, verify, and assess the authenticity and completeness of official documents with high accuracy. Whether you need to validate certificates, identification documents, official records, or other critical paperwork, DocVal provides a reliable and efficient solution for document verification.
 
 The application features a secure, user-friendly interface that allows users to upload and evaluate documents, with detailed reports and insights generated through advanced AI algorithms.
 
@@ -38,7 +38,7 @@ Before running the system, ensure you have the following installed:
    Create a `.env` file in the root directory and add the required configuration:
 
    ```
-   NEXT_PUBLIC_BASE_URL=<base-url-for-backend-service>
+   BASE_URL=<base-url-for-backend-service>
    NEXTAUTH_SECRET=<your-secret-key>
 
    ```
@@ -75,10 +75,22 @@ npm start
 
 ## Project Structure
 
-- `src/app/` - Next.js application pages and API routes
+- `src/app/` - Next.js pages, API routes, and authentication
 - `src/components/` - Reusable React components
-- `src/helper/` - Utility functions and helpers
-- `public/` - Static assets
+- `src/helper/` - Utility functions, context providers, and helpers
+- `public/` - Static assets and uploaded files
+
+<!-- ## Team Members
+
+| Name           | Role               | Email                      | Status |
+| -------------- | ------------------ | -------------------------- | ------ |
+| Arvie       | Lead Developer     | john.doe@example.com       | Alive |
+| Edward     | Backend Developer  | jane.smith@example.com     | Alert |
+| Kenjiro   | Frontend Developer | mike.johnson@example.com   | Awake |
+| Red | QA Engineer        | sarah.williams@example.com | Enthusiastic |
+| Ron | QA Engineer        | sarah.williams@example.com |  | -->
+
+_Note: Update the table above with your actual team members' information._
 
 ## Support
 

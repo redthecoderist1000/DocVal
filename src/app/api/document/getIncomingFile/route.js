@@ -11,12 +11,15 @@ export async function GET(request) {
       return auth.error;
     }
 
+    const userId = auth.user.uid;
     const pool = await getConnection();
     const selectReq = pool.request();
-    const selectRes = await selectReq.query("SELECT * FROM vw_getAllDocType");
+    const selectRes = await selectReq
+      .input("user_id", sql.UniqueIdentifier, userId)
+      .execute("dbo.getIncomingFileByUser");
 
     return NextResponse.json({
-      message: "Document types retrieved successfully",
+      message: "Files retrieved successfully",
       body: selectRes.recordset,
     });
   } catch (err) {
