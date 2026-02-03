@@ -13,6 +13,8 @@ import {
   FormControl,
   IconButton,
   Container,
+  Autocomplete,
+  Stack,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
@@ -23,6 +25,7 @@ import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownR
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
 import RotateLeftRoundedIcon from "@mui/icons-material/RotateLeftRounded";
+import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
@@ -149,7 +152,12 @@ export default function files() {
       const matchesOffice =
         filterOffice === "" || file.sender_office === filterOffice;
 
-      return matchesSearch && matchesClassification && matchesDocType && matchesOffice;
+      return (
+        matchesSearch &&
+        matchesClassification &&
+        matchesDocType &&
+        matchesOffice
+      );
     });
 
     // Apply sorting
@@ -178,26 +186,44 @@ export default function files() {
     filterDocType,
     filterOffice,
   ]);
-  // Calculate count of files by office
+
   let filesByOffice = useMemo(() => {
-    const countMap = {};
-    
-    // Initialize all offices with 0 count
-    officeOption.forEach((office) => {
-      countMap[office.division_name] = 0;
-    });
-    
-    // Count files for each office
-    files.forEach((file) => {
+    const temp = files.reduce((acc, file) => {
       const office = file.sender_office || "Unknown";
-      countMap[office] = (countMap[office] || 0) + 1;
-    });
-    
-    return Object.entries(countMap).map(([office, count]) => ({
+      if (!acc[office]) {
+        acc[office] = 0;
+      }
+      acc[office] += 1;
+      return acc;
+    }, {});
+
+    const result = Object.entries(temp).map(([office, count]) => ({
       office,
       count,
     }));
+
+    return result;
   }, [files, officeOption]);
+
+  // Organize offices by division type
+  const organizedOffices = useMemo(() => {
+    const external = [];
+    const internal = [];
+
+    officeOption.forEach((office) => {
+      if (office.office_type?.toLowerCase() === "external") {
+        external.push(office);
+      } else if (office.office_type?.toLowerCase() === "internal") {
+        // Only include internal offices where parent_id is not null
+        if (office.parent_id) {
+          internal.push(office);
+        }
+      }
+    });
+
+    return { external, internal };
+  }, [officeOption]);
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -249,31 +275,35 @@ export default function files() {
         </div>
 
         {/* File Count by Office Box */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <div className="overflow-x-auto" style={{ maxWidth: "100%" }}>
-            <div className="flex gap-2" style={{ minWidth: "min-content" }}>
-              {filesByOffice.map((item, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setFilterOffice(item.office === filterOffice ? "" : item.office);
-                    setPage(0);
-                  }}
-                  className={`flex flex-col items-center justify-center px-4 py-2 rounded-full font-semibold text-sm transition-all whitespace-nowrap ${
-                    filterOffice === item.office
-                      ? "bg-blue-600 text-white shadow-md"
-                      : "bg-white border-2 border-gray-300 text-gray-600 hover:border-gray-400"
-                  }`}
-                >
-                  <span>{officeEditLabels[item.office] || item.office}</span>
-                  <span className={`text-xs mt-1 ${filterOffice === item.office ? "text-blue-100" : "text-gray-500"}`}>
-                    {item.count} files
-                  </span>
-                </button>
-              ))}
+            <div className="flex gap-2" style={{ minWidth: "min-content" }}> */}
+        <Stack
+          direction="row"
+          spacing={2}
+          mb={3}
+          sx={{ overflowX: "auto", pb: 1 }}
+        >
+          {filesByOffice.map((item, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg p-4 border-l-4 border-blue-600 max-w-xs shadow-sm w-75 "
+            >
+              <div className="flex flex-col justify-between h-full">
+                <p className="text-gray-500 text-sm font-medium">
+                  {item?.office ?? "-"}
+                </p>
+                <h3 className="text-3xl font-bold text-gray-900">
+                  {item?.count ?? 0}
+                </h3>
+              </div>
             </div>
+          ))}
+        </Stack>
+
+        {/* </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Search and Filter Bar */}
         <div className="mb-6 grid grid-cols-1  md:grid-cols-5 gap-4 items-end">
@@ -333,23 +363,37 @@ export default function files() {
 
           {/* Office filter - full width on mobile */}
           <div className="flex gap-2">
-            <FormControl size="small" fullWidth>
-              <Select
-                value={filterOffice}
-                onChange={(e) => {
-                  setFilterOffice(e.target.value);
-                  setPage(0);
-                }}
-                displayEmpty
-              >
-                <MenuItem value="">All Offices</MenuItem>
-                {officeOption.map((data, index) => (
-                  <MenuItem key={index} value={data.division_name}>
-                    {data.division_name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Autocomplete
+              size="small"
+              fullWidth
+              options={[
+                ...organizedOffices.external,
+                ...organizedOffices.internal,
+              ]}
+              groupBy={(option) => {
+                if (option.office_type?.toLowerCase() === "external") {
+                  return "External";
+                } else if (option.office_type?.toLowerCase() === "internal") {
+                  return "Internal";
+                }
+                return "Other";
+              }}
+              getOptionLabel={(option) =>
+                typeof option === "string" ? option : option.division_name || ""
+              }
+              value={
+                officeOption.find(
+                  (office) => office.division_name === filterOffice,
+                ) || null
+              }
+              onChange={(event, value) => {
+                setFilterOffice(value ? value.division_name : "");
+                setPage(0);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} placeholder="All Offices" />
+              )}
+            />
             <Tooltip title="Reset Filters" arrow placement="top">
               <IconButton color="error" size="small">
                 <RotateLeftRoundedIcon
@@ -439,8 +483,16 @@ export default function files() {
                     <tr key={index}>
                       <td className="px-6 py-3">
                         <div className="flex flex-col">
-                          <Typography variant="body2" className="font-semibold text-gray-900">{doc.title}</Typography>
-                          <Typography variant="caption" className="text-gray-500 mt-1">
+                          <Typography
+                            variant="body2"
+                            className="font-semibold text-gray-900"
+                          >
+                            {doc.title}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            className="text-gray-500 mt-1"
+                          >
                             {doc.sender_office}
                           </Typography>
                         </div>
