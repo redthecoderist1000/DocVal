@@ -28,7 +28,7 @@ import RotateLeftRoundedIcon from "@mui/icons-material/RotateLeftRounded";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
 import { useError } from "@/helper/ErrorContext";
-import FileDetailsModal from "@/app/(dashboard)/files/components/FileDetailsModal";
+import FileDetailsModal from "@/components/FileDetailsModal";
 import DeleteDocDialog from "@/app/(dashboard)/files/components/DeleteDocDialog";
 
 export default function IncomingPage() {

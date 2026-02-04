@@ -4,6 +4,7 @@ import { IconButton, Stack, Typography } from "@mui/material";
 import PrintRoundedIcon from "@mui/icons-material/PrintRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import Report_pdf from "@/helper/printables/Report_pdf";
+import ReportRenderer from "../../../../../components/ReportRenderer";
 
 export default function ReportTab({ data }) {
   const reportData = JSON.parse(data.report);
@@ -14,7 +15,7 @@ export default function ReportTab({ data }) {
       classification_name: data.doc_class,
       type_name: data.doc_type,
       sender_office: data.sender_office,
-      generation_date: new Date(data.date_created).toISOString().split('T')[0],
+      generation_date: new Date(data.date_created).toISOString().split("T")[0],
       report_data: reportData,
     };
 
@@ -39,98 +40,7 @@ export default function ReportTab({ data }) {
         <Typography variant="caption" fontStyle="italic" color="text.disabled">
           powered by Gemini AI <AutoAwesomeRoundedIcon sx={{ fontSize: 10 }} />
         </Typography>
-        <Typography variant="body1" gutterBottom fontWeight="bold">
-          Summary
-        </Typography>
-        <Typography variant="body2" gutterBottom align="justify">
-          {reportData.summary}
-        </Typography>
-        <Typography variant="body1" gutterBottom fontWeight="bold">
-          Key Points
-        </Typography>
-        {reportData.key_points.map((point, index) => (
-          <Typography key={index} variant="body2" align="justify">
-            • {point}
-          </Typography>
-        ))}
-        {reportData.potential_issues.compliance_issues && (
-          <>
-            <Typography variant="body1" gutterBottom fontWeight="bold">
-              Compliance Issues
-            </Typography>
-            {reportData.potential_issues.compliance_issues.map(
-              (data, index) => (
-                <div key={index}>
-                  <Typography
-                    variant="body2"
-                    align="center"
-                    fontStyle={"italic"}
-                  >
-                    "{data.excerpt}"
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    align="center"
-                    fontStyle="italic"
-                    color="text.disabled"
-                  >
-                    - {data.location}
-                  </Typography>
-                  <Typography variant="body1" align="justify">
-                    {data.explanation}
-                  </Typography>
-                </div>
-              )
-            )}
-          </>
-        )}
-        {reportData.potential_issues.security_concerns && (
-          <>
-            <Typography variant="body1" gutterBottom fontWeight="bold">
-              Security Concerns
-            </Typography>
-            {reportData.potential_issues.security_concerns.map(
-              (data, index) => (
-                <div key={index}>
-                  <Typography
-                    variant="body2"
-                    align="center"
-                    fontStyle={"italic"}
-                  >
-                    "{data.excerpt}"
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    align="center"
-                    fontStyle="italic"
-                    color="text.disabled"
-                  >
-                    - {data.location}
-                  </Typography>
-                  <Typography variant="body1" align="justify">
-                    {data.explanation}
-                  </Typography>
-                </div>
-              )
-            )}
-          </>
-        )}
-        <Typography variant="body1" gutterBottom fontWeight="bold">
-          Recommendations
-        </Typography>
-        {reportData.recommendations.map((data, index) => (
-          <Typography key={index} variant="body2" align="justify">
-            • {data}
-          </Typography>
-        ))}
-        <Typography variant="body1" gutterBottom fontWeight="bold">
-          References
-        </Typography>
-        {reportData.references.map((data, index) => (
-          <Typography key={index} variant="body2" align="justify">
-            • {data}
-          </Typography>
-        ))}
+        <ReportRenderer reportData={reportData} documentType={data.doc_type} />
       </Stack>
     </div>
   );

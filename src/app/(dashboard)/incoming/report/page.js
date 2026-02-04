@@ -21,10 +21,10 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Report_pdf from "@/helper/printables/Report_pdf";
-import { useSession } from "next-auth/react";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
 import { useError } from "@/helper/ErrorContext";
 import axiosInstance from "@/helper/Axios";
+import ReportRenderer from "@/components/ReportRenderer";
 
 export default function Report() {
   const { session, status } = useProtectedRoute();
@@ -239,112 +239,10 @@ export default function Report() {
                 <AutoAwesomeRoundedIcon sx={{ fontSize: 10 }} />
               </Typography>
               {newReportData.report_data && (
-                <>
-                  <Typography variant="body1" gutterBottom fontWeight="bold">
-                    Summary
-                  </Typography>
-                  <Typography variant="body2" gutterBottom align="justify">
-                    {newReportData.report_data.summary}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom fontWeight="bold">
-                    Key Points
-                  </Typography>
-                  {newReportData.report_data.key_points?.map((point, index) => (
-                    <Typography key={index} variant="body2" align="justify">
-                      • {point}
-                    </Typography>
-                  ))}
-                  {newReportData.report_data.potential_issues
-                    ?.compliance_issues && (
-                    <>
-                      <Typography
-                        variant="body1"
-                        gutterBottom
-                        fontWeight="bold"
-                      >
-                        Compliance Issues
-                      </Typography>
-                      {newReportData.report_data.potential_issues.compliance_issues.map(
-                        (data, index) => (
-                          <div key={index}>
-                            <Typography
-                              variant="body2"
-                              align="center"
-                              fontStyle={"italic"}
-                            >
-                              "{data.excerpt}"
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              align="center"
-                              fontStyle="italic"
-                              color="text.disabled"
-                            >
-                              - {data.location}
-                            </Typography>
-                            <Typography variant="body1" align="justify">
-                              {data.explanation}
-                            </Typography>
-                          </div>
-                        ),
-                      )}
-                    </>
-                  )}
-                  {newReportData.report_data.potential_issues
-                    ?.security_concerns && (
-                    <>
-                      <Typography
-                        variant="body1"
-                        gutterBottom
-                        fontWeight="bold"
-                      >
-                        Security Concerns
-                      </Typography>
-                      {newReportData.report_data.potential_issues.security_concerns.map(
-                        (data, index) => (
-                          <div key={index}>
-                            <Typography
-                              variant="body2"
-                              align="center"
-                              fontStyle={"italic"}
-                            >
-                              "{data.excerpt}"
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              align="center"
-                              fontStyle="italic"
-                              color="text.disabled"
-                            >
-                              - {data.location}
-                            </Typography>
-                            <Typography variant="body1" align="justify">
-                              {data.explanation}
-                            </Typography>
-                          </div>
-                        ),
-                      )}
-                    </>
-                  )}
-                  <Typography variant="body1" gutterBottom fontWeight="bold">
-                    Recommendations
-                  </Typography>
-                  {newReportData.report_data.recommendations?.map(
-                    (data, index) => (
-                      <Typography key={index} variant="body2" align="justify">
-                        • {data}
-                      </Typography>
-                    ),
-                  )}
-                  <Typography variant="body1" gutterBottom fontWeight="bold">
-                    References
-                  </Typography>
-                  {newReportData.report_data.references?.map((data, index) => (
-                    <Typography key={index} variant="body2" align="justify">
-                      • {data}
-                    </Typography>
-                  ))}
-                </>
+                <ReportRenderer
+                  reportData={newReportData.report_data}
+                  documentType={newReportData.doc_type}
+                />
               )}
             </Stack>
           </Card>

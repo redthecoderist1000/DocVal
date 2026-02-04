@@ -32,7 +32,7 @@ import axiosInstance from "@/helper/Axios";
 import { useError } from "@/helper/ErrorContext";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
 import { useLoading } from "@/helper/LoadingContext";
-import FileDetailsModal from "@/app/(dashboard)/files/components/FileDetailsModal";
+import FileDetailsModal from "@/components/FileDetailsModal";
 import DeleteDocDialog from "./components/DeleteDocDialog";
 
 export default function files() {
