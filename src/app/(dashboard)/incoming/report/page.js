@@ -86,29 +86,19 @@ export default function Report() {
   };
 
   const handleSave = () => {
+    console.log("Saving report...", newReportData);
     // save logic here
     setLoading(true);
     axiosInstance
-      .post("/document/createFile", {
-        reference_no: newReportData.refno,
-        title: newReportData.title,
-        doc_type: newReportData.type,
-        doc_class: newReportData.classification,
-        sender_office: newReportData.sender_office,
-        sender_person: newReportData.sender_person,
-        sender_email: newReportData.sender_email,
-        sender_phone: newReportData.sender_phone,
-        base64_data: newReportData.file_base64,
+      .put("/document/createFile", {
+        fileId: newReportData.id,
         report: newReportData.report_data,
-        receiving_office: newReportData.receiving_office,
-        office_type: newReportData.office_type,
-        // receiving_office: "string",
-        // receiving_office_name: "string",
+        status: "Completed",
       })
       .then((res) => {
-        // console.log(res);
-        setError("File saved successfully!", "success");
-        router.back();
+        console.log(res);
+        setError(res.message, "success");
+        router.push("/incoming", { replace: true });
         sessionStorage.removeItem("newReportData");
         // setLoading(false);
       })
@@ -174,14 +164,14 @@ export default function Report() {
             <Typography variant="body1" gutterBottom>
               {newReportData.doc_class}
             </Typography>
-            
-                <Typography variant="body2" color="text.disabled">
-                  receiving office
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  {newReportData.receiving_office}
-                </Typography>
-              
+
+            <Typography variant="body2" color="text.disabled">
+              receiving office
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              {newReportData.receiving_office}
+            </Typography>
+
             <Typography variant="body2" color="text.disabled">
               sender office
             </Typography>
