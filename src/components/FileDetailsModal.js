@@ -34,6 +34,7 @@ export default function FileDetailsModal({
     : [{ label: "Info", id: 0 }];
 
   const handleClose = () => {
+    setActiveTab(0);
     setIsModalOpen(false);
     router.push(basePath, { replace: true });
   };
