@@ -2,7 +2,7 @@
 
 import { Stack, Typography, Divider } from "@mui/material";
 
-const SECTION_CONFIGS = {
+const sectionConfig = {
   summary: {
     title: "Summary",
     render: (data) => (
@@ -154,7 +154,7 @@ const SECTION_CONFIGS = {
   },
 };
 
-const DOCUMENT_TYPE_SECTION_ORDER = {
+const docTypeSectionOrder = {
   "terms of reference": [
     "summary",
     "key_points",
@@ -168,7 +168,7 @@ const DOCUMENT_TYPE_SECTION_ORDER = {
   ],
 };
 
-const DEFAULT_SECTION_ORDER = Object.keys(SECTION_CONFIGS);
+const defaultSectionOrder = Object.keys(sectionConfig);
 
 export default function ReportRenderer({ reportData, documentType }) {
   if (!reportData) {
@@ -179,13 +179,13 @@ export default function ReportRenderer({ reportData, documentType }) {
 
   const normalizedType = documentType?.trim().toLowerCase();
   const sectionOrder =
-    DOCUMENT_TYPE_SECTION_ORDER[normalizedType] || DEFAULT_SECTION_ORDER;
+    docTypeSectionOrder[normalizedType] || defaultSectionOrder;
 
   return (
     <Stack spacing={3}>
       {sectionOrder.map((sectionKey) => {
         const data = reportData[sectionKey];
-        const config = SECTION_CONFIGS[sectionKey];
+        const config = sectionConfig[sectionKey];
 
         // Skip sections that don't have data
         if (!data || !config) return null;
