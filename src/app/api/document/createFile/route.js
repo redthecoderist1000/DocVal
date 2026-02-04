@@ -106,3 +106,48 @@ export async function POST(request) {
     );
   }
 }
+
+// update nalang , add report field
+
+export async function PUT(request) {
+  try {
+    const auth = await authenticateToken(request);
+    if (auth.error) {
+      return auth.error;
+    }
+
+    const { fileId, report, status } = await request.json();
+
+    // valiadate payload
+    if (!fileId || !report || !status) {
+      return NextResponse.json(
+        {
+          error: "All fields are required",
+        },
+        { status: 400 },
+      );
+    }
+
+    const pool = await getConnection();
+    const updateReq = pool.request();
+    const updateRes = await updateReq
+      .input("fileId", sql.UniqueIdentifier, fileId)
+      .input("report", sql.NVarChar(sql.MAX), JSON.stringify(report))
+      .input("status", sql.VarChar(50), status)
+      .execute("dbo.updateExternalFile");
+
+    return NextResponse.json(
+      {
+        message: "File updated successfully",
+        body: updateRes.recordset,
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: getErrorMessage(error) },
+      { status: 500 },
+    );
+  }
+}

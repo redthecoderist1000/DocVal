@@ -63,6 +63,7 @@ export async function POST(request) {
         full_name: user.full_name,
         email: user.email,
         role: JSON.parse(user.role),
+        division_id: user.division_id,
         division: user.division,
         division_abrv: user.division_abrv,
       },

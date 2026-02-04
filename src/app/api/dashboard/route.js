@@ -37,7 +37,7 @@ export async function GET(request) {
       const response = JSON.parse(selectRes.recordset[0].JsonOutput);
 
       return NextResponse.json({
-        error: "Dashboard data retrieved successfully",
+        message: "Dashboard data retrieved successfully",
         body: response,
       });
     }

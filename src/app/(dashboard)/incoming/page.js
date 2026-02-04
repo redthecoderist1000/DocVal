@@ -13,6 +13,8 @@ import {
   FormControl,
   IconButton,
   Container,
+  Autocomplete,
+  Stack,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
@@ -26,7 +28,7 @@ import RotateLeftRoundedIcon from "@mui/icons-material/RotateLeftRounded";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
 import { useError } from "@/helper/ErrorContext";
-import FileDetailsModal from "@/app/(dashboard)/files/components/FileDetailsModal";
+import FileDetailsModal from "@/components/FileDetailsModal";
 import DeleteDocDialog from "@/app/(dashboard)/files/components/DeleteDocDialog";
 
 export default function IncomingPage() {
@@ -49,6 +51,9 @@ export default function IncomingPage() {
 
   const [classOption, setClassOption] = useState([]);
   const [typeOption, setTypeOption] = useState([]);
+  const [officeOption, setOfficeOption] = useState([]);
+  const [filterOffice, setFilterOffice] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
   const headerCells = [
     "Documents",
@@ -81,6 +86,15 @@ export default function IncomingPage() {
       });
 
     axiosInstance
+      .get("/office/getAllDivision")
+      .then((res) => {
+        setOfficeOption(res.body);
+      })
+      .catch((error) => {
+        console.error("Error fetching offices:", error);
+      });
+
+    axiosInstance
       .get("/document/getIncomingFile")
       .then((res) => {
         setFiles(res.body || []);
@@ -109,8 +123,17 @@ export default function IncomingPage() {
         filterClassification === "" || file.doc_class === filterClassification;
       const matchesDocType =
         filterDocType === "" || file.doc_type === filterDocType;
+      const matchesOffice =
+        filterOffice === "" || file.sender_office === filterOffice;
+      const matchesStatus = filterStatus === "" || file.status === filterStatus;
 
-      return matchesSearch && matchesClassification && matchesDocType;
+      return (
+        matchesSearch &&
+        matchesClassification &&
+        matchesDocType &&
+        matchesOffice &&
+        matchesStatus
+      );
     });
 
     if (sortBy === "documents-asc") {
@@ -136,6 +159,8 @@ export default function IncomingPage() {
     sortBy,
     filterClassification,
     filterDocType,
+    filterOffice,
+    filterStatus,
   ]);
 
   const handleChangePage = (event, newPage) => {
@@ -151,20 +176,91 @@ export default function IncomingPage() {
     setSearchQuery("");
     setFilterClassification("");
     setFilterDocType("");
+    setFilterOffice("");
+    setFilterStatus("");
     setPage(0);
   };
+
+  // Calculate count of files by office
+  let filesByOffice = useMemo(() => {
+    const temp = files.reduce((acc, file) => {
+      const office = file.sender_office || "Unknown";
+      if (!acc[office]) {
+        acc[office] = 0;
+      }
+      acc[office] += 1;
+      return acc;
+    }, {});
+
+    const result = Object.entries(temp).map(([office, count]) => ({
+      office,
+      count,
+    }));
+
+    return result;
+  }, [files]);
+
+  // Organize offices by division type
+  const organizedOffices = useMemo(() => {
+    const external = [];
+    const internal = [];
+
+    officeOption.forEach((office) => {
+      if (office.office_type?.toLowerCase() === "external") {
+        external.push(office);
+      } else if (office.office_type?.toLowerCase() === "internal") {
+        if (office.parent_id) {
+          internal.push(office);
+        }
+      }
+    });
+
+    return { external, internal };
+  }, [officeOption]);
 
   return (
     <Container maxWidth="lg" className="py-8 min-h-[80vh]">
       <div className={`${isModalOpen ? "blur-sm" : ""}`}>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Incoming</h1>
-          <h2 className="text-sm text-gray-600">
-            Manage external documents for evaluation
-          </h2>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Incoming</h1>
+            <h2 className="text-sm text-gray-600">
+              Manage external documents for evaluation
+            </h2>
+          </div>
         </div>
 
-        <div className="mb-6 grid grid-cols-1  md:grid-cols-4 gap-4 items-end">
+        {/* File Count by Office Cards */}
+        <Stack
+          direction="row"
+          spacing={2}
+          mb={3}
+          sx={{ overflowX: "auto", pb: 1 }}
+        >
+          {filesByOffice.map((item, index) => (
+            <div
+              key={index}
+              onClick={() => {
+                setFilterOffice(
+                  item.office === filterOffice ? "" : item.office,
+                );
+                setPage(0);
+              }}
+              className="cursor-pointer bg-white rounded-lg p-4 border-l-4 border-blue-600 max-w-xs shadow-sm w-75 transition-all hover:shadow-md"
+            >
+              <div className="flex flex-col justify-between h-full">
+                <p className="text-gray-500 text-sm font-medium">
+                  {item?.office ?? "-"}
+                </p>
+                <h3 className="text-3xl font-bold text-gray-900">
+                  {item?.count ?? 0}
+                </h3>
+              </div>
+            </div>
+          ))}
+        </Stack>
+
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
           <div className="md:col-span-2">
             <TextField
               type="text"
@@ -196,7 +292,7 @@ export default function IncomingPage() {
             </FormControl>
           </div>
 
-          <div className="flex gap-2">
+          <div>
             <FormControl size="small" fullWidth>
               <Select
                 value={filterDocType}
@@ -212,6 +308,58 @@ export default function IncomingPage() {
                     {data.name}
                   </MenuItem>
                 ))}
+              </Select>
+            </FormControl>
+          </div>
+
+          <div>
+            <Autocomplete
+              size="small"
+              fullWidth
+              options={[
+                ...organizedOffices.external,
+                ...organizedOffices.internal,
+              ]}
+              groupBy={(option) => {
+                if (option.office_type?.toLowerCase() === "external") {
+                  return "External";
+                } else if (option.office_type?.toLowerCase() === "internal") {
+                  return "Internal";
+                }
+                return "Other";
+              }}
+              getOptionLabel={(option) =>
+                typeof option === "string" ? option : option.division_name || ""
+              }
+              value={
+                officeOption.find(
+                  (office) => office.division_name === filterOffice,
+                ) || null
+              }
+              onChange={(event, value) => {
+                setFilterOffice(value ? value.division_name : "");
+                setPage(0);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} placeholder="All Offices" />
+              )}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <FormControl size="small" fullWidth>
+              <Select
+                value={filterStatus}
+                onChange={(e) => {
+                  setFilterStatus(e.target.value);
+                  setPage(0);
+                }}
+                displayEmpty
+              >
+                <MenuItem value="">All Status</MenuItem>
+                <MenuItem value="Requested">Requested</MenuItem>
+                <MenuItem value="Processing">Processing</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
               </Select>
             </FormControl>
             <Tooltip title="Reset Filters" arrow placement="top">

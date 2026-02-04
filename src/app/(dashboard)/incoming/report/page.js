@@ -21,11 +21,10 @@ import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Report_pdf from "@/helper/printables/Report_pdf";
-import { useSession } from "next-auth/react";
 import { useProtectedRoute } from "@/helper/ProtectedRoutes";
 import { useError } from "@/helper/ErrorContext";
 import axiosInstance from "@/helper/Axios";
-import ReportRenderer from "../../../../components/ReportRenderer";
+import ReportRenderer from "@/components/ReportRenderer";
 
 export default function Report() {
   const { session, status } = useProtectedRoute();
@@ -82,34 +81,24 @@ export default function Report() {
   }, [setError]);
 
   const handleCancel = () => {
-    router.push("/files", { replace: true });
+    router.back();
     sessionStorage.removeItem("newReportData");
   };
 
   const handleSave = () => {
+    console.log("Saving report...", newReportData);
     // save logic here
     setLoading(true);
     axiosInstance
-      .post("/document/createFile", {
-        reference_no: newReportData.refno,
-        title: newReportData.title,
-        doc_type: newReportData.type,
-        doc_class: newReportData.classification,
-        sender_office: newReportData.sender_office,
-        sender_person: newReportData.sender_person,
-        sender_email: newReportData.sender_email,
-        sender_phone: newReportData.sender_phone,
-        base64_data: newReportData.file_base64,
+      .put("/document/createFile", {
+        fileId: newReportData.id,
         report: newReportData.report_data,
-        receiving_office: newReportData.receiving_office,
-        office_type: newReportData.office_type,
-        // receiving_office: "string",
-        // receiving_office_name: "string",
+        status: "Completed",
       })
       .then((res) => {
-        // console.log(res);
-        setError("File saved successfully!", "success");
-        router.push("/files", { replace: true });
+        console.log(res);
+        setError(res.message, "success");
+        router.push("/incoming", { replace: true });
         sessionStorage.removeItem("newReportData");
         // setLoading(false);
       })
@@ -155,7 +144,7 @@ export default function Report() {
               reference no.
             </Typography>
             <Typography variant="body1" gutterBottom>
-              {newReportData.refno}
+              {newReportData.reference_no}
             </Typography>
             <Typography variant="body2" color="text.disabled">
               title
@@ -167,29 +156,27 @@ export default function Report() {
               type of document
             </Typography>
             <Typography variant="body1" gutterBottom>
-              {newReportData.type_name}
+              {newReportData.doc_type}
             </Typography>
             <Typography variant="body2" color="text.disabled">
               classification
             </Typography>
             <Typography variant="body1" gutterBottom>
-              {newReportData.classification_name}
+              {newReportData.doc_class}
             </Typography>
-            {newReportData.office_type === "external" && (
-              <>
-                <Typography variant="body2" color="text.disabled">
-                  receiving office
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  {newReportData.receiving_office_name}
-                </Typography>
-              </>
-            )}
+
+            <Typography variant="body2" color="text.disabled">
+              receiving office
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              {newReportData.receiving_office}
+            </Typography>
+
             <Typography variant="body2" color="text.disabled">
               sender office
             </Typography>
             <Typography variant="body1" gutterBottom>
-              {newReportData.sender_office_name}
+              {newReportData.sender_office}
             </Typography>
             <Typography variant="body2" color="text.disabled">
               sender email
@@ -254,7 +241,7 @@ export default function Report() {
               {newReportData.report_data && (
                 <ReportRenderer
                   reportData={newReportData.report_data}
-                  documentType={newReportData.type_name}
+                  documentType={newReportData.doc_type}
                 />
               )}
             </Stack>
