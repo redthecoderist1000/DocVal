@@ -74,6 +74,294 @@ npm start
 - User profile management
 - Dynamic report schemas for different document types
 
+## API Endpoints
+
+All endpoints are served under the Next.js API base path: `/api`.
+
+### Common Headers
+
+- `Content-Type: application/json` for JSON requests
+- `Authorization: Bearer <access_token>` for protected endpoints (marked as **Auth required**)
+
+### Auth
+
+#### POST /api/auth/login
+
+- **Auth required:** No
+- **Payload:** `{ "email": string, "password": string }`
+- **Responses:**
+  - **200** `{ message, body: { id, f_name, m_name, l_name, full_name, email, role, division_id, division, division_abrv }, refresh_token, access_token }`
+  - **400** `{ message }`
+  - **500** `{ message, error }`
+
+#### POST /api/auth/register
+
+- **Auth required:** No
+- **Payload:** `{ "f_name"?: string, "m_name"?: string, "l_name"?: string, "email": string, "password": string, "role"?: string[] (role IDs), "division"?: string (UUID) }`
+- **Responses:**
+  - **201** `{ message, body, refresh_token, access_token }`
+  - **210** `{ message: "User created, but failed to send email", body, refresh_token, access_token }`
+  - **400** `{ message, error }`
+  - **500** `{ message, error }`
+
+#### POST /api/auth/refresh
+
+- **Auth required:** No
+- **Payload:** `{ "refreshToken": string }`
+- **Responses:**
+  - **200** `{ access_token }`
+  - **401** `{ message }`
+  - **403** `{ message, error }`
+  - **500** `{ message, error }`
+
+#### POST /api/auth/password/send_otp
+
+- **Auth required:** No
+- **Payload:** `{ "email": string }`
+- **Responses:**
+  - **200** `{ message, body: { user_id } }`
+  - **403** `{ message: "Invalid Email" }`
+  - **500** `{ message, error? }`
+
+#### POST /api/auth/password/verify_otp
+
+- **Auth required:** No
+- **Payload:** `{ "otp": string, "user_id": string (UUID) }`
+- **Responses:**
+  - **200** `{ message }`
+  - **400** `{ message }`
+  - **500** `{ message, error? }`
+
+#### POST /api/auth/password/reset
+
+- **Auth required:** No
+- **Payload:** `{ "user_id": string (UUID), "new_pass": string }`
+- **Responses:**
+  - **200** `{ message }`
+  - **400** `{ message }`
+  - **500** `{ message }`
+
+#### POST /api/auth/password/resend_otp
+
+- **Auth required:** No
+- **Payload:** `{ "user_id": string (UUID) }`
+- **Responses:**
+  - **200** `{ message, body: { user_id } }`
+  - **500** `{ message }`
+
+#### GET|POST /api/auth/[...nextauth]
+
+- **Auth required:** No
+- **Payload:** Standard NextAuth credentials flow.
+- **Responses:** NextAuth session/token responses (managed by NextAuth).
+
+### Dashboard
+
+#### GET /api/dashboard
+
+- **Auth required:** Yes
+- **Payload:** None
+- **Responses:**
+  - **200** `{ message, body }`
+  - **403** `{ error }`
+  - **500** `{ message, error }`
+
+### Document
+
+#### GET /api/document/getAllDocType
+
+- **Auth required:** Yes
+- **Payload:** None
+- **Responses:** **200** `{ message, body: [...] }`
+
+#### GET /api/document/getAllDocClass
+
+- **Auth required:** Yes
+- **Payload:** None
+- **Responses:** **200** `{ message, body: [...] }`
+
+#### POST /api/document/getFileByUser
+
+- **Auth required:** Yes
+- **Payload:** None
+- **Responses:** **200** `{ message, body: [...] }`
+
+#### POST /api/document/getFileDetail
+
+- **Auth required:** Yes
+- **Payload:** `{ "fileId": string }`
+- **Responses:** **200** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/document/createFile
+
+- **Auth required:** Yes
+- **Payload:**
+  `{ "reference_no": string, "title": string, "doc_type": string (UUID), "doc_class": string (UUID), "sender_office": string (UUID), "sender_person": string, "sender_email": string, "sender_phone": string, "base64_data": string, "office_type": string, "receiving_office"?: string (UUID), "report"?: object }`
+- **Responses:** **201** `{ message, body }` or **400** `{ message, error }`
+
+#### PUT /api/document/createFile
+
+- **Auth required:** Yes
+- **Payload:** `{ "fileId": string (UUID), "report": object, "status": string }`
+- **Responses:** **200** `{ message, body }` or **400** `{ error }`
+
+#### POST /api/document/generateReport
+
+- **Auth required:** Yes
+- **Payload:** `{ "base64_data": string, "document_type"?: string }`
+- **Responses:** **200** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/document/deleteFile
+
+- **Auth required:** Yes
+- **Payload:** `{ "fileId": string }`
+- **Responses:** **200** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/document/createDocType
+
+- **Auth required:** Yes
+- **Payload:** `{ "name": string }`
+- **Responses:** **201** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/document/editDocType
+
+- **Auth required:** Yes
+- **Payload:** `{ "docTypeId": string (UUID), "newName": string }`
+- **Responses:** **201** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/document/deleteDocType
+
+- **Auth required:** Yes
+- **Payload:** `{ "docTypeId": string (UUID) }`
+- **Responses:** **200** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/document/createDocClass
+
+- **Auth required:** Yes
+- **Payload:** `{ "name": string }`
+- **Responses:** **201** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/document/editDocClass
+
+- **Auth required:** Yes
+- **Payload:** `{ "docClassId": string (UUID), "newName": string }`
+- **Responses:** **201** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/document/deleteDocClass
+
+- **Auth required:** Yes
+- **Payload:** `{ "docClassId": string (UUID) }`
+- **Responses:** **200** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/document/downloadFile
+
+- **Auth required:** Yes
+- **Payload:** `{ "fileName": string }`
+- **Responses:**
+  - **200** PDF file stream with `Content-Type: application/pdf`
+  - **400** `{ message }`
+  - **404** `{ message }`
+
+#### GET /api/document/getIncomingFile
+
+- **Auth required:** Yes
+- **Payload:** None
+- **Responses:** **200** `{ message, body: [...] }`
+
+### Office (Divisions)
+
+#### GET /api/office/getAllDivision
+
+- **Auth required:** Yes
+- **Payload:** None
+- **Responses:** **200** `{ message, body: [...] }`
+
+#### POST /api/office/createDivision
+
+- **Auth required:** Yes
+- **Payload:** `{ "name": string, "abrv": string, "office_type"?: string, "parent_office"?: string (UUID or empty string) }`
+- **Responses:** **201** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/office/editDivision
+
+- **Auth required:** Yes
+- **Payload:** `{ "divId": string (UUID), "newName"?: string, "newAbrv"?: string }`
+- **Responses:** **201** `{ message, body }` or **400** `{ message }`
+
+#### POST /api/office/deleteDivision
+
+- **Auth required:** Yes
+- **Payload:** `{ "divisionId": string (UUID) }`
+- **Responses:** **200** `{ message, body }` or **400** `{ message }`
+
+### Roles
+
+#### GET /api/roles/getAllRoles
+
+- **Auth required:** Yes
+- **Payload:** None
+- **Responses:** **200** `{ message, body: [...] }`
+
+### User
+
+#### GET /api/user/getAllUser
+
+- **Auth required:** Yes
+- **Payload:** None
+- **Responses:** **200** `{ message, body: [...] }`
+
+#### POST /api/user/getUserDetail
+
+- **Auth required:** Yes
+- **Payload:** `{ "userId": string (UUID) }`
+- **Responses:** **200** `{ message, body }`
+
+#### POST /api/user/editUser
+
+- **Auth required:** Yes
+- **Payload:** `{ "userId": string (UUID), "newFName"?: string, "newMName"?: string, "newLName"?: string, "newEmail"?: string, "newDiv"?: string (UUID), "newRole"?: string }`
+- **Responses:** **200** `{ message, body, newData }` or **400** `{ message }`
+
+#### POST /api/user/deleteAccount
+
+- **Auth required:** Yes
+- **Payload:** `{ "userId": string (UUID) }`
+- **Responses:** **200** `{ message, body }` or **400** `{ message }`
+
+### Email
+
+#### POST /api/email/test
+
+- **Auth required:** Yes
+- **Payload:** `{ "name": string }`
+- **Responses:** **200** `{ message, data }` or **500** `{ message, error }`
+
+### AI
+
+#### /api/ai/evaluate
+
+- **Auth required:** Unknown (route not implemented)
+- **Payload/Responses:** Not implemented (route file is empty).
+
+#### /api/ai/fetchDocDetail
+
+- **Auth required:** Unknown (route not implemented)
+- **Payload/Responses:** Not implemented (route file is empty).
+
+### Test
+
+#### GET /api/test
+
+- **Auth required:** Yes
+- **Payload:** None
+- **Responses:** **200** `{ message, data }`
+
+#### POST /api/test
+
+- **Auth required:** Yes
+- **Payload:** Any JSON body
+- **Responses:** **200** `{ message, user, receivedData, status }`
+
 ## Dynamic Report Schemas
 
 The system supports generating AI reports with different structures based on document type. Each document type has a custom schema and instructions that guide the AI model to generate tailored reports.
@@ -171,13 +459,15 @@ The dynamic renderer automatically works across:
 - `src/helper/` - Utility functions, context providers, and helpers
 - `public/` - Static assets and uploaded files
 
-| Name    | Role                  | Email                    |
-| ------- | --------------------- | ------------------------ |
-| Arvie   | Documentation         | john.doe@example.com     |
-| Edward  | Documentation         | jane.smith@example.com   |
-| Kenjiro | AI & Documentation    | mike.johnson@example.com |
-| Red     | Fullstack Development | redochavillo@gmail.com   |
-| Ron     | UI/UX                 | arboisron2@gmail.com     |
+## Team Members
+
+| Name    | Role                  | Email                           |
+| ------- | --------------------- | ------------------------------- |
+| Arvie   | Documentation         | aezyy.yyzea@gmail.com           |
+| Edward  | Documentation         | johnedwardsolaybar263@gmail.com |
+| Kenjiro | AI & Documentation    | TakadaKenjiro123@gmail.com      |
+| Red     | Fullstack Development | redochavillo@gmail.com          |
+| Ron     | UI/UX                 | arboisron2@gmail.com            |
 
 ## Support
 
