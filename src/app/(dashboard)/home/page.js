@@ -62,7 +62,7 @@ export default function home() {
 
   const handleFileClick = (docId) => {
     // Navigate to the document detail page
-    router.push(`/files?id=${docId}`, {
+    router.push(`/evaluate?id=${docId}`, {
       replace: true,
     });
   };
@@ -203,7 +203,7 @@ export default function home() {
             <h3 className="text-xl font-bold text-gray-900">
               Recent Documents
             </h3>
-            <Link href="/files">
+            <Link href="/evaluate">
               <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                 View All
               </button>
@@ -244,7 +244,7 @@ export default function home() {
             Quick Actions
           </h3>
           <div className="grid gap-y-4">
-            <Link href="/files/new">
+            <Link href="/evaluate/new">
               <button className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition text-left flex items-center gap-2">
                 <svg
                   className="w-5 h-5"
@@ -262,7 +262,7 @@ export default function home() {
                 New Document
               </button>
             </Link>
-            <Link href="/files">
+            <Link href="/evaluate">
               <button className="w-full px-4 py-3 bg-gray-100 text-gray-800 font-medium rounded-lg hover:bg-gray-200 transition text-left flex items-center gap-2">
                 <svg
                   className="w-5 h-5"

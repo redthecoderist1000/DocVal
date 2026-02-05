@@ -82,7 +82,7 @@ export default function Report() {
   }, [setError]);
 
   const handleCancel = () => {
-    router.push("/files", { replace: true });
+    router.push("/evaluate", { replace: true });
     sessionStorage.removeItem("newReportData");
   };
 
@@ -109,7 +109,7 @@ export default function Report() {
       .then((res) => {
         // console.log(res);
         setError("File saved successfully!", "success");
-        router.push("/files", { replace: true });
+        router.push("/evaluate", { replace: true });
         sessionStorage.removeItem("newReportData");
         // setLoading(false);
       })

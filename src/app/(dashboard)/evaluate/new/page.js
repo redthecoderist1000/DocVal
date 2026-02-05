@@ -188,7 +188,7 @@ export default function NewFile() {
             }),
           );
 
-          router.push(`/files/report`);
+          router.push(`/evaluate/report`);
           setLoading(false);
         };
 
@@ -705,7 +705,7 @@ export default function NewFile() {
         formData={formData}
         onConfirm={() => {
           handleReset();
-          router.push("/files", { replace: true });
+          router.push("/evaluate", { replace: true });
         }}
       />
     </Container>

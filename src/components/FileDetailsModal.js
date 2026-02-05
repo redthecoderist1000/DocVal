@@ -11,13 +11,13 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/helper/Axios";
-import InfoTab from "../app/(dashboard)/files/components/tabs/InfoTab";
-import ReportTab from "../app/(dashboard)/files/components/tabs/ReportTab";
+import InfoTab from "../app/(dashboard)/evaluate/components/tabs/InfoTab";
+import ReportTab from "../app/(dashboard)/evaluate/components/tabs/ReportTab";
 
 export default function FileDetailsModal({
   isModalOpen,
   setIsModalOpen,
-  basePath = "/files",
+  basePath = "/evaluate",
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();

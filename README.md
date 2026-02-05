@@ -415,7 +415,7 @@ const docTypeInstruction = {
 
 #### 4. Define Section Order (Optional)
 
-In `src/app/(dashboard)/files/report/components/ReportRenderer.js`:
+In `src/app/(dashboard)/evaluate/report/components/ReportRenderer.js`:
 
 ```javascript
 const docTypeSectionOrder = {
@@ -441,14 +441,14 @@ const sectionConfig = {
 - `src/app/api/helper/gemini.js` - AI configuration
 - `src/app/api/helper/schema.js` - Schema definitions
 - `src/app/api/document/generateReport/route.js` - API endpoint for report generation
-- `src/app/(dashboard)/files/report/components/ReportRenderer.js` - Dynamic report rendering logic
-- `src/app/(dashboard)/files/new/page.js` - Document upload with type selection
+- `src/app/(dashboard)/evaluate/report/components/ReportRenderer.js` - Dynamic report rendering logic
+- `src/app/(dashboard)/evaluate/new/page.js` - Document upload with type selection
 
 ### Report Display Locations
 
 The dynamic renderer automatically works across:
 
-- `/files/report` - New document report review page
+- `/evaluate/report` - New document report review page
 - `/incoming/report` - Incoming document report review page
 - File Details Modal's Report Tab
 

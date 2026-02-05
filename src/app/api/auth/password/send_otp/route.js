@@ -62,12 +62,12 @@ export async function POST(request) {
         { status: 200 },
       );
     } else {
-      return NextResponse.json({ message: "Invalid Email" }, { status: 403 });
+      return NextResponse.json({ error: "Invalid Email" }, { status: 403 });
     }
   } catch (error) {
     console.error("Error checking email:", error);
     return NextResponse.json(
-      { message: error.message || "Internal Server Error" },
+      { error: error.message || "Internal Server Error" },
       { status: 500 },
     );
   }

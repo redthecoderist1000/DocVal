@@ -29,7 +29,7 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "@/helper/Axios";
 import { useError } from "@/helper/ErrorContext";
 import FileDetailsModal from "@/components/FileDetailsModal";
-import DeleteDocDialog from "@/app/(dashboard)/files/components/DeleteDocDialog";
+import DeleteDocDialog from "@/app/(dashboard)/evaluate/components/DeleteDocDialog";
 
 export default function IncomingPage() {
   const router = useRouter();
@@ -235,7 +235,26 @@ export default function IncomingPage() {
           direction="row"
           spacing={2}
           mb={3}
-          sx={{ overflowX: "auto", pb: 1 }}
+          sx={{
+            overflowX: "auto",
+            pb: 1,
+            flexWrap: "nowrap",
+            "&::-webkit-scrollbar": {
+              height: "6px",
+            },
+            "&::-webkit-scrollbar-track": {
+              background: "transparent",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: "#d1d5db",
+              borderRadius: "3px",
+              "&:hover": {
+                background: "#9ca3af",
+              },
+            },
+            scrollbarWidth: "thin",
+            scrollbarColor: "#d1d5db transparent",
+          }}
         >
           {filesByOffice.map((item, index) => (
             <div
@@ -246,7 +265,8 @@ export default function IncomingPage() {
                 );
                 setPage(0);
               }}
-              className="cursor-pointer bg-white rounded-lg p-4 border-l-4 border-blue-600 max-w-xs shadow-sm w-75 transition-all hover:shadow-md"
+              className="cursor-pointer bg-white rounded-lg p-4 border-l-4 border-blue-600 shadow-sm transition-all hover:shadow-md flex-shrink-0"
+              style={{ width: "300px" }}
             >
               <div className="flex flex-col justify-between h-full">
                 <p className="text-gray-500 text-sm font-medium">

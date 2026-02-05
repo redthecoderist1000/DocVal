@@ -21,7 +21,7 @@ export default function Home() {
     if (status === "authenticated") {
       router.push("/home");
     } else if (status === "unauthenticated") {
-      router.push("/api/auth/signin");
+      router.push("/auth/signin");
     }
   }, [status, router, startLoading, stopLoading]);
 
