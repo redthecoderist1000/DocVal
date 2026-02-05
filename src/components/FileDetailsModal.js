@@ -11,8 +11,8 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/helper/Axios";
-import InfoTab from "../app/(dashboard)/evaluate/components/tabs/InfoTab";
-import ReportTab from "../app/(dashboard)/evaluate/components/tabs/ReportTab";
+import InfoTab from "./InfoTab";
+import ReportTab from "./ReportTab";
 
 export default function FileDetailsModal({
   isModalOpen,

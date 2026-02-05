@@ -4,7 +4,7 @@ import { IconButton, Stack, Typography } from "@mui/material";
 import PrintRoundedIcon from "@mui/icons-material/PrintRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import Report_pdf from "@/helper/printables/Report_pdf";
-import ReportRenderer from "../../../../../components/ReportRenderer";
+import ReportRenderer from "./ReportRenderer";
 
 export default function ReportTab({ data }) {
   const reportData = JSON.parse(data.report);

@@ -29,7 +29,7 @@ const Report_pdf = (data) => {
     "Document Evaluation Report",
     doc.internal.pageSize.getWidth() / 2,
     yOffset,
-    { align: "center" }
+    { align: "center" },
   );
   yOffset += lineHeight * 2;
 
@@ -42,7 +42,7 @@ const Report_pdf = (data) => {
   // title
   const titleLines = doc.splitTextToSize(
     `Document name: ${data.report_data.document_name}`,
-    180
+    180,
   );
   titleLines.forEach((line) => {
     if (yOffset + lineHeight > pageHeight - margin - 5) {
@@ -60,7 +60,7 @@ const Report_pdf = (data) => {
   doc.text(
     `Document classification: ${data.classification_name}`,
     margin,
-    yOffset
+    yOffset,
   );
   yOffset += lineHeight;
   // type
@@ -73,14 +73,8 @@ const Report_pdf = (data) => {
   doc.text(`Generation date: ${data.generation_date}`, margin, yOffset);
   yOffset += lineHeight * 2;
 
-  // actual report
-  doc.setFont("helvetica", "bold");
-  doc.text("Summary", margin, yOffset);
-  yOffset += lineHeight;
-  doc.setFont("helvetica", "normal");
-  const summaryLines = doc.splitTextToSize(data.report_data.summary, 180);
-  summaryLines.forEach((line) => {
-    if (yOffset + lineHeight > pageHeight - margin - 5) {
+  const ensurePageSpace = (extra = lineHeight) => {
+    if (yOffset + extra > pageHeight - margin - 5) {
       doc.addPage();
       set_dict_header(doc);
       yOffset = 50;
@@ -88,193 +82,125 @@ const Report_pdf = (data) => {
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
     }
-    doc.text(line, margin, yOffset);
-    yOffset += lineHeight;
-  });
-  yOffset += lineHeight;
+  };
 
-  // keyppoints
-  doc.setFont("helvetica", "bold");
-  doc.text("Key Points", margin, yOffset);
-  yOffset += lineHeight;
-  doc.setFont("helvetica", "normal");
-  data.report_data.key_points.forEach((point, index) => {
-    const pointLines = doc.splitTextToSize(`${index + 1}. ${point}`, 180);
-    pointLines.forEach((line) => {
-      if (yOffset + lineHeight > pageHeight - margin - 5) {
-        doc.addPage();
-        set_dict_header(doc);
-        yOffset = 50;
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-      }
+  const addSectionTitle = (title) => {
+    yOffset += lineHeight;
+    ensurePageSpace();
+    doc.setFont("helvetica", "bold");
+    doc.text(title, margin, yOffset);
+    yOffset += lineHeight;
+    doc.setFont("helvetica", "normal");
+  };
+
+  const addParagraph = (text) => {
+    if (!text) return;
+    const lines = doc.splitTextToSize(text, 180);
+    lines.forEach((line) => {
+      ensurePageSpace();
       doc.text(line, margin, yOffset);
       yOffset += lineHeight;
     });
-  });
+  };
 
-  const potential_issues = data.report_data.potential_issues;
-  // compliance issues
-  if (potential_issues.compliance_issues.length > 0) {
-    yOffset += lineHeight;
-    doc.setFont("helvetica", "bold");
-    // check for page break
-    if (yOffset + lineHeight > pageHeight - margin - 5) {
-      doc.addPage();
-      set_dict_header(doc);
-      yOffset = 50;
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-    }
-    doc.text("Compliance Issues", margin, yOffset);
-    yOffset += lineHeight;
-    potential_issues.compliance_issues.forEach((issue, index) => {
-      doc.setFont("helvetica", "italic");
-      const issueText = `${index + 1}. \"${issue.excerpt}\" [${
-        issue.location
-      }]`;
-      const issueLines = doc.splitTextToSize(issueText, 180);
-      issueLines.forEach((line) => {
-        if (yOffset + lineHeight > pageHeight - margin) {
-          doc.addPage();
-          set_dict_header(doc);
-          yOffset = 50;
-          doc.setFont("helvetica", "italic");
-          doc.setTextColor(0, 0, 0);
-          doc.setFontSize(10);
-        }
-        doc.text(line, margin, yOffset);
-        yOffset += lineHeight;
-      });
-      // Add explanation
-      const explanationLines = doc.splitTextToSize(
-        `Explanation: ${issue.explanation}`,
-        180
-      );
-      explanationLines.forEach((line) => {
-        if (yOffset + lineHeight > pageHeight - margin - 5) {
-          doc.addPage();
-          set_dict_header(doc);
-          yOffset = 50;
-          doc.setFont("helvetica", "normal");
-          doc.setTextColor(0, 0, 0); //blac
-          doc.setFontSize(10);
-        }
-        doc.setFont("helvetica", "normal");
+  const addBullets = (items) => {
+    if (!Array.isArray(items) || items.length === 0) return;
+    items.forEach((item, index) => {
+      const bulletText = `${index + 1}. ${item}`;
+      const lines = doc.splitTextToSize(bulletText, 180);
+      lines.forEach((line) => {
+        ensurePageSpace();
         doc.text(line, margin, yOffset);
         yOffset += lineHeight;
       });
     });
-  }
+  };
 
-  // security concerns
-  if (potential_issues.security_concerns.length > 0) {
-    yOffset += lineHeight;
-    doc.setFont("helvetica", "bold");
-    // check for page break
-    if (yOffset + lineHeight > pageHeight - margin - 5) {
-      doc.addPage();
-      set_dict_header(doc);
-      yOffset = 50;
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-    }
-    doc.text("Security Concerns", margin, yOffset);
-    yOffset += lineHeight;
-    potential_issues.security_concerns.forEach((issue, index) => {
-      doc.setFont("helvetica", "italic");
-      const issueText = `${index + 1}. \"${issue.excerpt}\" [${
-        issue.location
-      }]`;
-      const issueLines = doc.splitTextToSize(issueText, 180);
-      issueLines.forEach((line) => {
-        if (yOffset + lineHeight > pageHeight - margin) {
-          doc.addPage();
-          set_dict_header(doc);
-          yOffset = 50;
-          doc.setFont("helvetica", "italic");
-          doc.setTextColor(0, 0, 0);
-          doc.setFontSize(10);
-        }
-        doc.text(line, margin, yOffset);
-        yOffset += lineHeight;
-      });
-      // Add explanation
-      const explanationLines = doc.splitTextToSize(
-        `Explanation: ${issue.explanation}`,
-        180
-      );
-      explanationLines.forEach((line) => {
-        if (yOffset + lineHeight > pageHeight - margin - 5) {
-          doc.addPage();
-          set_dict_header(doc);
-          yOffset = 50;
-          doc.setFont("helvetica", "normal");
-          doc.setTextColor(0, 0, 0); //black
-          doc.setFontSize(10);
-        }
+  const addPotentialIssues = (potentialIssues) => {
+    if (!potentialIssues) return;
+
+    const { compliance_issues, security_concerns } = potentialIssues;
+
+    if (Array.isArray(compliance_issues) && compliance_issues.length > 0) {
+      addSectionTitle("Compliance Issues");
+      compliance_issues.forEach((issue, index) => {
+        doc.setFont("helvetica", "italic");
+        const issueText = `${index + 1}. \"${issue.excerpt}\" [${
+          issue.location
+        }]`;
+        const issueLines = doc.splitTextToSize(issueText, 180);
+        issueLines.forEach((line) => {
+          ensurePageSpace();
+          doc.text(line, margin, yOffset);
+          yOffset += lineHeight;
+        });
         doc.setFont("helvetica", "normal");
-        doc.text(line, margin, yOffset);
-        yOffset += lineHeight;
+        addParagraph(`Explanation: ${issue.explanation}`);
       });
-    });
-  }
-
-  // recommendations
-  yOffset += lineHeight;
-  doc.setFont("helvetica", "bold");
-  // check for page break
-  if (yOffset + lineHeight > pageHeight - margin - 5) {
-    doc.addPage();
-    set_dict_header(doc);
-    yOffset = 50;
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10);
-  }
-  doc.text("Recommendations", margin, yOffset);
-  yOffset += lineHeight;
-  doc.setFont("helvetica", "normal");
-  data.report_data.recommendations.forEach((recommendation, index) => {
-    const recommendationLines = doc.splitTextToSize(
-      `${index + 1}. ${recommendation}`,
-      180
-    );
-    recommendationLines.forEach((line) => {
-      if (yOffset + lineHeight > pageHeight - margin - 5) {
-        doc.addPage();
-        set_dict_header(doc);
-        yOffset = 50;
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-      }
-      doc.text(line, margin, yOffset);
-      yOffset += lineHeight;
-    });
-  });
-
-  // references
-  yOffset += lineHeight;
-  doc.setFont("helvetica", "bold");
-  doc.text("References", margin, yOffset);
-  yOffset += lineHeight;
-  doc.setFont("helvetica", "normal");
-  const referenceLines = doc.splitTextToSize(data.report_data.references, 180);
-  referenceLines.forEach((line) => {
-    if (yOffset + lineHeight > pageHeight - margin - 5) {
-      doc.addPage();
-      set_dict_header(doc);
-      yOffset = 50;
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
     }
-    doc.text(`${line}`, margin, yOffset);
-    yOffset += lineHeight;
+
+    if (Array.isArray(security_concerns) && security_concerns.length > 0) {
+      addSectionTitle("Security Concerns");
+      security_concerns.forEach((issue, index) => {
+        doc.setFont("helvetica", "italic");
+        const issueText = `${index + 1}. \"${issue.excerpt}\" [${
+          issue.location
+        }]`;
+        const issueLines = doc.splitTextToSize(issueText, 180);
+        issueLines.forEach((line) => {
+          ensurePageSpace();
+          doc.text(line, margin, yOffset);
+          yOffset += lineHeight;
+        });
+        doc.setFont("helvetica", "normal");
+        addParagraph(`Explanation: ${issue.explanation}`);
+      });
+    }
+  };
+
+  const sectionRenderer = {
+    summary: { title: "Summary", render: addParagraph },
+    key_points: { title: "Key Points", render: addBullets },
+    scope_of_work: { title: "Scope of Work", render: addParagraph },
+    deliverables: { title: "Deliverables", render: addBullets },
+    timeline: { title: "Timeline", render: addParagraph },
+    budget_summary: { title: "Budget Summary", render: addParagraph },
+    potential_issues: { title: "Potential Issues", render: addPotentialIssues },
+    recommendations: { title: "Recommendations", render: addBullets },
+    references: { title: "References", render: addBullets },
+  };
+
+  const docTypeSectionOrder = {
+    "terms of reference": [
+      "summary",
+      "key_points",
+      "scope_of_work",
+      "deliverables",
+      "timeline",
+      "budget_summary",
+      "potential_issues",
+      "recommendations",
+      "references",
+    ],
+  };
+
+  const normalizedType = data.type_name?.trim().toLowerCase();
+  const defaultOrder = Object.keys(sectionRenderer);
+  const sectionOrder = docTypeSectionOrder[normalizedType] || defaultOrder;
+
+  const reportData = data.report_data || {};
+
+  sectionOrder.forEach((sectionKey) => {
+    const section = sectionRenderer[sectionKey];
+    const sectionData = reportData[sectionKey];
+
+    if (!section || sectionData == null) return;
+
+    if (Array.isArray(sectionData) && sectionData.length === 0) return;
+    if (typeof sectionData === "string" && sectionData.trim() === "") return;
+
+    addSectionTitle(section.title);
+    section.render(sectionData);
   });
 
   set_dict_footer(doc);
