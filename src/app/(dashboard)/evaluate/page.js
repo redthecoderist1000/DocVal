@@ -252,7 +252,7 @@ export default function files() {
             size="small"
             disableElevation
             startIcon={<AddRoundedIcon fontSize="small" />}
-            onClick={() => router.push("/files/new")}
+            onClick={() => router.push("/evaluate/new")}
           >
             Evaluate
           </Button>
@@ -263,7 +263,27 @@ export default function files() {
           direction="row"
           spacing={2}
           mb={3}
-          sx={{ overflowX: "auto", pb: 1 }}
+          sx={{
+            overflowX: "auto",
+            mb: 5,
+            flexWrap: "nowrap",
+            pb: 1,
+            "&::-webkit-scrollbar": {
+              height: "6px",
+            },
+            "&::-webkit-scrollbar-track": {
+              background: "transparent",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: "#d1d5db",
+              borderRadius: "3px",
+              "&:hover": {
+                background: "#9ca3af",
+              },
+            },
+            scrollbarWidth: "thin",
+            scrollbarColor: "#d1d5db transparent",
+          }}
         >
           {filesByOffice.map((item, index) => (
             <div
@@ -274,7 +294,8 @@ export default function files() {
                 );
                 setPage(0);
               }}
-              className="cursor-pointer bg-white rounded-lg p-4 border-l-4 border-blue-600 max-w-xs shadow-sm w-75 transition-all hover:shadow-md"
+              className="cursor-pointer bg-white rounded-lg p-4 border-l-4 border-blue-600 shadow-sm transition-all hover:shadow-md flex-shrink-0"
+              style={{ width: "300px" }}
             >
               <div className="flex flex-col justify-between h-full">
                 <p className="text-gray-500 text-sm font-medium">
@@ -505,7 +526,7 @@ export default function files() {
                               disableElevation
                               size="small"
                               onClick={() =>
-                                router.push(`/files?id=${doc.id}`, {
+                                router.push(`/evaluate?id=${doc.id}`, {
                                   replace: true,
                                 })
                               }

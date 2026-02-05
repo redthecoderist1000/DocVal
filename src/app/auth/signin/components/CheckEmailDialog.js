@@ -25,6 +25,9 @@ export default function CheckEmailDialog({ open, setOpen }) {
 
   const handleClose = () => {
     setOpen(false);
+    setFormData({ email: "" });
+    setErrors({ email: "" });
+    setLoading(false);
   };
 
   const handleSubmit = (e) => {
@@ -59,7 +62,7 @@ export default function CheckEmailDialog({ open, setOpen }) {
       })
       .catch((err) => {
         console.error("Error sending OTP:", err);
-        setError("Failed to send OTP. Please try again.", "error");
+        setError(err.message, "error");
         setLoading(false);
       });
   };

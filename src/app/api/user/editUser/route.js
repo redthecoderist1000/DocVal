@@ -47,11 +47,19 @@ export async function POST(request) {
       updatedFields.push("Division");
       updateReq.input("newDiv", sql.UniqueIdentifier, newDiv.trim());
     }
-    if (newRole?.trim()) {
+    if (newRole) {
+      const roleTable = new sql.Table();
+      roleTable.columns.add("RoleIdList", sql.UniqueIdentifier);
+      (newRole || []).forEach((r) => roleTable.rows.add(r));
       updatedFields.push("Role");
-      updateReq.input("newRole", sql.VarChar(255), newRole.trim());
+      updateReq.input("newRole", roleTable);
+    } else {
+      const roleTable = new sql.Table();
+      roleTable.columns.add("RoleIdList", sql.UniqueIdentifier);
+      updateReq.input("newRole", roleTable);
     }
 
+    // console.log("Executing stored procedure with inputs:", updatedFields);
     const updateRes = await updateReq.execute("dbo.editUser");
     const updatedUser = updateRes.recordset?.[0] || null;
 
@@ -76,9 +84,8 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error(error);
-    const { getErrorMessage } = await import("../../helper/errorHandler");
     return NextResponse.json(
-      { message: "Server error", error: getErrorMessage(error) },
+      { message: "Server error", error: error.message },
       { status: 500 },
     );
   }

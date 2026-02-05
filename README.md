@@ -415,7 +415,7 @@ const docTypeInstruction = {
 
 #### 4. Define Section Order (Optional)
 
-In `src/app/(dashboard)/files/report/components/ReportRenderer.js`:
+In `src/app/(dashboard)/evaluate/report/components/ReportRenderer.js`:
 
 ```javascript
 const docTypeSectionOrder = {
@@ -436,19 +436,48 @@ const sectionConfig = {
 };
 ```
 
+#### 6. Update PDF Export (If Needed)
+
+In `src/helper/printables/Report_pdf.js`, add a renderer for custom fields if they need special formatting:
+
+```javascript
+const sectionRenderer = {
+  summary: { title: "Summary", render: addParagraph },
+  key_points: { title: "Key Points", render: addBullets },
+  // ... existing renderers
+  your_custom_field: {
+    title: "Custom Field Title",
+    render: (data) => {
+      // Custom render logic for PDF
+      // Example: addParagraph(data) for text, addBullets(data) for arrays
+    },
+  },
+};
+```
+
+Then add the document type section order for PDF generation:
+
+```javascript
+const docTypeSectionOrder = {
+  "terms of reference": ["summary", "key_points", "scope_of_work", ...],
+  "new document type": ["summary", "key_points", "your_custom_field", ...],  // Add this
+};
+```
+
 ### Files Involved
 
 - `src/app/api/helper/gemini.js` - AI configuration
 - `src/app/api/helper/schema.js` - Schema definitions
 - `src/app/api/document/generateReport/route.js` - API endpoint for report generation
-- `src/app/(dashboard)/files/report/components/ReportRenderer.js` - Dynamic report rendering logic
+- `src/app/(dashboard)/files/report/components/ReportRenderer.js` - Dynamic report rendering logic (UI)
+- `src/helper/printables/Report_pdf.js` - Dynamic PDF export logic
 - `src/app/(dashboard)/files/new/page.js` - Document upload with type selection
 
 ### Report Display Locations
 
 The dynamic renderer automatically works across:
 
-- `/files/report` - New document report review page
+- `/evaluate/report` - New document report review page
 - `/incoming/report` - Incoming document report review page
 - File Details Modal's Report Tab
 
