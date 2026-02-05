@@ -195,7 +195,7 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
       updateData.newRole = formData.role;
     }
 
-    console.log("Update data:", updateData);
+    // console.log("Update data:", updateData);
 
     axiosInstance
       .post("/user/editUser", updateData)

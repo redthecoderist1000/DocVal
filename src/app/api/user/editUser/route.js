@@ -59,7 +59,7 @@ export async function POST(request) {
       updateReq.input("newRole", roleTable);
     }
 
-    console.log("Executing stored procedure with inputs:", updatedFields);
+    // console.log("Executing stored procedure with inputs:", updatedFields);
     const updateRes = await updateReq.execute("dbo.editUser");
     const updatedUser = updateRes.recordset?.[0] || null;
 
