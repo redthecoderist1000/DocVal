@@ -195,6 +195,8 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
       updateData.newRole = formData.role;
     }
 
+    console.log("Update data:", updateData);
+
     axiosInstance
       .post("/user/editUser", updateData)
       .then((res) => {
@@ -209,11 +211,7 @@ export default function ViewAccountModal({ data, setData, setAccounts }) {
         setLoading(false);
       })
       .catch((err) => {
-        const message =
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to update user. Please try again.";
-        setError(message);
+        setError(err.message || "Failed to update user. Please try again.");
         setLoading(false);
         // console.error(err);
       });
