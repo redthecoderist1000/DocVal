@@ -10,6 +10,8 @@ import {
   CircularProgress,
   TextField,
   Tooltip,
+  IconButton,
+  useMediaQuery,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -38,6 +40,7 @@ export default function DivisionTab({ data, isActive }) {
     divisionId: null,
     divisionName: "",
   });
+  const isSmallScreen = useMediaQuery("(max-width: 640px)");
 
   useEffect(() => {
     if (isActive) {
