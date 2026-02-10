@@ -8,6 +8,8 @@ import {
   CircularProgress,
   TextField,
   Tooltip,
+  IconButton,
+  useMediaQuery,
 } from "@mui/material";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -34,6 +36,14 @@ export default function AccountsTab({ data, isActive }) {
     userId: null,
     email: "",
   });
+  const isSmallScreen = useMediaQuery("(max-width: 640px)");
+  const columnVisibility = [
+    "",
+    "hidden md:table-cell",
+    "hidden lg:table-cell",
+    "hidden xl:table-cell",
+    "",
+  ];
 
   useEffect(() => {
     if (isActive) {
@@ -100,6 +110,38 @@ export default function AccountsTab({ data, isActive }) {
     setDialogOpen(true);
   };
 
+  const paginationSection = (
+    <>
+      <Divider />
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={accounts.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        sx={{
+          "& .MuiTablePagination-toolbar": {
+            minHeight: "44px",
+            paddingX: 2,
+          },
+          "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
+            {
+              margin: 0,
+              fontSize: "0.75rem",
+            },
+          "& .MuiTablePagination-select": {
+            fontSize: "0.75rem",
+          },
+          "& .MuiIconButton-root": {
+            padding: "4px",
+          },
+        }}
+      />
+    </>
+  );
+
   return (
     <div>
       <ViewAccountModal
@@ -146,110 +188,168 @@ export default function AccountsTab({ data, isActive }) {
             <CircularProgress />
           </div>
         ) : accounts && accounts.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-100 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
-                    Fullname
-                  </th>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
-                    Email
-                  </th>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
-                    Division
-                  </th>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
-                    Role
-                  </th>
-                  <th className="px-6 py-2 text-center text-xs uppercase text-gray-700">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {visibleRows.map((account, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: "#000000" }}>
+          isSmallScreen ? (
+            <div className="p-4 space-y-4">
+              {visibleRows.map((account) => (
+                <div
+                  key={account.id}
+                  className="border border-gray-100 rounded-xl p-4 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-base font-semibold text-gray-900">
                         {account?.full_name || "N/A"}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: "#000000" }}>
-                        {account?.email || "N/A"}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: "#000000" }}>
-                        {account?.division_name || "N/A"}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: "#000000" }}>
-                        {account?.role || "N/A"}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <Tooltip title="View Account" placement="top" arrow>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            color="success"
-                            disableElevation
-                            onClick={() => handleView(account.id)}
-                          >
-                            <RemoveRedEyeOutlinedIcon fontSize="small" />
-                          </Button>
-                        </Tooltip>
-                        <Tooltip title="Delete Account" placement="top" arrow>
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            disableElevation
-                            onClick={() =>
-                              handleDelete(account?.id, account?.email)
-                            }
-                          >
-                            <DeleteOutlineRoundedIcon fontSize="small" />
-                          </Button>
-                        </Tooltip>
-                      </div>
-                    </td>
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {account?.email || "-"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Tooltip title="View Account" placement="top" arrow>
+                        <IconButton
+                          color="success"
+                          size="small"
+                          onClick={() => handleView(account.id)}
+                          sx={{ border: "1px solid #16a34a" }}
+                          aria-label="View account"
+                        >
+                          <RemoveRedEyeOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Account" placement="top" arrow>
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={() => handleDelete(account?.id, account?.email)}
+                          sx={{ border: "1px solid #dc2626" }}
+                          aria-label="Delete account"
+                        >
+                          <DeleteOutlineRoundedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <Divider className="my-3" />
+                  <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+                    <div>
+                      <p className="text-gray-500 uppercase tracking-wide text-[10px]">
+                        Division
+                      </p>
+                      <p className="font-semibold text-gray-900">
+                        {account?.division_name || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 uppercase tracking-wide text-[10px]">
+                        Role
+                      </p>
+                      <p className="font-semibold text-gray-900">
+                        {account?.role || "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {paginationSection}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto">
+                <thead className="bg-gray-100 border-b border-gray-200">
+                  <tr>
+                    {[
+                      "Fullname",
+                      "Email",
+                      "Division",
+                      "Role",
+                      "Actions",
+                    ].map((cell, index) => (
+                      <th
+                        key={cell}
+                        className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs uppercase text-gray-700 ${columnVisibility[index]}`}
+                      >
+                        {cell}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <Divider />
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={accounts.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{
-                "& .MuiTablePagination-toolbar": {
-                  minHeight: "44px",
-                  paddingX: 2,
-                },
-                "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                  {
-                    margin: 0,
-                    fontSize: "0.75rem",
-                  },
-                "& .MuiTablePagination-select": {
-                  fontSize: "0.75rem",
-                },
-                "& .MuiIconButton-root": {
-                  padding: "4px",
-                },
-              }}
-            />
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {visibleRows.map((account) => (
+                    <tr key={account.id} className="align-top">
+                      <td className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3">
+                        <Typography
+                          variant="body2"
+                          className="text-gray-900 text-sm"
+                        >
+                          {account?.full_name || "N/A"}
+                        </Typography>
+                      </td>
+                      <td
+                        className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 ${columnVisibility[1]}`}
+                      >
+                        <Typography
+                          variant="body2"
+                          className="text-gray-900 text-sm"
+                        >
+                          {account?.email || "N/A"}
+                        </Typography>
+                      </td>
+                      <td
+                        className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 ${columnVisibility[2]}`}
+                      >
+                        <Typography
+                          variant="body2"
+                          className="text-gray-900 text-sm"
+                        >
+                          {account?.division_name || "N/A"}
+                        </Typography>
+                      </td>
+                      <td
+                        className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 ${columnVisibility[3]}`}
+                      >
+                        <Typography
+                          variant="body2"
+                          className="text-gray-900 text-sm"
+                        >
+                          {account?.role || "N/A"}
+                        </Typography>
+                      </td>
+                      <td className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 ${columnVisibility[4]}`}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <Tooltip title="View Account" placement="top" arrow>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              color="success"
+                              disableElevation
+                              onClick={() => handleView(account.id)}
+                            >
+                              <RemoveRedEyeOutlinedIcon fontSize="small" />
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Delete Account" placement="top" arrow>
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              disableElevation
+                              onClick={() =>
+                                handleDelete(account?.id, account?.email)
+                              }
+                            >
+                              <DeleteOutlineRoundedIcon fontSize="small" />
+                            </Button>
+                          </Tooltip>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {paginationSection}
+            </div>
+          )
         ) : (
           <div className="text-center py-12 text-gray-500">
             {searchQuery ? (

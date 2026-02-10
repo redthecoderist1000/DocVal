@@ -10,6 +10,8 @@ import {
   CircularProgress,
   TextField,
   Tooltip,
+  IconButton,
+  useMediaQuery,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -38,6 +40,7 @@ export default function DocumentClassificationTab({ data, isActive }) {
     docClassId: null,
     docClassName: "",
   });
+  const isSmallScreen = useMediaQuery("(max-width: 640px)");
 
   useEffect(() => {
     if (isActive) {
@@ -104,6 +107,38 @@ export default function DocumentClassificationTab({ data, isActive }) {
     setDialogOpen(true);
   };
 
+  const paginationSection = (
+    <>
+      <Divider />
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={classifications.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        sx={{
+          "& .MuiTablePagination-toolbar": {
+            minHeight: "44px",
+            paddingX: 2,
+          },
+          "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
+            {
+              margin: 0,
+              fontSize: "0.75rem",
+            },
+          "& .MuiTablePagination-select": {
+            fontSize: "0.75rem",
+          },
+          "& .MuiIconButton-root": {
+            padding: "4px",
+          },
+        }}
+      />
+    </>
+  );
+
   return (
     <div>
       <NewDocumentClassificationDialog
@@ -151,94 +186,115 @@ export default function DocumentClassificationTab({ data, isActive }) {
             <CircularProgress />
           </div>
         ) : classifications && classifications.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-100 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-2 text-left text-xs uppercase text-gray-700">
-                    Name
-                  </th>
-                  <th className="px-6 py-2 text-center text-xs uppercase text-gray-700">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {visibleRows.map((classification, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-2">
-                      <Typography variant="body2" sx={{ color: "#000000" }}>
-                        {classification?.name || "N/A"}
-                      </Typography>
-                    </td>
-                    <td className="px-6 py-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <Tooltip
-                          title="Edit Classification"
-                          placement="top"
-                          arrow
-                        >
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            color="warning"
-                            disableElevation
-                            onClick={() => {
-                              handleEdit(classification?.id);
-                            }}
-                          >
-                            <EditOutlinedIcon fontSize="small" />
-                          </Button>
-                        </Tooltip>
-                        <Tooltip
-                          title="Delete Classification"
-                          placement="top"
-                          arrow
-                        >
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            disableElevation
-                            onClick={() => handleDelete(classification?.id)}
-                          >
-                            <DeleteOutlineRoundedIcon fontSize="small" />
-                          </Button>
-                        </Tooltip>
-                      </div>
-                    </td>
+          isSmallScreen ? (
+            <div className="p-4 space-y-4">
+              {visibleRows.map((classification) => (
+                <div
+                  key={classification.id}
+                  className="border border-gray-100 rounded-xl p-4 shadow-sm flex items-center justify-between gap-3"
+                >
+                  <p className="font-semibold text-gray-900">
+                    {classification?.name || "N/A"}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Tooltip title="Edit Classification" placement="top" arrow>
+                      <IconButton
+                        color="warning"
+                        size="small"
+                        onClick={() => handleEdit(classification?.id)}
+                        sx={{ border: "1px solid #fbbf24" }}
+                        aria-label="Edit classification"
+                      >
+                        <EditOutlinedIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip
+                      title="Delete Classification"
+                      placement="top"
+                      arrow
+                    >
+                      <IconButton
+                        color="error"
+                        size="small"
+                        onClick={() => handleDelete(classification?.id)}
+                        sx={{ border: "1px solid #dc2626" }}
+                        aria-label="Delete classification"
+                      >
+                        <DeleteOutlineRoundedIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </div>
+                </div>
+              ))}
+              {paginationSection}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto">
+                <thead className="bg-gray-100 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 lg:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs uppercase text-gray-700">
+                      Name
+                    </th>
+                    <th className="px-4 lg:px-6 py-2 sm:py-3 text-center text-[10px] sm:text-xs uppercase text-gray-700">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <Divider />
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={classifications.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              sx={{
-                "& .MuiTablePagination-toolbar": {
-                  minHeight: "44px",
-                  paddingX: 2,
-                },
-                "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                  {
-                    margin: 0,
-                    fontSize: "0.75rem",
-                  },
-                "& .MuiTablePagination-select": {
-                  fontSize: "0.75rem",
-                },
-                "& .MuiIconButton-root": {
-                  padding: "4px",
-                },
-              }}
-            />
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {visibleRows.map((classification) => (
+                    <tr key={classification.id}>
+                      <td className="px-4 lg:px-6 py-2 sm:py-3">
+                        <Typography
+                          variant="body2"
+                          className="text-gray-900 text-sm"
+                        >
+                          {classification?.name || "N/A"}
+                        </Typography>
+                      </td>
+                      <td className="px-4 lg:px-6 py-2 sm:py-3">
+                        <div className="flex items-center justify-center gap-2">
+                          <Tooltip
+                            title="Edit Classification"
+                            placement="top"
+                            arrow
+                          >
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              color="warning"
+                              disableElevation
+                              onClick={() => {
+                                handleEdit(classification?.id);
+                              }}
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </Button>
+                          </Tooltip>
+                          <Tooltip
+                            title="Delete Classification"
+                            placement="top"
+                            arrow
+                          >
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              disableElevation
+                              onClick={() => handleDelete(classification?.id)}
+                            >
+                              <DeleteOutlineRoundedIcon fontSize="small" />
+                            </Button>
+                          </Tooltip>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {paginationSection}
+            </div>
+          )
         ) : (
           <div className="text-center py-12 text-gray-500">
             {searchQuery ? (

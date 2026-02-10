@@ -15,6 +15,7 @@ import {
   Container,
   Autocomplete,
   Stack,
+  useMediaQuery,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
@@ -63,6 +64,17 @@ export default function IncomingPage() {
     "Status",
     "Actions",
   ];
+
+  const columnVisibility = [
+    "",
+    "hidden sm:table-cell",
+    "hidden md:table-cell",
+    "hidden lg:table-cell",
+    "hidden xl:table-cell",
+    "",
+  ];
+
+  const isSmallScreen = useMediaQuery("(max-width: 640px)");
 
   useEffect(() => {
     setLoading(true);
@@ -217,6 +229,38 @@ export default function IncomingPage() {
 
     return { external, internal };
   }, [officeOption]);
+
+  const paginationSection = (
+    <>
+      <Divider />
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={files.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        sx={{
+          "& .MuiTablePagination-toolbar": {
+            minHeight: "44px",
+            paddingX: 2,
+          },
+          "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
+            {
+              margin: 0,
+              fontSize: "0.75rem",
+            },
+          "& .MuiTablePagination-select": {
+            fontSize: "0.75rem",
+          },
+          "& .MuiIconButton-root": {
+            padding: "4px",
+          },
+        }}
+      />
+    </>
+  );
 
   return (
     <Container maxWidth="lg" className="py-8 min-h-[80vh]">
@@ -399,151 +443,216 @@ export default function IncomingPage() {
               <CircularProgress />
             </div>
           ) : visibleRows.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead className="bg-gray-100 border-b border-gray-200">
-                  <tr>
-                    {headerCells.map((cell, index) => (
-                      <th
-                        key={index}
-                        className={`px-6 py-2 text-${
-                          index === 0 ? "left" : "center"
-                        } text-xs uppercase text-gray-700`}
-                      >
-                        <div className="flex items-center gap-2 ">
-                          {cell}
-                          {(cell === "Documents" ||
-                            cell === "Date Received") && (
-                            <Tooltip
-                              title={`Sort by ${cell}`}
-                              arrow
-                              placement="top"
-                            >
-                              <Button
-                                size="small"
-                                variant="text"
-                                onClick={() => {
-                                  if (cell === "Documents") {
-                                    setSortBy(
-                                      sortBy === "documents-asc"
-                                        ? "documents-desc"
-                                        : "documents-asc",
-                                    );
-                                  } else if (cell === "Date Received") {
-                                    setSortBy(
-                                      sortBy === "date-asc"
-                                        ? "date-desc"
-                                        : "date-asc",
-                                    );
-                                  }
-                                }}
-                                sx={{
-                                  padding: "4px",
-                                  minWidth: "auto",
-                                  color: "inherit",
-                                }}
+            isSmallScreen ? (
+              <div className="p-4 space-y-4">
+                {visibleRows.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="border border-gray-100 rounded-xl p-4 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-base font-semibold text-gray-900">
+                          {doc.title || "Untitled"}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {doc.sender_office || "-"}
+                        </p>
+                      </div>
+                      <Tooltip title="View Details" arrow placement="top">
+                        <IconButton
+                          color="success"
+                          size="small"
+                          onClick={() =>
+                            router.push(`/incoming?id=${doc.id}`, {
+                              replace: true,
+                            })
+                          }
+                          sx={{ border: "1px solid #16a34a" }}
+                          aria-label="View details"
+                        >
+                          <RemoveRedEyeOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                    <Divider className="my-3" />
+                    <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+                      <div>
+                        <p className="text-gray-500 uppercase tracking-wide text-[10px]">
+                          Classification
+                        </p>
+                        <p className="font-semibold text-gray-900">
+                          {doc.doc_class || "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 uppercase tracking-wide text-[10px]">
+                          Document Type
+                        </p>
+                        <p className="font-semibold text-gray-900">
+                          {doc.doc_type || "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 uppercase tracking-wide text-[10px]">
+                          Date Received
+                        </p>
+                        <p className="font-semibold text-gray-900">
+                          {doc.date_created
+                            ? new Date(doc.date_created)
+                                .toISOString()
+                                .split("T")[0]
+                            : "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 uppercase tracking-wide text-[10px]">
+                          Status
+                        </p>
+                        <p className="font-semibold text-gray-900">
+                          {doc.status || "-"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {paginationSection}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead className="bg-gray-100 border-b border-gray-200">
+                    <tr>
+                      {headerCells.map((cell, index) => (
+                        <th
+                          key={cell}
+                          className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-semibold uppercase text-gray-700 bg-gray-50 ${columnVisibility[index]}`}
+                        >
+                          <div className="flex items-center gap-2 ">
+                            {cell}
+                            {(cell === "Documents" ||
+                              cell === "Date Received") && (
+                              <Tooltip
+                                title={`Sort by ${cell}`}
+                                arrow
+                                placement="top"
                               >
-                                {sortBy === "documents-asc" &&
-                                cell === "Documents" ? (
-                                  <KeyboardArrowUpRoundedIcon fontSize="small" />
-                                ) : sortBy === "documents-desc" &&
+                                <Button
+                                  size="small"
+                                  variant="text"
+                                  onClick={() => {
+                                    if (cell === "Documents") {
+                                      setSortBy(
+                                        sortBy === "documents-asc"
+                                          ? "documents-desc"
+                                          : "documents-asc",
+                                      );
+                                    } else if (cell === "Date Received") {
+                                      setSortBy(
+                                        sortBy === "date-asc"
+                                          ? "date-desc"
+                                          : "date-asc",
+                                      );
+                                    }
+                                  }}
+                                  sx={{
+                                    padding: "4px",
+                                    minWidth: "auto",
+                                    color: "inherit",
+                                  }}
+                                >
+                                  {sortBy === "documents-asc" &&
                                   cell === "Documents" ? (
-                                  <KeyboardArrowDownRoundedIcon fontSize="small" />
-                                ) : sortBy === "date-asc" &&
-                                  cell === "Date Received" ? (
-                                  <KeyboardArrowUpRoundedIcon fontSize="small" />
-                                ) : sortBy === "date-desc" &&
-                                  cell === "Date Received" ? (
-                                  <KeyboardArrowDownRoundedIcon fontSize="small" />
-                                ) : (
-                                  <UnfoldMoreRoundedIcon fontSize="small" />
-                                )}
-                              </Button>
-                            </Tooltip>
-                          )}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {visibleRows.map((doc, index) => (
-                    <tr key={index}>
-                      <td className="px-6 py-2">
-                        <div className="flex flex-col">
-                          <Typography variant="body1">{doc.title}</Typography>
-                          <Typography variant="caption">
-                            {doc.sender_office}
-                          </Typography>
-                        </div>
-                      </td>
-                      <td className="px-6 py-2 text-left text-sm text-gray-600">
-                        {doc.doc_class || "-"}
-                      </td>
-                      <td className="px-6 py-2 text-left text-sm text-gray-600">
-                        {doc.doc_type || "-"}
-                      </td>
-                      <td className="px-6 py-2 text-left text-sm text-gray-600">
-                        {doc.date_created
-                          ? new Date(doc.date_created)
-                              .toISOString()
-                              .split("T")[0]
-                          : "-"}
-                      </td>
-                      <td className="px-6 py-2 text-left text-sm text-gray-600">
-                        {doc.status || "-"}
-                      </td>
-                      <td className="px-6 py-2">
-                        <div className="flex items-center justify-center gap-2">
-                          <Tooltip title="View Details" arrow placement="top">
-                            <Button
-                              variant="outlined"
-                              color="success"
-                              disableElevation
-                              size="small"
-                              onClick={() =>
-                                router.push(`/incoming?id=${doc.id}`, {
-                                  replace: true,
-                                })
-                              }
-                            >
-                              <RemoveRedEyeOutlinedIcon fontSize="small" />
-                            </Button>
-                          </Tooltip>
-                        </div>
-                      </td>
+                                    <KeyboardArrowUpRoundedIcon fontSize="small" />
+                                  ) : sortBy === "documents-desc" &&
+                                    cell === "Documents" ? (
+                                    <KeyboardArrowDownRoundedIcon fontSize="small" />
+                                  ) : sortBy === "date-asc" &&
+                                    cell === "Date Received" ? (
+                                    <KeyboardArrowUpRoundedIcon fontSize="small" />
+                                  ) : sortBy === "date-desc" &&
+                                    cell === "Date Received" ? (
+                                    <KeyboardArrowDownRoundedIcon fontSize="small" />
+                                  ) : (
+                                    <UnfoldMoreRoundedIcon fontSize="small" />
+                                  )}
+                                </Button>
+                              </Tooltip>
+                            )}
+                          </div>
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              <Divider />
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={files.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                sx={{
-                  "& .MuiTablePagination-toolbar": {
-                    minHeight: "44px",
-                    paddingX: 2,
-                  },
-                  "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                    {
-                      margin: 0,
-                      fontSize: "0.75rem",
-                    },
-                  "& .MuiTablePagination-select": {
-                    fontSize: "0.75rem",
-                  },
-                  "& .MuiIconButton-root": {
-                    padding: "4px",
-                  },
-                }}
-              />
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {visibleRows.map((doc) => (
+                      <tr key={doc.id} className="align-top">
+                        <td className="px-3 sm:px-4 lg:px-6 py-3">
+                          <div className="flex flex-col">
+                            <Typography
+                              variant="body2"
+                              className="font-semibold text-gray-900 text-sm sm:text-base"
+                            >
+                              {doc.title}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              className="text-gray-500 mt-1 text-xs sm:text-sm"
+                            >
+                              {doc.sender_office}
+                            </Typography>
+                          </div>
+                        </td>
+                        <td
+                          className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-700 ${columnVisibility[1]}`}
+                        >
+                          {doc.doc_class || "-"}
+                        </td>
+                        <td
+                          className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-700 ${columnVisibility[2]}`}
+                        >
+                          {doc.doc_type || "-"}
+                        </td>
+                        <td
+                          className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-700 ${columnVisibility[3]}`}
+                        >
+                          {doc.date_created
+                            ? new Date(doc.date_created)
+                                .toISOString()
+                                .split("T")[0]
+                            : "-"}
+                        </td>
+                        <td
+                          className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-gray-700 ${columnVisibility[4]}`}
+                        >
+                          {doc.status || "-"}
+                        </td>
+                        <td className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3">
+                          <div className="flex items-center justify-center gap-1 sm:gap-2">
+                            <Tooltip title="View Details" arrow placement="top">
+                              <IconButton
+                                color="success"
+                                size="small"
+                                onClick={() =>
+                                  router.push(`/incoming?id=${doc.id}`, {
+                                    replace: true,
+                                  })
+                                }
+                                sx={{ border: "1px solid #16a34a" }}
+                                aria-label="View details"
+                              >
+                                <RemoveRedEyeOutlinedIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {paginationSection}
+              </div>
+            )
           ) : (
             <div className="text-center py-12 text-gray-500">
               {searchQuery ? (
