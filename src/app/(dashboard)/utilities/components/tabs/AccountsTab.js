@@ -220,7 +220,9 @@ export default function AccountsTab({ data, isActive }) {
                         <IconButton
                           color="error"
                           size="small"
-                          onClick={() => handleDelete(account?.id, account?.email)}
+                          onClick={() =>
+                            handleDelete(account?.id, account?.email)
+                          }
                           sx={{ border: "1px solid #dc2626" }}
                           aria-label="Delete account"
                         >
@@ -257,20 +259,16 @@ export default function AccountsTab({ data, isActive }) {
               <table className="min-w-full table-auto">
                 <thead className="bg-gray-100 border-b border-gray-200">
                   <tr>
-                    {[
-                      "Fullname",
-                      "Email",
-                      "Division",
-                      "Role",
-                      "Actions",
-                    ].map((cell, index) => (
-                      <th
-                        key={cell}
-                        className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs uppercase text-gray-700 ${columnVisibility[index]}`}
-                      >
-                        {cell}
-                      </th>
-                    ))}
+                    {["Fullname", "Email", "Division", "Role", "Actions"].map(
+                      (cell, index) => (
+                        <th
+                          key={cell}
+                          className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs uppercase text-gray-700 ${columnVisibility[index]}`}
+                        >
+                          {cell}
+                        </th>
+                      ),
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -314,7 +312,8 @@ export default function AccountsTab({ data, isActive }) {
                           {account?.role || "N/A"}
                         </Typography>
                       </td>
-                      <td className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 ${columnVisibility[4]}`}
+                      <td
+                        className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 ${columnVisibility[4]}`}
                       >
                         <div className="flex items-center justify-center gap-2">
                           <Tooltip title="View Account" placement="top" arrow>
