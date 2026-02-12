@@ -84,6 +84,29 @@ const Report_pdf = (data) => {
     }
   };
 
+  const sanitizeText = (text) => {
+    if (!text) return "";
+    const replacements = {
+      "≤": "<=",
+      "≥": ">=",
+      "–": "-",
+      "—": "-",
+      "“": '"',
+      "”": '"',
+      "‘": "'",
+      "’": "'",
+      "•": "-",
+      "…": "...",
+      "×": "x",
+      " ": " ",
+    };
+
+    return text.replace(
+      /[≤≥–—“”‘’•…× ]/g,
+      (char) => replacements[char] || char,
+    );
+  };
+
   const addSectionTitle = (title) => {
     yOffset += lineHeight;
     ensurePageSpace();
@@ -94,19 +117,25 @@ const Report_pdf = (data) => {
   };
 
   const addParagraph = (text) => {
-    if (!text) return;
-    const lines = doc.splitTextToSize(text, 180);
-    lines.forEach((line) => {
-      ensurePageSpace();
-      doc.text(line, margin, yOffset);
-      yOffset += lineHeight;
+    const content = sanitizeText(text);
+    if (!content) return;
+    const lines = doc.splitTextToSize(content, 180);
+    const align = lines.length > 1 ? "justify" : "left";
+    const lineHeightFactor = 1.2; // keep internal line spacing comfortable
+    const renderHeight = lines.length * lineHeight;
+    ensurePageSpace(renderHeight);
+    doc.text(lines, margin, yOffset, {
+      align,
+      maxWidth: 180,
+      lineHeightFactor,
     });
+    yOffset += renderHeight;
   };
 
   const addBullets = (items) => {
     if (!Array.isArray(items) || items.length === 0) return;
     items.forEach((item, index) => {
-      const bulletText = `${index + 1}. ${item}`;
+      const bulletText = sanitizeText(`${index + 1}. ${item}`);
       const lines = doc.splitTextToSize(bulletText, 180);
       lines.forEach((line) => {
         ensurePageSpace();
@@ -125,9 +154,9 @@ const Report_pdf = (data) => {
       addSectionTitle("Compliance Issues");
       compliance_issues.forEach((issue, index) => {
         doc.setFont("helvetica", "italic");
-        const issueText = `${index + 1}. \"${issue.excerpt}\" [${
-          issue.location
-        }]`;
+        const issueText = sanitizeText(
+          `${index + 1}. \"${issue.excerpt}\" [${issue.location}]`,
+        );
         const issueLines = doc.splitTextToSize(issueText, 180);
         issueLines.forEach((line) => {
           ensurePageSpace();
@@ -135,7 +164,7 @@ const Report_pdf = (data) => {
           yOffset += lineHeight;
         });
         doc.setFont("helvetica", "normal");
-        addParagraph(`Explanation: ${issue.explanation}`);
+        addParagraph(`Explanation: ${sanitizeText(issue.explanation)}`);
       });
     }
 
@@ -143,9 +172,9 @@ const Report_pdf = (data) => {
       addSectionTitle("Security Concerns");
       security_concerns.forEach((issue, index) => {
         doc.setFont("helvetica", "italic");
-        const issueText = `${index + 1}. \"${issue.excerpt}\" [${
-          issue.location
-        }]`;
+        const issueText = sanitizeText(
+          `${index + 1}. \"${issue.excerpt}\" [${issue.location}]`,
+        );
         const issueLines = doc.splitTextToSize(issueText, 180);
         issueLines.forEach((line) => {
           ensurePageSpace();
@@ -153,7 +182,7 @@ const Report_pdf = (data) => {
           yOffset += lineHeight;
         });
         doc.setFont("helvetica", "normal");
-        addParagraph(`Explanation: ${issue.explanation}`);
+        addParagraph(`Explanation: ${sanitizeText(issue.explanation)}`);
       });
     }
   };
