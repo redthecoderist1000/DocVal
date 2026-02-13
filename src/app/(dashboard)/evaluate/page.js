@@ -84,19 +84,17 @@ export default function files() {
     axiosInstance
       .get("/document/getAllDocClass")
       .then((res) => setClassOption(res.body))
-      .catch((error) =>
-        console.error("Error fetching classifications:", error),
-      );
+      .catch((error) => setError("Error fetching classifications", "error"));
 
     axiosInstance
       .get("/document/getAllDocType")
       .then((res) => setTypeOption(res.body))
-      .catch((error) => console.error("Error fetching types:", error));
+      .catch((error) => setError("Error fetching types", "error"));
 
     axiosInstance
       .get("/office/getAllDivision")
       .then((res) => setOfficeOption(res.body))
-      .catch((error) => console.error("Error fetching offices:", error));
+      .catch((error) => setError("Error fetching offices", "error"));
 
     axiosInstance
       .post("/document/getFileByUser")
@@ -105,12 +103,8 @@ export default function files() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error(err);
-        const message =
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to fetch documents. Please try again.";
-        setError(message);
+        // console.error(err);
+        setError("Failed to fetch documents. Please try again.", "error");
         setLoading(false);
       });
   }, [setError]);
