@@ -4,7 +4,7 @@ const baseSchema = {
     document_name: {
       type: "string",
       description:
-        "The name of the document being evaluated. Not the type of document.",
+        "The name of the document being evaluated. Not the type of document. Do not rephrase, it must be exactly as it appears in the document. Do not include what type of document it is, just the name. For example, if the document is a Terms of Reference for a project called 'Project Alpha', the document_name should be 'Project Alpha'.",
     },
     summary: {
       type: "string",

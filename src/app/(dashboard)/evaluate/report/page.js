@@ -28,7 +28,7 @@ import axiosInstance from "@/helper/Axios";
 import ReportRenderer from "../../../../components/ReportRenderer";
 
 export default function Report() {
-  const { session, status } = useProtectedRoute();
+  // const { session, status } = useProtectedRoute();
   const { setError } = useError();
   const [loading, setLoading] = useState(true);
   const [newReportData, setNewReportData] = useState({});
@@ -120,12 +120,20 @@ export default function Report() {
       });
   };
 
+  const handleEditReport = (newReportData) => {
+    // console.log("edited report data:", newReportData);
+    setNewReportData((prev) => ({
+      ...prev,
+      report_data: newReportData,
+    }));
+  };
+
   const handleExportPDF = () => {
     console.log("report", newReportData.report_data);
-    Report_pdf({
-      ...newReportData,
-      sender_office: newReportData.sender_office_name,
-    });
+    // Report_pdf({
+    //   ...newReportData,
+    //   sender_office: newReportData.sender_office_name,
+    // });
   };
 
   if (loading) {
@@ -139,6 +147,7 @@ export default function Report() {
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
       <Grid container direction="row" spacing={4}>
+        {/* left side */}
         <Grid flex={1}>
           <Stack spacing={1} alignItems="flex-start">
             <IconButton onClick={() => router.back()}>
@@ -224,6 +233,7 @@ export default function Report() {
             />
           </Stack>
         </Grid>
+        {/* right side, report side*/}
         <Grid flex={3}>
           <Card elevation={0} sx={{ p: 3 }}>
             <Stack spacing={2}>
@@ -255,6 +265,7 @@ export default function Report() {
                 <ReportRenderer
                   reportData={newReportData.report_data}
                   documentType={newReportData.type_name}
+                  onChange={handleEditReport}
                 />
               )}
             </Stack>

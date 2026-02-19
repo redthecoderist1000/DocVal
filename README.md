@@ -1,5 +1,25 @@
 # DocVal
 
+## Table of Contents
+
+- [Introduction](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#introduction)
+- [Getting Started](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#getting-started)
+  - [Prerequisites](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#prerequisites)
+  - [Installation Steps](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#installation-steps)
+  - [Running the System](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#running-the-system)
+    - [Development Mode](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#development-mode)
+    - [Production Mode](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#production-mode)
+- [Features](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#features)
+- [API Endpoints](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#api-endpoints)
+- [Dynamic Report Schemas](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#dynamic-report-schemas)
+  - [How It Works](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#how-it-works)
+  - [Adding a New Document Type](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#adding-a-new-document-type)
+  - [Files Involved](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#files-involved)
+  - [Report Display Locations](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#report-display-locations)
+- [Poject Structure](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#project-structure)
+- [Team Members](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#team-members)
+- [Support](https://github.com/redthecoderist1000/DocVal?tab=readme-ov-file#api-support)
+
 ## Introduction
 
 **DocVal** is an AI-based tool designed for evaluating and validating official documents. This system leverages artificial intelligence to analyze, verify, and assess the authenticity and completeness of official documents with high accuracy. Whether you need to validate certificates, identification documents, official records, or other critical paperwork, DocVal provides a reliable and efficient solution for document verification.

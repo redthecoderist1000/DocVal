@@ -1,13 +1,13 @@
 import sql from "mssql";
 
 const DB_PORT = process.env.DB_PORT;
+const DB_INSTANCE = process.env.DB_INSTANCE; // add this
 const DB_NAME = process.env.DB_NAME;
 const DB_USERNAME = process.env.DB_USERNAME;
 const DB_PASSWORD = process.env.DB_PASSWORD || "";
 const DB_SERVER = process.env.DB_SERVER;
 
 const config = {
-  port: parseInt(DB_PORT, 10),
   user: DB_USERNAME,
   password: DB_PASSWORD,
   server: DB_SERVER,
@@ -16,6 +16,7 @@ const config = {
   requestTimeout: 30000,
   options: {
     encrypt: false,
+    trustServerCertificate: true,
   },
   pool: {
     max: 10,
@@ -23,6 +24,17 @@ const config = {
     idleTimeoutMillis: 30000,
   },
 };
+
+if (DB_PORT) {
+  const numericPort = Number(DB_PORT);
+  if (!Number.isNaN(numericPort)) {
+    config.port = numericPort;
+  }
+}
+
+if (DB_INSTANCE) {
+  config.options.instanceName = DB_INSTANCE;
+}
 
 let poolPromise;
 

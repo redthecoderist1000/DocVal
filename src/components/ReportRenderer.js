@@ -1,10 +1,27 @@
 "use client";
 
-import { Stack, Typography, Divider } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Stack,
+  Typography,
+  Divider,
+  Tooltip,
+  Button,
+  TextField,
+} from "@mui/material";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 const sectionConfig = {
   summary: {
     title: "Summary",
+    editConfig: {
+      label: "Edit Summary",
+      placeholder:
+        "Enter a concise summary of the document, highlighting key points and overall assessment.",
+      multiline: true,
+      type: "text",
+      minRows: 4,
+    },
     render: (data) => (
       <Typography variant="body2" gutterBottom align="justify">
         {data}
@@ -13,6 +30,14 @@ const sectionConfig = {
   },
   key_points: {
     title: "Key Points",
+    editConfig: {
+      label: "Edit Key Points",
+      placeholder:
+        "List the key points or findings from the document. Use bullet points for clarity.",
+      type: "array",
+      multiline: false,
+      minRows: 4,
+    },
     render: (data) => (
       <>
         {data?.map((point, index) => (
@@ -170,7 +195,32 @@ const docTypeSectionOrder = {
 
 const defaultSectionOrder = Object.keys(sectionConfig);
 
-export default function ReportRenderer({ reportData, documentType }) {
+export default function ReportRenderer({ reportData, documentType, onChange }) {
+  const [editableData, setEditableData] = useState(reportData || {});
+  const [editingSections, setEditingSections] = useState({});
+
+  const reportDataKey = useMemo(
+    () => JSON.stringify(reportData ?? {}),
+    [reportData],
+  );
+
+  const editableDataKey = useMemo(
+    () => JSON.stringify(editableData ?? {}),
+    [editableData],
+  );
+
+  useEffect(() => {
+    // console.log("reportData changed, resetting editableData");
+    setEditableData(reportData || {});
+    setEditingSections({});
+  }, [reportDataKey]);
+
+  useEffect(() => {
+    if (!onChange) return;
+    if (editableDataKey === reportDataKey) return; // avoid loops when change originated from prop reset
+    onChange(editableData);
+  }, [editableDataKey, reportDataKey, editableData, onChange]);
+
   if (!reportData) {
     return (
       <Typography color="text.secondary">No report data available</Typography>
@@ -181,34 +231,279 @@ export default function ReportRenderer({ reportData, documentType }) {
   const sectionOrder =
     docTypeSectionOrder[normalizedType] || defaultSectionOrder;
 
+  const renderEditableContent = (sectionKey, data, config) => {
+    // Array content
+    if (Array.isArray(data)) {
+      const safeArray = data.length ? data : [""];
+      return (
+        <Stack spacing={1.5}>
+          {safeArray.map((value, index) => (
+            <TextField
+              key={`${sectionKey}-${index}`}
+              fullWidth
+              size="small"
+              value={value}
+              placeholder={config.editConfig?.placeholder || "Enter value"}
+              onChange={(e) => {
+                const nextValue = e.target.value;
+                setEditableData((prev) => {
+                  const current = Array.isArray(prev[sectionKey])
+                    ? prev[sectionKey]
+                    : safeArray;
+                  const updated = current.map((item, i) =>
+                    i === index ? nextValue : item,
+                  );
+                  return { ...prev, [sectionKey]: updated };
+                });
+              }}
+            />
+          ))}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() =>
+              setEditableData((prev) => ({
+                ...prev,
+                [sectionKey]: [
+                  ...(Array.isArray(prev[sectionKey])
+                    ? prev[sectionKey]
+                    : safeArray),
+                  "",
+                ],
+              }))
+            }
+          >
+            Add Row
+          </Button>
+        </Stack>
+      );
+    }
+
+    // Object content (e.g., potential issues)
+    if (data && typeof data === "object") {
+      return (
+        <Stack spacing={2}>
+          {Object.entries(data).map(([groupKey, groupVal]) => {
+            if (Array.isArray(groupVal)) {
+              const safeArray = groupVal.length ? groupVal : [{}];
+              return (
+                <Stack key={groupKey} spacing={1.5}>
+                  <Typography variant="subtitle2" textTransform="capitalize">
+                    {groupKey.replaceAll("_", " ")}
+                  </Typography>
+                  {safeArray.map((item, idx) => {
+                    const entry =
+                      item && typeof item === "object" && !Array.isArray(item)
+                        ? item
+                        : {};
+                    const fieldKeys = Object.keys(entry).length
+                      ? Object.keys(entry)
+                      : ["value"];
+                    return (
+                      <Stack
+                        key={`${groupKey}-${idx}`}
+                        spacing={1}
+                        sx={{
+                          border: "1px solid #eee",
+                          p: 1.5,
+                          borderRadius: 1,
+                        }}
+                      >
+                        {fieldKeys.map((fieldKey) => {
+                          const fieldValue = entry[fieldKey] ?? "";
+                          const isLongText = fieldKey
+                            .toLowerCase()
+                            .includes("explanation");
+                          return (
+                            <TextField
+                              key={`${groupKey}-${idx}-${fieldKey}`}
+                              fullWidth
+                              size="small"
+                              multiline={isLongText}
+                              minRows={isLongText ? 3 : 1}
+                              label={fieldKey.replaceAll("_", " ")}
+                              value={fieldValue}
+                              onChange={(e) => {
+                                const nextVal = e.target.value;
+                                setEditableData((prev) => {
+                                  const currentSection = prev[sectionKey] || {};
+                                  const currentGroup = Array.isArray(
+                                    currentSection[groupKey],
+                                  )
+                                    ? currentSection[groupKey]
+                                    : safeArray;
+                                  const updatedGroup = currentGroup.map(
+                                    (row, rowIdx) => {
+                                      if (rowIdx !== idx) return row;
+                                      return {
+                                        ...(row && typeof row === "object"
+                                          ? row
+                                          : {}),
+                                        [fieldKey]: nextVal,
+                                      };
+                                    },
+                                  );
+                                  return {
+                                    ...prev,
+                                    [sectionKey]: {
+                                      ...currentSection,
+                                      [groupKey]: updatedGroup,
+                                    },
+                                  };
+                                });
+                              }}
+                            />
+                          );
+                        })}
+                      </Stack>
+                    );
+                  })}
+                  {/* <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() =>
+                      setEditableData((prev) => {
+                        const currentSection = prev[sectionKey] || {};
+                        const currentGroup = Array.isArray(
+                          currentSection[groupKey],
+                        )
+                          ? currentSection[groupKey]
+                          : safeArray;
+                        return {
+                          ...prev,
+                          [sectionKey]: {
+                            ...currentSection,
+                            [groupKey]: [...currentGroup, {}],
+                          },
+                        };
+                      })
+                    }
+                  >
+                    Add {groupKey.replaceAll("_", " ")}
+                  </Button> */}
+                </Stack>
+              );
+            }
+
+            const value = typeof groupVal === "string" ? groupVal : "";
+            return (
+              <TextField
+                key={groupKey}
+                fullWidth
+                size="small"
+                multiline
+                minRows={config.editConfig?.minRows || 3}
+                label={groupKey.replaceAll("_", " ")}
+                value={value}
+                onChange={(e) => {
+                  const nextVal = e.target.value;
+                  setEditableData((prev) => ({
+                    ...prev,
+                    [sectionKey]: {
+                      ...(prev[sectionKey] || {}),
+                      [groupKey]: nextVal,
+                    },
+                  }));
+                }}
+              />
+            );
+          })}
+        </Stack>
+      );
+    }
+
+    // String or empty content
+    if (typeof data === "string" || data === undefined || data === null) {
+      const value = typeof data === "string" ? data : "";
+      return (
+        <TextField
+          fullWidth
+          multiline
+          minRows={config.editConfig?.minRows || 4}
+          size="small"
+          placeholder={config.editConfig?.placeholder || `Edit ${config.title}`}
+          value={value}
+          onChange={(e) => {
+            const nextValue = e.target.value;
+            setEditableData((prev) => ({ ...prev, [sectionKey]: nextValue }));
+          }}
+        />
+      );
+    }
+
+    return config.render(data);
+  };
+
   return (
     <Stack spacing={3}>
       {sectionOrder.map((sectionKey) => {
-        const data = reportData[sectionKey];
         const config = sectionConfig[sectionKey];
+        if (!config) return null;
 
-        // Skip sections that don't have data
-        if (!data || !config) return null;
-
-        // Skip empty arrays or strings
-        if (
+        const data = editableData[sectionKey];
+        const isEditing = Boolean(editingSections[sectionKey]);
+        const hasContent = !(
+          data === undefined ||
+          data === null ||
           (Array.isArray(data) && data.length === 0) ||
           (typeof data === "string" && !data.trim())
-        ) {
-          return null;
-        }
+        );
 
         return (
           <div key={sectionKey}>
-            <Typography
-              variant="body1"
-              gutterBottom
-              fontWeight="bold"
-              textTransform="capitalize"
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={1}
             >
-              {config.title}
-            </Typography>
-            {config.render(data)}
+              <Typography
+                variant="body1"
+                gutterBottom
+                fontWeight="bold"
+                textTransform="capitalize"
+              >
+                {config.title}
+              </Typography>
+              {onChange && (
+                <Tooltip
+                  title={`${isEditing ? "Done" : "Edit"} ${config.title}`}
+                  arrow
+                >
+                  <Button
+                    variant={isEditing ? "contained" : "outlined"}
+                    disableElevation
+                    size="small"
+                    color="warning"
+                    startIcon={
+                      !isEditing ? <EditOutlinedIcon fontSize="small" /> : null
+                    }
+                    onClick={() =>
+                      setEditingSections((prev) => ({
+                        ...prev,
+                        [sectionKey]: !prev[sectionKey],
+                      }))
+                    }
+                  >
+                    {isEditing ? "Done" : "Edit"}
+                  </Button>
+                </Tooltip>
+              )}
+            </Stack>
+
+            {isEditing ? (
+              renderEditableContent(sectionKey, data, config)
+            ) : hasContent ? (
+              config.render(data)
+            ) : (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                fontStyle="italic"
+              >
+                No content yet.
+              </Typography>
+            )}
             <Divider sx={{ mt: 2 }} />
           </div>
         );
