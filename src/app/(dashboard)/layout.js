@@ -72,11 +72,6 @@ export default function DashboardLayout({ children }) {
       icon: <HomeRoundedIcon />,
     },
     {
-      path: "evaluate",
-      label: "Evaluate",
-      icon: <ArticleRoundedIcon />,
-    },
-    {
       path: "incoming",
       label: "Incoming",
       icon: <DriveFileMoveRoundedIcon />,

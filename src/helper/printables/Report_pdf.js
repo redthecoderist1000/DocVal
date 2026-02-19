@@ -40,10 +40,7 @@ const Report_pdf = (data) => {
   doc.text(`Reference No.: ${data.refno}`, margin, yOffset);
   yOffset += lineHeight;
   // title
-  const titleLines = doc.splitTextToSize(
-    `Document name: ${data.report_data.title}`,
-    180,
-  );
+  const titleLines = doc.splitTextToSize(`Document name: ${data.title}`, 180);
   titleLines.forEach((line) => {
     if (yOffset + lineHeight > pageHeight - margin - 5) {
       doc.addPage();

@@ -51,14 +51,13 @@ export default function Report() {
 
         getRequest.onsuccess = () => {
           const indexedData = getRequest.result || {};
-          // console.log(indexedData);
+
           setNewReportData({
             ...storedData,
             file_base64: indexedData.file_base64,
             report_data: indexedData.report_data,
           });
 
-          // console.log("report:", indexedData.report_data);
           setLoading(false);
         };
 
@@ -86,7 +85,7 @@ export default function Report() {
   };
 
   const handleSave = () => {
-    console.log("Saving report...", newReportData);
+    // console.log("Saving report...", newReportData);
     // save logic here
     setLoading(true);
     axiosInstance
