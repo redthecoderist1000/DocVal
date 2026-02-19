@@ -129,11 +129,10 @@ export default function Report() {
   };
 
   const handleExportPDF = () => {
-    console.log("report", newReportData.report_data);
-    // Report_pdf({
-    //   ...newReportData,
-    //   sender_office: newReportData.sender_office_name,
-    // });
+    Report_pdf({
+      ...newReportData,
+      sender_office: newReportData.sender_office_name,
+    });
   };
 
   if (loading) {
