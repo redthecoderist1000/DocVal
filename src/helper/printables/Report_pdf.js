@@ -41,7 +41,7 @@ const Report_pdf = (data) => {
   yOffset += lineHeight;
   // title
   const titleLines = doc.splitTextToSize(
-    `Document name: ${data.report_data.document_name}`,
+    `Document name: ${data.report_data.title}`,
     180,
   );
   titleLines.forEach((line) => {
